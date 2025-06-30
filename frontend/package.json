@@ -1,0 +1,36 @@
+{
+  "name": "weather-center-chat",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.4",
+    "@react-hook/media-query": "^1.1.1",
+    "@types/react-datepicker": "^6.0.2",
+    "firebase": "^10.10.0",
+    "next": "14.1.0",
+    "react": "^18",
+    "react-datepicker": "^6.2.0",
+    "react-dom": "^18",
+    "react-firebase-hooks": "^5.1.1",
+    "react-media": "^1.10.0",
+    "react-media-query": "^0.1.0",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
