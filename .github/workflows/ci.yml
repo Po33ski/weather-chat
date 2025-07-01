@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install uv
+
+    - name: Create .env file
+      run: |
+        echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> backend/agent_system/src/multi_tool_agent/.env
+        echo "VISUAL_CROSSING_API_KEY=${{ secrets.VISUAL_CROSSING_API_KEY }}" >> backend/agent_system/src/multi_tool_agent/.env
+
+    # Optional: Run your tests or start the server
+    - name: Run tests
+      run: |
+        cd backend
+        # pytest or any test command you use
+        echo "No tests yet"
