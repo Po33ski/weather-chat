@@ -10,6 +10,7 @@ from ..utils.load_env_data import load_model
 from ..utils.load_env_data import load_google_api_key
 
 from .sub_agents.plan_activities.agent import plan_activities_agent
+from .sub_agents.ask_for_plan.agent import ask_for_plan_agent
 from .tools.get_weather import get_weather
 
 MODEL = load_model()
@@ -23,7 +24,7 @@ root_agent = Agent(
     description= prompt.ROOT_DESCRIPTION,
     global_instruction=prompt.ROOT_GLOBAL_INSTR,
     instruction=prompt.ROOT_INSTR,
-    sub_agents=[ plan_activities_agent],
+    sub_agents=[plan_activities_agent, ask_for_plan_agent], 
     tools=[get_weather],
 )
 

@@ -11,7 +11,7 @@ ROOT_INSTR = """
     1. Follow the section <Welcome>
     2. Follow the section <Search>
     3. Follow the section <Finish>
-
+ 
 
     <Welcome>
         1. welcome the user
@@ -21,9 +21,13 @@ ROOT_INSTR = """
     </Welcome>
 
     <Search>
-        4. If user asks for a plan, you should call your agent plan_activities to plan the activities based on the weather.
-        5. If user has a question about the weather for a few next days then you should use your tool get_weather. Remember! You need have information about the city, which user is asking weather for.
-        6. Go to the <Finish> section.
+        1. If user asks for a plan then: 
+            ** you should call your agent ask_for_plan_agent to gather the information from the user. 
+            ** you should call your agent plan_activities_agent to plan the activities based on the weather. 
+            ** present the plan to the user.
+        OR
+           If user has a question about the weather for a few next days then you should be sure that you have name of the city, which user is asking weather for and then use your tool get_weather.
+        3. Go to the <Finish> section.
     </Search>
 
     <Finish>
