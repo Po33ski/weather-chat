@@ -22,13 +22,29 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// Only initialize Firebase if we have the required config and we're on the client side
+let app: any = null;
+let auth: any = null;
+let db: any = null;
+let googleProvider: any = null;
+
+if (typeof window !== 'undefined' && firebaseConfig.apiKey) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error);
+  }
+}
 
 const signInWithGoogle = async () => {
+  if (!auth || !googleProvider) {
+    console.error('Firebase not initialized');
+    return;
+  }
+  
   await signInWithPopup(auth, googleProvider)
     .then(() => {
       console.log("logged in");
@@ -39,6 +55,11 @@ const signInWithGoogle = async () => {
 };
 
 const logInWithEmailAndPassword = async (email: string, password: string) => {
+  if (!auth) {
+    console.error('Firebase not initialized');
+    return;
+  }
+  
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err: any) {
@@ -52,6 +73,11 @@ const registerWithEmailAndPassword = async (
   email: string,
   password: string
 ) => {
+  if (!auth || !db) {
+    console.error('Firebase not initialized');
+    return;
+  }
+  
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
@@ -68,6 +94,11 @@ const registerWithEmailAndPassword = async (
 };
 
 const sendPasswordReset = async (email: string) => {
+  if (!auth) {
+    console.error('Firebase not initialized');
+    return;
+  }
+  
   try {
     await sendPasswordResetEmail(auth, email);
     alert("Password reset link sent!");
@@ -78,6 +109,10 @@ const sendPasswordReset = async (email: string) => {
 };
 
 const logout = () => {
+  if (!auth) {
+    console.error('Firebase not initialized');
+    return;
+  }
   signOut(auth);
 };
 

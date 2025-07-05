@@ -30,7 +30,7 @@ export const Chat: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [user, loading] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth || null);
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
