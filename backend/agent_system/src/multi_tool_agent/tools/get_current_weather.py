@@ -9,9 +9,9 @@ values = dotenv.dotenv_values(ENV_PATH)
 API_KEY = values.get("VISUAL_CROSSING_API_KEY")
 API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
 
-def get_weather(city: str) -> str:
+def get_current_weather(city: str) -> str:
     """
-    Fetch weather data for a given city using the Visual Crossing API.
+    Fetch current weather data for a given city using the Visual Crossing API.
     Returns the JSON response as a string, or an error message as a string.
     """
     if not city:
@@ -24,8 +24,4 @@ def get_weather(city: str) -> str:
         response.raise_for_status()
         return response.text  # Already a JSON string
     except Exception as e:
-        return json.dumps({"error": str(e)})
-
-# if __name__ == "__main__":
-#     city = input("Enter city: ")
-#     print(get_weather(city)) 
+        return json.dumps({"error": str(e)}) 
