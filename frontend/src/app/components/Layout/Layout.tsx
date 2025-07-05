@@ -13,16 +13,19 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <ContextProviderComponent>
-        <MainContent>
-          <TopBar>
-            <MainMenu />
-            <Logo />
-
-            <SystemSelector />
-          </TopBar>
-          {children}
-        </MainContent>
-        <Footer />
+        <div className="min-h-screen flex flex-col">
+          <MainContent>
+            <TopBar>
+              <MainMenu />
+              <Logo />
+              <SystemSelector />
+            </TopBar>
+            <main className="flex-1">
+              {children}
+            </main>
+          </MainContent>
+          <Footer />
+        </div>
       </ContextProviderComponent>
     </>
   );

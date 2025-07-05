@@ -15,7 +15,7 @@ export function Footer() {
     setInfoModal(createInfoModal);
   }, []);
   return (
-    <div className="flex justify-center items-center mt-4 h-[200px] bg-stone-500 text-white">
+    <div className="flex justify-center items-center h-[200px] bg-stone-500 text-white mt-auto">
       <p>Created by Jarek Popardowski</p>
       <InfoButton />
       {infoModalContext?.isInfoModalShown && infoModal}
