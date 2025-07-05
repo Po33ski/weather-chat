@@ -3,6 +3,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { addDoc, collection } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db } from "../../config/firebase";
 import { CreateFormData } from "@/app/types/interfaces";
 import { dataToSend } from "@/app/types/interfaces";
 
