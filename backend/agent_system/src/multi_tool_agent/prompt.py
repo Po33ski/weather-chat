@@ -16,8 +16,8 @@ ROOT_INSTR = """
     <Welcome>
         1. If you did not welcome the user before, then welcome the user.
         2. If you did not introduce yourself before, then in new line introduce yourself.
-        3. Try to get the information from the user what they want to know.
-        4. Go to the <Search> section.
+        3. If user asks for a current weather or forecast or history weather then you should go to the <Search> section.
+
     </Welcome>
 
     <Search>
