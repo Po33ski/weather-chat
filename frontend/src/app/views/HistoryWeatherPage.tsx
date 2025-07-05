@@ -7,17 +7,17 @@ import { Loading } from "../components/Loading/Loading";
 import { MyText } from "../components/MyText/MyText";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { normalDateFormatted } from "../functions/functions";
-import { API_KEY, API_HTTP } from "../constants/apiConstants";
 import { InfoModalContext } from "../contexts/InfoModalContext";
 import { capitalizeFirstLetter } from "../functions/functions";
 import { InfoModalContextType } from "../types/types";
-import { WeatherData } from "../types/interfaces";
+import { WeatherData as FrontendWeatherData } from "../types/interfaces";
+import { weatherApi, WeatherData as BackendWeatherData } from "../services/weatherApi";
 
 export const HistoryWeatherPage = () => {
   const infoModalContext = useContext<InfoModalContextType | null>(
     InfoModalContext
   );
-  const [data, setData] = useState<WeatherData>({
+  const [data, setData] = useState<FrontendWeatherData>({
     address: null,
     days: [
       {
@@ -45,39 +45,64 @@ export const HistoryWeatherPage = () => {
     }, 5000);
   }, []);
 
-  function onSubmit(
+  // Convert backend WeatherData array to frontend WeatherData format
+  const convertBackendToFrontendData = (weatherDataArray: BackendWeatherData[], location: string): FrontendWeatherData => {
+    const days = weatherDataArray.map(day => {
+      // Convert wind direction to number if possible
+      const windDirNumber = day.wind_direction ? 
+        (typeof day.wind_direction === 'string' ? 
+          (isNaN(Number(day.wind_direction)) ? null : Number(day.wind_direction)) :
+          (typeof day.wind_direction === 'number' ? day.wind_direction : null)) : 
+        null;
+
+      return {
+        datetime: day.timestamp,
+        temp: day.temperature,
+        tempmax: day.temperature, // Using temp as max since we don't have separate max/min
+        tempmin: day.temperature, // Using temp as min since we don't have separate max/min
+        winddir: windDirNumber,
+        windspeed: day.wind_speed || null,
+        conditions: day.conditions || null,
+        sunrise: day.sunrise || null,  // Use actual sunrise data
+        sunset: day.sunset || null,    // Use actual sunset data
+        pressure: day.pressure?.toString() || null,
+        humidity: day.humidity?.toString() || null,
+      };
+    });
+
+    return {
+      address: location,
+      days: days as [typeof days[0]], // Type assertion to match the interface
+    };
+  };
+
+  async function onSubmit(
     cityData: string | undefined,
     startDate: Date,
     endDate: Date
   ) {
-    let normalStartDate =
-      startDate === null ? "" : normalDateFormatted(startDate);
-    let normalEndDate = endDate === null ? "" : normalDateFormatted(endDate);
+    if (!cityData || typeof cityData !== 'string') return;
+    
+    let normalStartDate = startDate ? normalDateFormatted(startDate) : "";
+    let normalEndDate = endDate ? normalDateFormatted(endDate) : "";
 
     setIsLoading(true);
-    fetch(
-      `${API_HTTP}${cityData}/${normalStartDate}/${normalEndDate}?unitGroup=metric&key=${API_KEY}&contentType=json`
-    )
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(
-            "Error, please wait until the request becomes available again or check if your request complies with the guidelines"
-          );
-        }
-      })
-      .then((response) => {
-        console.log(response);
-        setData(response);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsLoading(false);
-        handleError(err);
-      });
+    try {
+      const response = await weatherApi.getHistoryWeather(cityData, normalStartDate, normalEndDate);
+      if (response.success && response.data) {
+        const frontendData = convertBackendToFrontendData(response.data, cityData);
+        setData(frontendData);
+      } else {
+        throw new Error(response.error || 'Failed to fetch historical data');
+      }
+    } catch (err) {
+      console.error(err);
+      handleError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   if (isLoading) {
     return <Loading />;
   }

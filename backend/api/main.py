@@ -11,6 +11,12 @@ import asyncio
 
 import os
 
+from .models import (
+    CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
+    CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse
+)
+from .weather_service import WeatherService
+
 # Load environment variables (if needed)
 load_env_data()
 
@@ -51,4 +57,31 @@ async def chat_endpoint(request: ChatRequest):
             # Get the text from the agent's response
             text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"
             return ChatResponse(message=text or "[Agent error] No response content")
-    return ChatResponse(message="[Agent error] No response from agent.") 
+    return ChatResponse(message="[Agent error] No response from agent.")
+
+# --- Weather API Endpoints ---
+weather_service = WeatherService()
+
+@app.post("/api/weather/current", response_model=CurrentWeatherResponse)
+def get_current_weather(request: CurrentWeatherRequest):
+    try:
+        data = weather_service.get_current_weather(request.location)
+        return CurrentWeatherResponse(success=True, data=data)
+    except Exception as e:
+        return CurrentWeatherResponse(success=False, error=str(e))
+
+@app.post("/api/weather/forecast", response_model=ForecastWeatherResponse)
+def get_forecast_weather(request: ForecastWeatherRequest):
+    try:
+        data = weather_service.get_forecast_weather(request.location, request.days)
+        return ForecastWeatherResponse(success=True, data=data)
+    except Exception as e:
+        return ForecastWeatherResponse(success=False, error=str(e))
+
+@app.post("/api/weather/history", response_model=HistoryWeatherResponse)
+def get_history_weather(request: HistoryWeatherRequest):
+    try:
+        data = weather_service.get_history_weather(request.location, request.start_date, request.end_date)
+        return HistoryWeatherResponse(success=True, data=data)
+    except Exception as e:
+        return HistoryWeatherResponse(success=False, error=str(e)) 

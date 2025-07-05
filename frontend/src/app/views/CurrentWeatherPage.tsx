@@ -15,10 +15,10 @@ import { ModalBrick } from "../components/ModalBrick/ModalBrick";
 import { Loading } from "../components/Loading/Loading";
 import { ButtonLink } from "../components/ButtonLink/ButtonLink";
 import { BrickModalContext } from "../contexts/BrickModalContext";
-import { API_KEY, API_HTTP } from "../constants/apiConstants";
 import { BrickModalContextType, CityContextType } from "../types/types";
 import { CurrentData } from "../types/interfaces";
 import { CityContext } from "../contexts/CityContextType";
+import { weatherApi, WeatherData } from "../services/weatherApi";
 
 export const CurrentWeatherPage = () => {
   const brickModalContext = useContext<BrickModalContextType | null>(
@@ -81,60 +81,99 @@ export const CurrentWeatherPage = () => {
     }, 5000);
   }, []);
 
+  // Convert backend WeatherData to CurrentData format
+  const convertWeatherDataToCurrentData = (weatherData: WeatherData): CurrentData => {
+    // Convert wind direction to number if possible
+    const windDirNumber = weatherData.wind_direction ? 
+      (typeof weatherData.wind_direction === 'string' ? 
+        (isNaN(Number(weatherData.wind_direction)) ? null : Number(weatherData.wind_direction)) :
+        (typeof weatherData.wind_direction === 'number' ? weatherData.wind_direction : null)) : 
+      null;
+
+    return {
+      address: weatherData.location,
+      currentConditions: {
+        temp: weatherData.temperature,
+        humidity: weatherData.humidity || null,
+        windspeed: weatherData.wind_speed || null,
+        winddir: windDirNumber,
+        pressure: weatherData.pressure || null,
+        conditions: weatherData.conditions || null,
+        sunrise: weatherData.sunrise || null,  // Use actual sunrise data
+        sunset: weatherData.sunset || null,    // Use actual sunset data
+      },
+      days: [
+        {
+          description: null,
+          temp: weatherData.temperature,
+          tempmax: weatherData.temperature, // Using current temp as max
+          tempmin: weatherData.temperature, // Using current temp as min
+          winddir: windDirNumber,
+          windspeed: weatherData.wind_speed || null,
+          conditions: weatherData.conditions || null,
+          sunrise: weatherData.sunrise || null,  // Use actual sunrise data
+          sunset: weatherData.sunset || null,    // Use actual sunset data
+          pressure: weatherData.pressure || null,
+          humidity: weatherData.humidity || null,
+          hours: [
+            {
+              temp: weatherData.temperature,
+              conditions: weatherData.conditions || null,
+              winddir: windDirNumber,
+              windspeed: weatherData.wind_speed || null,
+              pressure: weatherData.pressure?.toString() || null,
+              humidity: weatherData.humidity?.toString() || null,
+            },
+          ],
+        },
+      ],
+    };
+  };
+
   useEffect(() => {
     if (cityContext?.city.data) {
-      fetch(
-        `${API_HTTP}${cityContext?.city.data}?unitGroup=metric&include=alerts%2Cdays%2Chours%2Ccurrent&key=${API_KEY}&contentType=json`
-      )
+      setIsLoading(true);
+      weatherApi.getCurrentWeather(cityContext.city.data)
         .then((response) => {
-          if (response.ok) {
-            return response.json();
+          if (response.success && response.data) {
+            const currentData = convertWeatherDataToCurrentData(response.data);
+            setData(currentData);
           } else {
-            throw new Error(
-              "Error, please wait until the request becomes available again or check if your request complies with the guidelines"
-            );
+            throw new Error(response.error || 'Failed to fetch weather data');
           }
-        })
-        .then((response) => {
-          console.log(response);
-          setData(response);
-          setIsLoading(false);
         })
         .catch((err) => {
           console.error(err);
-          setIsLoading(false);
           handleError(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [cityContext?.city.data, handleError]);
 
-  function onCitySubmit(cityData: string | undefined) {
+  async function onCitySubmit(cityData: string | undefined) {
+    if (!cityData) return;
+    
     cityContext?.city.setToLocalStorage(cityData);
-
     setIsLoading(true);
-    fetch(
-      `${API_HTTP}${cityData}?unitGroup=metric&include=alerts%2Cdays%2Chours%2Ccurrent&key=${API_KEY}&contentType=json`
-    )
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(
-            "Error, please wait until the request becomes available again or check if your request complies with the guidelines"
-          );
-        }
-      })
-      .then((response) => {
-        console.log(response);
-        setData(response);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsLoading(false);
-        handleError(err);
-      });
+
+    try {
+      const response = await weatherApi.getCurrentWeather(cityData);
+      if (response.success && response.data) {
+        const currentData = convertWeatherDataToCurrentData(response.data);
+        setData(currentData);
+      } else {
+        throw new Error(response.error || 'Failed to fetch weather data');
+      }
+    } catch (err) {
+      console.error(err);
+      handleError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   if (isLoading) {
     return <Loading />;
   }

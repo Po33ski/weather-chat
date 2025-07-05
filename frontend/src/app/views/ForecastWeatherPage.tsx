@@ -6,13 +6,12 @@ import { ErrorMessage } from "../components/ErrorMessage/ErrorMessage";
 import { Loading } from "../components/Loading/Loading";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { MyText } from "../components/MyText/MyText";
-import { API_KEY, API_HTTP } from "../constants/apiConstants";
 import { capitalizeFirstLetter } from "../functions/functions";
-
-import { WeatherData } from "../types/interfaces";
+import { WeatherData as FrontendWeatherData } from "../types/interfaces";
+import { weatherApi, WeatherData as BackendWeatherData } from "../services/weatherApi";
 
 export const ForecastWeatherPage = () => {
-  const [data, setData] = useState<WeatherData>({
+  const [data, setData] = useState<FrontendWeatherData>({
     address: null,
     days: [
       {
@@ -40,31 +39,57 @@ export const ForecastWeatherPage = () => {
     }, 5000);
   }, []);
 
-  function onCitySubmit(cityData: string | undefined) {
+  // Convert backend WeatherData array to frontend WeatherData format
+  const convertBackendToFrontendData = (weatherDataArray: BackendWeatherData[], location: string): FrontendWeatherData => {
+    const days = weatherDataArray.map(day => {
+      // Convert wind direction to number if possible
+      const windDirNumber = day.wind_direction ? 
+        (typeof day.wind_direction === 'string' ? 
+          (isNaN(Number(day.wind_direction)) ? null : Number(day.wind_direction)) :
+          (typeof day.wind_direction === 'number' ? day.wind_direction : null)) : 
+        null;
+
+      return {
+        datetime: day.timestamp,
+        temp: day.temperature,
+        tempmax: day.temperature, // Using temp as max since we don't have separate max/min
+        tempmin: day.temperature, // Using temp as min since we don't have separate max/min
+        winddir: windDirNumber,
+        windspeed: day.wind_speed || null,
+        conditions: day.conditions || null,
+        sunrise: day.sunrise || null,  // Use actual sunrise data
+        sunset: day.sunset || null,    // Use actual sunset data
+        pressure: day.pressure?.toString() || null,
+        humidity: day.humidity?.toString() || null,
+      };
+    });
+
+    return {
+      address: location,
+      days: days as [typeof days[0]], // Type assertion to match the interface
+    };
+  };
+
+  async function onCitySubmit(cityData: string | undefined) {
+    if (!cityData) return;
+    
     setIsLoading(true);
-    fetch(
-      `${API_HTTP}${cityData}?unitGroup=metric&key=${API_KEY}&contentType=json`
-    )
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(
-            "Error, please wait until the request becomes available again or check if your request complies with the guidelines"
-          );
-        }
-      })
-      .then((response) => {
-        console.log(response);
-        setData(response);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsLoading(false);
-        handleError(err);
-      });
+    try {
+      const response = await weatherApi.getForecastWeather(cityData, 15); // Get 15 days forecast
+      if (response.success && response.data) {
+        const frontendData = convertBackendToFrontendData(response.data, cityData);
+        setData(frontendData);
+      } else {
+        throw new Error(response.error || 'Failed to fetch forecast data');
+      }
+    } catch (err) {
+      console.error(err);
+      handleError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   if (isLoading) {
     return <Loading />;
   }
