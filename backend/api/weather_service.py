@@ -3,17 +3,20 @@ import requests
 from datetime import datetime, date, timedelta
 from typing import Dict, List, Optional, Any
 from .models import WeatherData
-from agent_system.src.utils.load_env_data import load_env_data
+from agent_system.src.utils.load_env_data import load_env_data, load_visual_crossing_api_key
 
 # Load environment variables
 load_env_data()
 
 class WeatherService:
     def __init__(self):
-        self.api_key = os.getenv('VISUAL_CROSSING_API_KEY')
+        try:
+            self.api_key = load_visual_crossing_api_key()
+        except ValueError as e:
+            raise ValueError(f"Weather service initialization failed: {e}")
+        
         self.base_url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
-        if not self.api_key:
-            raise ValueError("VISUAL_CROSSING_API_KEY not found in environment variables")
+        print(f"Weather service initialized with API key: {self.api_key[:8]}...")
 
     def _make_api_request(self, location: str, start_date: str, end_date: str, include: str = "current,days,hours") -> Dict[str, Any]:
         url = f"{self.base_url}/{location}/{start_date}/{end_date}"

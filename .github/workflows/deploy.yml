@@ -1,0 +1,86 @@
+name: Deploy Weather Center Chat
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '18'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v
+      env:
+        VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+    
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Render (Manual)
+      run: |
+        echo "Deployment to Render should be configured in Render dashboard"
+        echo "Environment variables are available in GitHub Secrets:"
+        echo "- VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY != '' }}"
+        echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
+    
+    - name: Notify deployment status
+      run: |
+        echo "✅ Tests passed and deployment is ready"
+        echo "📋 Next steps:"
+        echo "1. Go to Render.com dashboard"
+        echo "2. Create new Web Service from this repository"
+        echo "3. Set environment variables:"
+        echo "   - VISUAL_CROSSING_API_KEY"
+        echo "   - GOOGLE_API_KEY"
+        echo "4. Deploy!" 

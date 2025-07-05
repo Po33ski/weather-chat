@@ -1,15 +1,15 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from agent_system.src.utils.load_env_data import load_env_data
+from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
 from agent_system.src.multi_tool_agent.agent import root_agent
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types
 import asyncio
-
 import os
+from datetime import datetime
 
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
@@ -20,7 +20,11 @@ from .weather_service import WeatherService
 # Load environment variables (if needed)
 load_env_data()
 
-app = FastAPI()
+app = FastAPI(
+    title="Weather Center Chat API",
+    description="A comprehensive weather and AI chat application API",
+    version="1.0.0"
+)
 
 # Allow CORS for local frontend
 app.add_middleware(
@@ -41,7 +45,39 @@ class ChatResponse(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """
+    Health check endpoint that verifies the application is running and environment is properly configured.
+    """
+    try:
+        env_info = get_environment_info()
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "environment": env_info,
+            "services": {
+                "api": "running",
+                "weather_service": "available" if env_info["has_visual_crossing_api_key"] else "unavailable",
+                "ai_chat": "available" if env_info["has_google_api_key"] else "unavailable"
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
+
+@app.get("/")
+def root():
+    """
+    Root endpoint with basic API information.
+    """
+    return {
+        "message": "Weather Center Chat API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
