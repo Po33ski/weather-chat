@@ -136,21 +136,41 @@ weather-center-chat/
 
 ## 🚀 Deployment
 
+### Single Container Deployment
+
+The application uses a unified Docker container that serves both frontend and backend:
+
+```bash
+# Build the container
+docker build -t weather-center-chat .
+
+# Run locally
+docker run -p 80:80 weather-center-chat
+
+# Deploy to Render.com
+# 1. Set up GitHub Secrets (see [Firebase Setup Guide](FIREBASE_ENV_SETUP.md))
+# 2. Push to 'deploy' branch
+# 3. Configure single Web Service on Render.com
+```
+
 ### Render.com Deployment
 
 1. **Set up GitHub Secrets** (see [Firebase Setup Guide](FIREBASE_ENV_SETUP.md))
-2. **Configure Render.com services** using `render.yaml`
-3. **Deploy automatically** via GitHub Actions
+2. **Push to deploy branch**: `git push origin deploy`
+3. **Create single Web Service** on Render.com with:
+   - Branch: `deploy`
+   - Build Command: `docker build -t weather-center-chat .`
+   - Start Command: `docker run -p $PORT:80 weather-center-chat`
 
-### Docker Deployment
+### Local Development
 
 ```bash
-# Local development
+# Using Docker Compose (separate services)
 docker-compose up
 
-# Production
+# Using single container
 docker build -t weather-center-chat .
-docker run -p 8000:8000 weather-center-chat
+docker run -p 80:80 weather-center-chat
 ```
 
 ## 🤝 Contributing
