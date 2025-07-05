@@ -83,8 +83,8 @@ export const HistoryWeatherPage = () => {
   ) {
     if (!cityData || typeof cityData !== 'string') return;
     
-    let normalStartDate = startDate ? normalDateFormatted(startDate) : "";
-    let normalEndDate = endDate ? normalDateFormatted(endDate) : "";
+    const normalStartDate = normalDateFormatted(startDate);
+    const normalEndDate = normalDateFormatted(endDate);
 
     setIsLoading(true);
     try {

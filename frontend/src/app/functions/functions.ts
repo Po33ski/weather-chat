@@ -42,7 +42,7 @@ export const systemsConvert = {
   },
 };
 
-export const normalDateFormatted = (d: Date) => {
+export const normalDateFormatted = (d: Date): string => {
   if (d) {
     return (
       d.getFullYear() +
@@ -52,6 +52,7 @@ export const normalDateFormatted = (d: Date) => {
       ("0" + d.getDate()).slice(-2)
     );
   }
+  return "";
 };
 
 export function capitalizeFirstLetter(word: string | null): string {
