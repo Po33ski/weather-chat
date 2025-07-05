@@ -1,6 +1,6 @@
 # Deployment Guide - Weather Center Chat
 
-This guide will help you deploy the Weather Center Chat application to [Render.com](https://render.com/) using GitHub environment variables.
+This guide will help you deploy the Weather Center Chat application to [Render.com](https://render.com/) using GitHub environment variables and modern uv dependency management.
 
 ## Prerequisites
 
@@ -33,6 +33,13 @@ The application is designed to work locally with or without API keys. For full f
 3. **Start the backend**:
    ```bash
    cd backend
+   
+   # Using uv (recommended)
+   uv sync
+   uv run uvicorn api.main:app --reload
+   
+   # Or using traditional pip
+   pip install -e .
    uvicorn api.main:app --reload
    ```
 
@@ -92,7 +99,8 @@ The backend application is configured to:
    weather-center-chat/
    ├── backend/
    │   ├── Dockerfile
-   │   ├── requirements.txt
+   │   ├── pyproject.toml
+   │   ├── uv.lock
    │   └── ...
    ├── frontend/
    │   ├── Dockerfile
@@ -131,8 +139,8 @@ The backend application is configured to:
 3. **Configure the service**:
    - **Name**: `weather-center-backend`
    - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+   - **Build Command**: `pip install uv && uv sync --frozen --no-dev`
+   - **Start Command**: `uv run uvicorn api.main:app --host 0.0.0.0 --port $PORT`
    - **Root Directory**: `backend`
 4. **Add environment variables**:
    - `VISUAL_CROSSING_API_KEY`: Your Visual Crossing API key
@@ -230,6 +238,7 @@ The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml
 - **Uses GitHub Secrets** for environment variables
 - **Validates the build** before deployment
 - **Provides deployment instructions**
+- **Uses uv for dependency management**
 
 ### Setting up GitHub Actions
 
@@ -243,9 +252,10 @@ The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml
 ### Common Issues
 
 1. **Build Failures**:
-   - Check that all dependencies are in `requirements.txt` and `package.json`
+   - Check that all dependencies are in `pyproject.toml`
    - Verify Dockerfile syntax
    - Check build logs in Render dashboard
+   - Ensure uv is properly installed in Docker
 
 2. **Environment Variables**:
    - Ensure all required environment variables are set
@@ -332,8 +342,9 @@ The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml
 - **Render Documentation**: [docs.render.com](https://docs.render.com/)
 - **Render Community**: [community.render.com](https://community.render.com/)
 - **GitHub Actions**: [docs.github.com/en/actions](https://docs.github.com/en/actions)
+- **uv Documentation**: [docs.astral.sh/uv/](https://docs.astral.sh/uv/)
 - **GitHub Issues**: For application-specific issues
 
 ---
 
-Your Weather Center Chat application should now be successfully deployed on Render with proper environment variable handling! 🚀 
+Your Weather Center Chat application should now be successfully deployed on Render with proper environment variable handling and modern uv dependency management! 🚀 

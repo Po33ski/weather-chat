@@ -1,249 +1,180 @@
 # Weather Center Chat
 
-A modern weather application with AI chat integration powered by Google ADK, built with Next.js frontend and FastAPI backend. The application provides current weather, forecasts, historical data, and AI-powered chat assistance.
+A comprehensive weather and AI chat application built with Next.js frontend and FastAPI backend, featuring Google ADK for AI chat and Visual Crossing API for weather data.
 
-## 🚀 Quick Start
+## 🌟 Features
 
-### Option 1: Docker (Recommended)
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd weather-center-chat
-
-# Set environment variables
-export VISUAL_CROSSING_API_KEY="your_api_key"
-export GOOGLE_API_KEY="your_google_key"
-
-# Start with Docker Compose
-docker-compose up --build
-
-# Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
-```
-
-### Option 2: Local Development
-
-#### Prerequisites
-- Node.js 18+ and npm
-- Python 3.12+
-- Visual Crossing Weather API key
-- Google Cloud credentials (for AI chat)
-
-#### Backend Setup
-```bash
-cd backend
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment (optional for development)
-cp env.example .env
-# Edit .env with your API keys
-
-# Start the server
-uvicorn api.main:app --reload
-```
-
-#### Frontend Setup
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-## 📁 Project Structure
-
-```
-weather-center-chat/
-├── frontend/          # Next.js application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/     # React components
-│   │   │   ├── views/          # Page components
-│   │   │   ├── services/       # API services
-│   │   │   └── ...
-│   │   └── ...
-│   ├── Dockerfile
-│   ├── package.json
-│   └── ...
-├── backend/           # FastAPI application
-│   ├── api/           # Main API application
-│   │   ├── main.py    # FastAPI app with endpoints
-│   │   ├── models.py  # Pydantic models
-│   │   └── weather_service.py # Weather API service
-│   ├── agent_system/  # Google ADK agent system
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── env.example
-├── docker-compose.yml # Local development setup
-├── render.yaml        # Render deployment configuration
-├── DEPLOYMENT.md      # Detailed deployment guide
-└── README.md
-```
-
-## ✨ Features
-
-- **🌤️ Weather Data**: Current weather, forecasts, and historical data
-- **🤖 AI Chat Assistant**: Powered by Google ADK with weather tools
-- **🔒 Secure Architecture**: Backend handles all external API calls
-- **📱 Modern UI**: Responsive design with Tailwind CSS
-- **🔧 Type Safety**: Full TypeScript support with Pydantic models
-- **📊 Data Visualization**: Interactive weather displays and charts
-- **🐳 Docker Support**: Easy deployment with Docker and Docker Compose
-- **☁️ Cloud Ready**: Deploy to Render.com with GitHub environment variables
+- **AI Chat Assistant**: Powered by Google ADK with weather-specific tools
+- **Weather Data**: Current, forecast, and historical weather information
+- **Google Authentication**: Secure Firebase authentication for chat access
+- **Real-time Updates**: Live weather data and chat responses
+- **Responsive Design**: Modern UI that works on all devices
+- **Docker Support**: Easy deployment with Docker containers
 
 ## 🏗️ Architecture
 
-### Secure Backend-First Design
-- **Frontend** communicates only with our **Backend API**
-- **Backend** handles all external API calls (Visual Crossing Weather API, Google ADK)
-- **No direct API calls** from frontend to external services
-- **Enhanced security** with API keys stored securely in backend
+- **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
+- **Backend**: FastAPI with Python 3.12 and uv dependency management
+- **Authentication**: Firebase Authentication with Google OAuth
+- **AI**: Google ADK with custom weather tools and sub-agents
+- **Weather API**: Visual Crossing Weather API
+- **Deployment**: Render.com with Docker containers
 
-### Data Flow
-1. User enters location in frontend
-2. Frontend sends request to our backend API
-3. Backend calls Visual Crossing Weather API
-4. Backend processes and validates data with Pydantic models
-5. Backend returns clean, validated JSON to frontend
-6. Frontend displays weather data
+## 🚀 Quick Start
 
-## 🌐 Application Pages
+### Prerequisites
 
-### Weather Pages
-- **`/current`**: Real-time weather conditions with hourly breakdown
-- **`/forecast`**: 15-day weather forecast
-- **`/history`**: Historical weather data with date range selection
+- Node.js 18+
+- Python 3.12+
+- uv (Python package manager)
+- Firebase project
+- Google API key
+- Visual Crossing API key
 
-### Features
-- **Current Weather**: Temperature, humidity, wind, pressure, UV index, sunrise/sunset
-- **Forecast**: Daily temperature ranges, conditions, wind data
-- **History**: Past weather data and trends
-- **AI Chat**: Weather-related queries powered by Google ADK
-- **Measurement Systems**: Metric, Imperial (British), Imperial (American)
+### Local Development
 
-## 🔧 API Endpoints
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd weather-center-chat
+   ```
 
-### Weather Endpoints
-- `POST /api/weather/current` - Get current weather for a location
-- `POST /api/weather/forecast` - Get weather forecast (1-14 days)
-- `POST /api/weather/history` - Get historical weather data
+2. **Set up environment variables**
+   
+   **Backend** (`backend/.env`):
+   ```bash
+   GOOGLE_API_KEY=your_google_api_key_here
+   VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key_here
+   ```
+   
+   **Frontend** (`frontend/.env.local`):
+   ```bash
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   ```
 
-### Chat Endpoints
-- `POST /api/chat` - Chat with AI assistant
-- `GET /health` - Health check with environment status
+3. **Start the backend**
+   ```bash
+   cd backend
+   uv sync
+   uv run uvicorn api.main:app --reload
+   ```
 
-### Example Requests
+4. **Start the frontend**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-**Current Weather:**
-```bash
-curl -X POST "http://localhost:8000/api/weather/current" \
-  -H "Content-Type: application/json" \
-  -d '{"location": "London"}'
+5. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Documentation: http://localhost:8000/docs
+
+## 🔐 Security
+
+### Environment Variables
+
+All sensitive data is stored as environment variables and never committed to version control:
+
+- **Backend**: Google API key, Visual Crossing API key
+- **Frontend**: Firebase configuration, API URLs
+
+### GitHub Actions
+
+The project uses GitHub Actions for CI/CD with secrets management:
+- All API keys are stored as GitHub Secrets
+- Environment variables are injected during build and deployment
+- No sensitive data is exposed in logs or code
+
+### Firebase Authentication
+
+- Google OAuth integration for secure user authentication
+- User data stored securely in Firebase
+- Session management handled by Firebase
+- No custom authentication implementation
+
+## 📚 Documentation
+
+- [Backend API Documentation](backend/api/README.md)
+- [Firebase Setup Guide](FIREBASE_ENV_SETUP.md)
+- [Deployment Guide](DEPLOYMENT.md)
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+weather-center-chat/
+├── backend/                 # FastAPI backend
+│   ├── api/                # API endpoints and models
+│   ├── agent_system/       # Google ADK agent system
+│   ├── pyproject.toml      # Python dependencies (uv)
+│   └── Dockerfile          # Backend container
+├── frontend/               # Next.js frontend
+│   ├── src/app/           # App components and pages
+│   ├── package.json       # Node.js dependencies
+│   └── Dockerfile         # Frontend container
+├── docker-compose.yml     # Local development
+├── render.yaml            # Render deployment config
+└── .github/workflows/     # GitHub Actions CI/CD
 ```
 
-**Forecast Weather:**
-```bash
-curl -X POST "http://localhost:8000/api/weather/forecast" \
-  -H "Content-Type: application/json" \
-  -d '{"location": "London", "days": 7}'
-```
+### Key Components
 
-**Health Check:**
-```bash
-curl http://localhost:8000/health
-```
-
-## 🔐 Environment Variables
-
-### Backend Environment
-```env
-# Required
-VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key
-GOOGLE_API_KEY=your_google_api_key
-
-# Optional
-MODEL=gemini-2.0-flash
-DISABLE_WEB_DRIVER=0
-ENVIRONMENT=development
-```
-
-### Frontend Environment
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+- **Chat System**: Firebase authentication + Google ADK integration
+- **Weather Service**: Visual Crossing API integration with Pydantic models
+- **Agent System**: Custom weather tools and sub-agents
+- **Frontend**: Modern React components with TypeScript
 
 ## 🚀 Deployment
 
-### Local Testing
+### Render.com Deployment
+
+1. **Set up GitHub Secrets** (see [Firebase Setup Guide](FIREBASE_ENV_SETUP.md))
+2. **Configure Render.com services** using `render.yaml`
+3. **Deploy automatically** via GitHub Actions
+
+### Docker Deployment
+
 ```bash
-# Test the application
-python test_local.py
+# Local development
+docker-compose up
 
-# Or use Docker Compose
-docker-compose up --build
+# Production
+docker build -t weather-center-chat .
+docker run -p 8000:8000 weather-center-chat
 ```
-
-### Production Deployment
-The application is configured for deployment to [Render.com](https://render.com/) with:
-
-- **Docker containers** for both frontend and backend
-- **GitHub environment variables** for secure API key management
-- **Automatic health checks** and monitoring
-- **Zero-downtime deployments**
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
-
-## 🧪 Development
-
-### Local Development Features
-- **Graceful handling** of missing API keys
-- **Development-friendly** environment loading
-- **Comprehensive health checks** with service status
-- **Hot reload** for both frontend and backend
-
-### Testing
-```bash
-# Test backend functionality
-python test_local.py
-
-# Test with Docker
-docker-compose up --build
-```
-
-### Environment Setup
-1. **Copy environment template**: `cp backend/env.example backend/.env`
-2. **Add your API keys** to the `.env` file
-3. **Start the services** (see Quick Start section)
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test both frontend and backend
+4. Add tests if applicable
 5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License.
 
-## 🔗 Links
+## 🆘 Support
 
-- **Live Demo**: [Weather Center Chat](https://weather-center-ts-new.vercel.app/)
-- **API Documentation**: Available at `/docs` when backend is running
-- **Deployment Guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+For issues and questions:
+1. Check the documentation
+2. Review existing issues
+3. Create a new issue with detailed information
 
 ---
 
-**Weather Center Chat** - Your intelligent weather companion! 🌤️🤖
+**Note**: This application requires valid API keys for Google ADK and Visual Crossing Weather API to function properly. Make sure to set up all environment variables before running the application.
 
 
 

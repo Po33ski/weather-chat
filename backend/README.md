@@ -19,13 +19,32 @@ docker run -p 8000:8000 \
   weather-backend
 ```
 
-### Option 2: Local Development
+### Option 2: Local Development with uv
+
+```bash
+cd backend
+
+# Install dependencies using uv (recommended)
+uv sync
+
+# Or install dependencies with dev tools
+uv sync --dev
+
+# Set up environment (optional for development)
+cp env.example .env
+# Edit .env with your API keys
+
+# Start the server
+uv run uvicorn api.main:app --reload
+```
+
+### Option 3: Traditional pip (fallback)
 
 ```bash
 cd backend
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
 
 # Set up environment (optional for development)
 cp env.example .env
@@ -52,7 +71,8 @@ backend/
 │           └── load_env_data.py # Environment loading utility
 ├── Dockerfile             # Docker configuration
 ├── env.example            # Environment template
-├── requirements.txt       # Python dependencies
+├── pyproject.toml         # Project configuration and dependencies
+├── uv.lock                # Locked dependencies (uv)
 └── README.md
 ```
 
@@ -65,6 +85,7 @@ backend/
 - **🚀 Fast**: Async FastAPI with high performance
 - **🐳 Docker Ready**: Containerized deployment
 - **🔐 Environment Management**: Flexible environment variable handling
+- **⚡ Modern Dependencies**: uv for fast dependency management
 
 ## 🔧 API Endpoints
 
@@ -204,6 +225,7 @@ GOOGLE_API_KEY=your_actual_google_key
 - **Security**: Non-root user execution
 - **Health checks** for monitoring
 - **Environment variable support**
+- **uv dependency management** for faster builds
 
 ### Docker Commands
 
@@ -269,14 +291,23 @@ The backend includes a Google ADK agent system with:
 - **Development-friendly** environment loading
 - **Comprehensive health checks** with service status
 - **Hot reload** with uvicorn
+- **Fast dependency management** with uv
 
 ### Running in Development
 ```bash
+# Using uv (recommended)
+uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Using traditional pip
 uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Running in Production
 ```bash
+# Using uv
+uv run uvicorn api.main:app --host 0.0.0.0 --port 8000
+
+# Using traditional pip
 uvicorn api.main:app --host 0.0.0.0 --port 8000
 ```
 
@@ -291,6 +322,22 @@ curl -X POST "http://localhost:8000/api/weather/current" \
   -d '{"location": "London"}'
 
 curl http://localhost:8000/health
+```
+
+### Development Tools
+```bash
+# Install development dependencies
+uv sync --dev
+
+# Run tests
+uv run pytest
+
+# Format code
+uv run black .
+uv run isort .
+
+# Lint code
+uv run flake8
 ```
 
 ## 📚 API Documentation
@@ -335,6 +382,7 @@ The backend is configured for deployment to Render.com with:
 - **GitHub environment variables** integration
 - **Automatic health checks**
 - **Zero-downtime deployments**
+- **uv dependency management**
 
 See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed instructions.
 
@@ -351,6 +399,7 @@ See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed instructions.
 4. Update API documentation
 5. Test all endpoints
 6. Ensure Docker compatibility
+7. Use uv for dependency management
 
 ## 📄 License
 

@@ -1,26 +1,23 @@
-import { Layout } from "./components/Layout/Layout";
-import { Roboto } from "next/font/google";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { ReactNode } from "react";
+import { Layout } from "./components/Layout/Layout";
 
-const roboto = Roboto({
-  style: ["italic"],
-  subsets: ["latin"],
-  weight: "300",
-});
-export const metadata = {
-  title: "Weather Center",
-  description: "The weather application",
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Weather Center Chat",
+  description: "AI-powered weather chat application",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: ReactNode;
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body className={roboto.className}>
+      <body className={inter.className}>
         <Layout>{children}</Layout>
       </body>
     </html>

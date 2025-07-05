@@ -2,9 +2,9 @@ name: Deploy Weather Center Chat
 
 on:
   push:
-    branches: [ main ]
+    branches: [ deploy ]
   pull_request:
-    branches: [ main ]
+    branches: [ deploy ]
 
 env:
   PYTHON_VERSION: '3.12'
@@ -29,10 +29,13 @@ jobs:
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
     
+    - name: Install uv
+      run: pip install uv
+    
     - name: Install Python dependencies
       run: |
         cd backend
-        pip install -r requirements.txt
+        uv sync --frozen --no-dev
     
     - name: Install Node.js dependencies
       run: |
@@ -42,7 +45,7 @@ jobs:
     - name: Run backend tests
       run: |
         cd backend
-        python -m pytest tests/ -v
+        uv run python -m pytest tests/ -v
       env:
         VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -57,12 +60,19 @@ jobs:
         cd frontend
         npm run build
       env:
-        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+        NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/deploy'
     
     steps:
     - uses: actions/checkout@v4
@@ -71,8 +81,19 @@ jobs:
       run: |
         echo "Deployment to Render should be configured in Render dashboard"
         echo "Environment variables are available in GitHub Secrets:"
+        echo "Backend variables:"
         echo "- VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY != '' }}"
         echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
+        echo ""
+        echo "Frontend variables:"
+        echo "- NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID != '' }}"
+        echo "- NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID != '' }}"
     
     - name: Notify deployment status
       run: |
@@ -80,7 +101,16 @@ jobs:
         echo "📋 Next steps:"
         echo "1. Go to Render.com dashboard"
         echo "2. Create new Web Service from this repository"
-        echo "3. Set environment variables:"
+        echo "3. Set environment variables for backend:"
         echo "   - VISUAL_CROSSING_API_KEY"
         echo "   - GOOGLE_API_KEY"
-        echo "4. Deploy!" 
+        echo "4. Set environment variables for frontend:"
+        echo "   - NEXT_PUBLIC_API_URL"
+        echo "   - NEXT_PUBLIC_FIREBASE_API_KEY"
+        echo "   - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+        echo "   - NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+        echo "   - NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
+        echo "   - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
+        echo "   - NEXT_PUBLIC_FIREBASE_APP_ID"
+        echo "   - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"
+        echo "5. Deploy!" 
