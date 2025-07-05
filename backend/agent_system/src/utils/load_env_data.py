@@ -15,10 +15,26 @@ def load_env_data():
         dotenv.load_dotenv(dotenv_path=env_path)
         print(f"Loaded environment from: {env_path}")
     else:
-        print("No .env file found, using system environment variables")
+        # Try alternative .env locations for local development
+        alternative_paths = [
+            pathlib.Path(__file__).parent.parent.parent.parent / ".env",  # backend/.env
+            pathlib.Path(__file__).parent.parent.parent.parent.parent / ".env",  # root/.env
+        ]
+        
+        for alt_path in alternative_paths:
+            if alt_path.exists():
+                dotenv.load_dotenv(dotenv_path=alt_path)
+                print(f"Loaded environment from: {alt_path}")
+                break
+        else:
+            print("No .env file found, using system environment variables")
     
-    # Verify critical environment variables are available
-    verify_environment_variables()
+    # Only verify environment variables in production or when explicitly requested
+    if os.getenv("ENVIRONMENT") == "production" or os.getenv("VERIFY_ENV") == "true":
+        verify_environment_variables()
+    else:
+        # In development, just warn about missing variables
+        warn_missing_environment_variables()
 
 
 def verify_environment_variables():
@@ -45,6 +61,28 @@ def verify_environment_variables():
     print("All required environment variables are available")
 
 
+def warn_missing_environment_variables():
+    """
+    Warns about missing environment variables without failing (for development).
+    """
+    required_vars = {
+        'VISUAL_CROSSING_API_KEY': 'Visual Crossing Weather API key',
+        'GOOGLE_API_KEY': 'Google Cloud API key for ADK'
+    }
+    
+    missing_vars = []
+    for var_name, description in required_vars.items():
+        if not os.getenv(var_name):
+            missing_vars.append(f"{var_name} ({description})")
+    
+    if missing_vars:
+        print(f"⚠️  WARNING: Missing environment variables: {', '.join(missing_vars)}")
+        print("   Some features may not work properly. Set these variables for full functionality.")
+        print("   For local development, create a .env file in the backend directory.")
+    else:
+        print("✅ All required environment variables are available")
+
+
 def load_model():
     """
     Retrieves the MODEL environment variable.
@@ -58,24 +96,18 @@ def load_google_api_key():
     """
     Retrieves the GOOGLE_API_KEY from environment variables.
     Returns:
-        str: The value of the GOOGLE_API_KEY variable.
+        str: The value of the GOOGLE_API_KEY variable, or None if not set.
     """
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY not found in environment variables")
-    return api_key
+    return os.getenv("GOOGLE_API_KEY")
 
 
 def load_visual_crossing_api_key():
     """
     Retrieves the VISUAL_CROSSING_API_KEY from environment variables.
     Returns:
-        str: The value of the VISUAL_CROSSING_API_KEY variable.
+        str: The value of the VISUAL_CROSSING_API_KEY variable, or None if not set.
     """
-    api_key = os.getenv("VISUAL_CROSSING_API_KEY")
-    if not api_key:
-        raise ValueError("VISUAL_CROSSING_API_KEY not found in environment variables")
-    return api_key
+    return os.getenv("VISUAL_CROSSING_API_KEY")
 
 
 def load_disable_web_driver() -> int:

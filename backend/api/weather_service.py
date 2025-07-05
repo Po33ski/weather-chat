@@ -10,15 +10,19 @@ load_env_data()
 
 class WeatherService:
     def __init__(self):
-        try:
-            self.api_key = load_visual_crossing_api_key()
-        except ValueError as e:
-            raise ValueError(f"Weather service initialization failed: {e}")
-        
+        self.api_key = load_visual_crossing_api_key()
         self.base_url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
-        print(f"Weather service initialized with API key: {self.api_key[:8]}...")
+        
+        if self.api_key:
+            print(f"Weather service initialized with API key: {self.api_key[:8]}...")
+        else:
+            print("⚠️  Weather service initialized without API key - weather features will not work")
+            print("   Set VISUAL_CROSSING_API_KEY environment variable for weather functionality")
 
     def _make_api_request(self, location: str, start_date: str, end_date: str, include: str = "current,days,hours") -> Dict[str, Any]:
+        if not self.api_key:
+            raise ValueError("VISUAL_CROSSING_API_KEY not set. Please set this environment variable to use weather features.")
+        
         url = f"{self.base_url}/{location}/{start_date}/{end_date}"
         params = {
             'unitGroup': 'metric',

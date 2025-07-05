@@ -9,6 +9,58 @@ This guide will help you deploy the Weather Center Chat application to [Render.c
 - Google Cloud API key (for AI chat)
 - GitHub repository with your code
 
+## Local Development Setup
+
+### Setting Up Environment Variables for Local Development
+
+The application is designed to work locally with or without API keys. For full functionality, set up your environment variables:
+
+1. **Copy the example environment file**:
+   ```bash
+   cd backend
+   cp env.example .env
+   ```
+
+2. **Edit the `.env` file** and add your API keys:
+   ```bash
+   # Visual Crossing Weather API
+   VISUAL_CROSSING_API_KEY=your_actual_api_key_here
+   
+   # Google Cloud API Key for ADK (AI Chat)
+   GOOGLE_API_KEY=your_actual_google_key_here
+   ```
+
+3. **Start the backend**:
+   ```bash
+   cd backend
+   uvicorn api.main:app --reload
+   ```
+
+### Local Development Behavior
+
+- **With API keys**: Full functionality (weather + AI chat)
+- **Without API keys**: Application starts but shows warnings
+  - Weather endpoints return error messages
+  - AI chat returns "not available" message
+  - Health check shows service status
+
+### Testing Local Setup
+
+```bash
+# Test health endpoint
+curl http://localhost:8000/health
+
+# Test weather endpoint (will fail without API key)
+curl -X POST http://localhost:8000/api/weather/current \
+  -H "Content-Type: application/json" \
+  -d '{"location": "London"}'
+
+# Test chat endpoint (will return "not available" without API key)
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello", "conversation_history": []}'
+```
+
 ## Environment Variables Setup
 
 ### GitHub Repository Secrets
@@ -28,6 +80,7 @@ The backend application is configured to:
 - **Automatically verify** that required environment variables are available
 - **Provide detailed error messages** if variables are missing
 - **Include environment status** in the health check endpoint
+- **Work gracefully in development** with missing API keys
 
 ## Option 1: Deploy Using Render Blueprint (Recommended)
 

@@ -1,8 +1,25 @@
 # FastAPI Backend API
 
-FastAPI backend for the Weather Center Chat application, providing weather data APIs and AI chat functionality.
+FastAPI backend for the Weather Center Chat application, providing weather data APIs and AI chat functionality with enhanced environment management and health monitoring.
 
-## API Structure
+## 🚀 Quick Start
+
+```bash
+# From backend directory
+cd backend
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment (optional for development)
+cp env.example .env
+# Edit .env with your API keys
+
+# Start the server
+uvicorn api.main:app --reload
+```
+
+## 📁 API Structure
 
 ```
 api/
@@ -11,7 +28,45 @@ api/
 └── weather_service.py   # Visual Crossing API integration
 ```
 
-## Endpoints
+## 🔧 Endpoints
+
+### Health & Status Endpoints
+
+#### `GET /health`
+Enhanced health check endpoint with environment status.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-06-15T14:30:00",
+  "environment": {
+    "has_google_api_key": true,
+    "has_visual_crossing_api_key": true,
+    "model": "gemini-2.0-flash",
+    "disable_web_driver": 0,
+    "environment": "development"
+  },
+  "services": {
+    "api": "running",
+    "weather_service": "available",
+    "ai_chat": "available"
+  }
+}
+```
+
+#### `GET /`
+Root endpoint with API information.
+
+**Response:**
+```json
+{
+  "message": "Weather Center Chat API",
+  "version": "1.0.0",
+  "docs": "/docs",
+  "health": "/health"
+}
+```
 
 ### Weather Endpoints
 
@@ -106,52 +161,39 @@ Chat with AI assistant powered by Google ADK.
 }
 ```
 
-#### `GET /health`
-Health check endpoint.
-
 **Response:**
 ```json
 {
-  "status": "ok"
+  "message": "The current weather in London is 18.5°C with partly cloudy conditions...",
+  "sender": "ai"
 }
 ```
 
-## Setup
+## 🔐 Environment Variables
 
-### Prerequisites
+### Required Variables
+| Variable | Description | Source |
+|----------|-------------|---------|
+| `VISUAL_CROSSING_API_KEY` | Visual Crossing Weather API key | GitHub Secrets / .env |
+| `GOOGLE_API_KEY` | Google Cloud API key for ADK | GitHub Secrets / .env |
 
-- Python 3.12+
-- Visual Crossing Weather API key
-- Google Cloud credentials (for AI chat)
+### Optional Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MODEL` | AI model to use | `gemini-2.0-flash` |
+| `DISABLE_WEB_DRIVER` | Disable web driver | `0` |
+| `ENVIRONMENT` | Environment mode | `development` |
 
-### Installation
+### Environment Loading Strategy
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+The API uses an intelligent environment loading system:
 
-2. **Configure environment variables:**
-   ```bash
-   # Create .env file in agent_system/src/multi_tool_agent/
-   cp ../agent_system/src/multi_tool_agent/.env.example ../agent_system/src/multi_tool_agent/.env
-   ```
+1. **System Environment Variables** (highest priority)
+2. **Local .env files** (development fallback)
+3. **Automatic verification** in production
+4. **Graceful warnings** in development
 
-3. **Edit the .env file:**
-   ```env
-   VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key
-   GOOGLE_API_KEY=your_google_api_key
-   ```
-
-4. **Run the server:**
-   ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-5. **Access API documentation:**
-   Navigate to [http://localhost:8000/docs](http://localhost:8000/docs)
-
-## Data Models
+## 📊 Data Models
 
 ### Request Models
 
@@ -174,6 +216,13 @@ class HistoryWeatherRequest(BaseModel):
     location: str
     start_date: date
     end_date: date
+```
+
+#### ChatRequest
+```python
+class ChatRequest(BaseModel):
+    message: str
+    conversation_history: list
 ```
 
 ### Response Models
@@ -203,26 +252,65 @@ class CurrentWeatherResponse(BaseModel):
     success: bool
     data: Optional[WeatherData] = None
     error: Optional[str] = None
+
+class ForecastWeatherResponse(BaseModel):
+    success: bool
+    data: Optional[List[WeatherData]] = None
+    error: Optional[str] = None
+
+class HistoryWeatherResponse(BaseModel):
+    success: bool
+    data: Optional[List[WeatherData]] = None
+    error: Optional[str] = None
+
+class ChatResponse(BaseModel):
+    message: str
+    sender: str = "ai"
 ```
 
-## Weather Service
+## 🔧 Services
 
-The `WeatherService` class provides:
+### Weather Service
+The `WeatherService` class handles all Visual Crossing API interactions:
 
-- **Visual Crossing API Integration**: Direct communication with weather data provider
-- **Data Parsing**: Converts API responses to standardized format
+- **Current Weather**: Real-time conditions with sunrise/sunset
+- **Forecast Weather**: 1-14 day forecasts
+- **Historical Weather**: Past weather data
+- **Data Validation**: Pydantic model validation
 - **Error Handling**: Comprehensive error management
-- **Type Safety**: Pydantic model validation
+- **Graceful Degradation**: Works without API keys in development
 
-### Key Methods
+### AI Chat Service
+The chat endpoint integrates with Google ADK:
 
-- `get_current_weather(location: str)`: Get current weather
-- `get_forecast_weather(location: str, days: int)`: Get forecast
-- `get_history_weather(location: str, start_date: date, end_date: date)`: Get historical data
+- **Natural Language Processing**: Understands weather queries
+- **Weather Tools**: Access to weather data through tools
+- **Session Management**: User session handling
+- **Error Handling**: Graceful fallback when API key is missing
 
-## Error Handling
+## 🧪 Development
 
-All endpoints return consistent error responses:
+### Local Development Features
+- **Graceful handling** of missing API keys
+- **Development-friendly** environment loading
+- **Comprehensive health checks** with service status
+- **Hot reload** with uvicorn
+
+### Testing
+```bash
+# Test from project root
+python test_local.py
+
+# Test individual endpoints
+curl -X POST "http://localhost:8000/api/weather/current" \
+  -H "Content-Type: application/json" \
+  -d '{"location": "London"}'
+
+curl http://localhost:8000/health
+```
+
+### Error Handling
+The API returns consistent error responses:
 
 ```json
 {
@@ -232,45 +320,58 @@ All endpoints return consistent error responses:
 ```
 
 Common error scenarios:
-- Invalid location names
-- API rate limits exceeded
+- Invalid location
+- API rate limits
 - Network connectivity issues
 - Invalid date ranges
-- Missing API keys
+- Missing API keys (with helpful messages)
 
-## Security Features
+## 📚 API Documentation
 
-- **CORS Configuration**: Configured for frontend communication
-- **API Key Security**: Keys stored in environment variables, never exposed
-- **Input Validation**: All inputs validated with Pydantic models
-- **Error Sanitization**: Sensitive data not exposed in error messages
-
-## Testing
-
-### Manual Testing
-```bash
-# Test current weather
-curl -X POST "http://localhost:8000/api/weather/current" \
-  -H "Content-Type: application/json" \
-  -d '{"location": "London"}'
-
-# Test forecast
-curl -X POST "http://localhost:8000/api/weather/forecast" \
-  -H "Content-Type: application/json" \
-  -d '{"location": "London", "days": 7}'
-
-# Test health endpoint
-curl http://localhost:8000/health
-```
-
-### API Documentation
 - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **OpenAPI JSON**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
 
-## Notes
+## 🔒 Security
 
-- The backend loads API keys securely from the `.env` file located in the `agent_system/src/multi_tool_agent/` directory
-- The API does **not** expose API keys to the frontend or clients
-- All weather data is fetched from Visual Crossing Weather API
-- AI chat functionality is powered by Google ADK with integrated weather tools
-- The API uses Pydantic models for request/response validation and type safety 
+- **CORS**: Configured for frontend communication
+- **API Keys**: Securely stored in environment variables
+- **Input Validation**: Pydantic models validate all inputs
+- **Error Sanitization**: Sensitive data not exposed in errors
+- **Environment Isolation**: Production vs development modes
+
+## 🚀 Deployment
+
+### Docker Support
+The API is containerized and ready for deployment:
+
+```bash
+# Build and run with Docker
+docker build -t weather-backend .
+docker run -p 8000:8000 \
+  -e VISUAL_CROSSING_API_KEY="your_key" \
+  -e GOOGLE_API_KEY="your_key" \
+  weather-backend
+```
+
+### Render.com Deployment
+Configured for deployment to Render.com with:
+- **Docker container** deployment
+- **GitHub environment variables** integration
+- **Automatic health checks**
+- **Zero-downtime deployments**
+
+See [DEPLOYMENT.md](../../DEPLOYMENT.md) for detailed instructions.
+
+## 🤝 Contributing
+
+1. Follow the existing code structure
+2. Add proper type hints
+3. Include error handling
+4. Update API documentation
+5. Test all endpoints
+6. Ensure Docker compatibility
+
+## 📄 License
+
+This project is licensed under the MIT License. 

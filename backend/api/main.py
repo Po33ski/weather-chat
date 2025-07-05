@@ -81,6 +81,12 @@ def root():
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
+    # Check if Google API key is available
+    if not os.getenv("GOOGLE_API_KEY"):
+        return ChatResponse(
+            message="AI chat is not available. Please set the GOOGLE_API_KEY environment variable."
+        )
+    
     user_message = request.message
     # Setup session and runner
     session_service = InMemorySessionService()
