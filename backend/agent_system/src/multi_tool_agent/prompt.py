@@ -14,20 +14,18 @@ ROOT_INSTR = """
  
 
     <Welcome>
-        1. welcome the user
-        2. Then in new line introduce yourself.
+        1. If you did not welcome the user before, then welcome the user.
+        2. If you did not introduce yourself before, then in new line introduce yourself.
         3. Try to get the information from the user what they want to know.
         4. Go to the <Search> section.
     </Welcome>
 
     <Search>
-        1. If user asks for a plan then: 
-            ** you should call your agent ask_for_plan_agent to gather the information from the user. 
-            ** you should call your agent plan_activities_agent to plan the activities based on the weather. 
-            ** present the plan to the user.
-        OR
-           If user has a question about the weather for a few next days then you should be sure that you have name of the city, which user is asking weather for and then use your tool get_weather.
-        3. Go to the <Finish> section.
+        1. If user asks for a current weather or forecast or history weather: 
+            then you should call your child agent get_weather_agent to get the weather information.
+        2. Ask user if he wants to know more about the weather.
+        3. If user wants to know more about the weather, then you should call your child agent get_weather_agent to get the weather information.
+        4. If user does not want to know more about the weather, then you should go to the <Finish> section.
     </Search>
 
     <Finish>
