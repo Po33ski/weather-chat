@@ -4,22 +4,21 @@
 # Stage 1: Build Backend
 FROM python:3.12-slim as backend-builder
 
-# Install uv
-RUN pip install uv
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy backend files
-COPY backend/pyproject.toml backend/
-COPY backend/uv.lock backend/
+# Copy entire backend directory
+COPY backend/ backend/
 
-# Install backend dependencies
+# Install backend dependencies using pip
 WORKDIR /app/backend
-RUN uv sync --frozen --no-dev
-
-# Copy backend source code
-COPY backend/ .
+RUN pip install -r requirements.txt
 
 # Stage 2: Build Frontend
 FROM node:18-alpine as frontend-builder
@@ -48,9 +47,6 @@ RUN apt-get update && apt-get install -y \
     nginx \
     curl \
     && rm -rf /var/lib/apt/lists/*
-
-# Install uv
-RUN pip install uv
 
 # Create app directory
 WORKDIR /app
