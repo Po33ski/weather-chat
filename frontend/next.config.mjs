@@ -12,12 +12,6 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
-  
-  // Experimental features
-  experimental: {
-    // Enable app directory
-    appDir: true,
-  },
 };
 
 export default nextConfig;

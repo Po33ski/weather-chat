@@ -1,200 +1,201 @@
 # Weather Center Chat
 
-A comprehensive weather and AI chat application built with Next.js frontend and FastAPI backend, featuring Google ADK for AI chat and Visual Crossing API for weather data.
+A comprehensive weather and AI chat application built with Next.js frontend and FastAPI backend, featuring Google ADK for AI chat and Google OAuth for authentication.
 
-## 🌟 Features
+## Features
 
-- **AI Chat Assistant**: Powered by Google ADK with weather-specific tools
-- **Weather Data**: Current, forecast, and historical weather information
-- **Google Authentication**: Secure Firebase authentication for chat access
-- **Real-time Updates**: Live weather data and chat responses
-- **Responsive Design**: Modern UI that works on all devices
-- **Docker Support**: Easy deployment with Docker containers
+- 🌤️ **Weather Data**: Current, forecast, and historical weather information
+- 🤖 **AI Chat**: Powered by Google ADK (Agent Development Kit)
+- 🔐 **Authentication**: Google OAuth integration
+- 📱 **Responsive Design**: Modern UI with Tailwind CSS
+- 🚀 **Fast Performance**: Optimized for speed and user experience
 
-## 🏗️ Architecture
+## Tech Stack
 
-- **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
-- **Backend**: FastAPI with Python 3.12 and uv dependency management
-- **Authentication**: Firebase Authentication with Google OAuth
-- **AI**: Google ADK with custom weather tools and sub-agents
-- **Weather API**: Visual Crossing Weather API
-- **Deployment**: Render.com with Docker containers
+### Frontend
+- **Next.js 14** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Google OAuth** - Authentication
 
-## 🚀 Quick Start
+### Backend
+- **FastAPI** - Python web framework
+- **Google ADK** - AI chat functionality
+- **Visual Crossing API** - Weather data
+- **Google OAuth** - Authentication verification
+
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- Python 3.12+
-- uv (Python package manager)
-- Firebase project
-- Google API key
-- Visual Crossing API key
+1. **Google Cloud Project**
+   - Create a project at [Google Cloud Console](https://console.cloud.google.com/)
+   - Enable Google AI Studio API
+   - Create an API key for Google ADK
+   - Create OAuth 2.0 Client ID
 
-### Local Development
+2. **Visual Crossing Weather API**
+   - Sign up at [Visual Crossing](https://www.visualcrossing.com/weather-api)
+   - Get your API key
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd weather-center-chat
-   ```
+### Backend Setup
 
-2. **Set up environment variables**
-   
-   **Backend** (`backend/.env`):
-   ```bash
-   GOOGLE_API_KEY=your_google_api_key_here
-   VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key_here
-   ```
-   
-   **Frontend** (`frontend/.env.local`):
-   ```bash
-   NEXT_PUBLIC_API_URL=http://localhost:8000
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
-   ```
-
-3. **Start the backend**
+1. **Clone and navigate to backend**
    ```bash
    cd backend
-   uv sync
-   uv run uvicorn api.main:app --reload
    ```
 
-4. **Start the frontend**
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your API keys
+   ```
+
+4. **Run the backend**
+   ```bash
+   uvicorn api.main:app --reload
+   ```
+
+### Frontend Setup
+
+1. **Navigate to frontend**
    ```bash
    cd frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
    npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   # Create .env.local with:
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+   ```
+
+4. **Run the frontend**
+   ```bash
    npm run dev
    ```
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+## Environment Variables
 
-## 🔐 Security
+### Backend (.env)
+```
+VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key
+GOOGLE_API_KEY=your_google_api_key
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+MODEL=gemini-2.0-flash
+DISABLE_WEB_DRIVER=0
+ENVIRONMENT=development
+```
 
-### Environment Variables
+### Frontend (.env.local)
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+```
 
-All sensitive data is stored as environment variables and never committed to version control:
+## API Endpoints
 
-- **Backend**: Google API key, Visual Crossing API key
-- **Frontend**: Firebase configuration, API URLs
+### Authentication
+- `POST /api/auth/google` - Google OAuth authentication
+- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/session/{session_id}` - Get session info
 
-### GitHub Actions
+### Chat
+- `POST /api/chat` - AI chat endpoint
 
-The project uses GitHub Actions for CI/CD with secrets management:
-- All API keys are stored as GitHub Secrets
-- Environment variables are injected during build and deployment
-- No sensitive data is exposed in logs or code
+### Weather
+- `POST /api/weather/current` - Current weather
+- `POST /api/weather/forecast` - Weather forecast
+- `POST /api/weather/history` - Historical weather
 
-### Firebase Authentication
+### Health
+- `GET /health` - Health check
+- `GET /` - API information
 
-- Google OAuth integration for secure user authentication
-- User data stored securely in Firebase
-- Session management handled by Firebase
-- No custom authentication implementation
+## Google Cloud Setup
 
-## 📚 Documentation
+### 1. Enable APIs
+- Google AI Studio API
+- Google OAuth2 API
 
-- [Backend API Documentation](backend/api/README.md)
-- [Firebase Setup Guide](FIREBASE_ENV_SETUP.md)
-- [Deployment Guide](DEPLOYMENT.md)
+### 2. Create API Key
+- Go to [Credentials](https://console.cloud.google.com/apis/credentials)
+- Create API key for Google AI Studio
+- Restrict to Google AI Studio API only
 
-## 🛠️ Development
+### 3. Create OAuth Client ID
+- Go to [Credentials](https://console.cloud.google.com/apis/credentials)
+- Create OAuth 2.0 Client ID
+- Set authorized origins:
+  - `http://localhost:3000` (development)
+  - `https://your-domain.com` (production)
 
-### Project Structure
+## Deployment
+
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for detailed deployment instructions.
+
+### Quick Deploy to Render.com
+
+1. **Backend Service**
+   - Environment: Python 3
+   - Build: `pip install -r requirements.txt`
+   - Start: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+
+2. **Frontend Service**
+   - Environment: Node
+   - Build: `npm install && npm run build`
+   - Start: `npm start`
+
+## Project Structure
 
 ```
 weather-center-chat/
-├── backend/                 # FastAPI backend
-│   ├── api/                # API endpoints and models
-│   ├── agent_system/       # Google ADK agent system
-│   ├── pyproject.toml      # Python dependencies (uv)
-│   └── Dockerfile          # Backend container
-├── frontend/               # Next.js frontend
-│   ├── src/app/           # App components and pages
-│   ├── package.json       # Node.js dependencies
-│   └── Dockerfile         # Frontend container
-├── docker-compose.yml     # Local development
-├── render.yaml            # Render deployment config
-└── .github/workflows/     # GitHub Actions CI/CD
+├── backend/
+│   ├── api/
+│   │   ├── main.py              # FastAPI app
+│   │   ├── auth_service.py      # Authentication service
+│   │   ├── weather_service.py   # Weather API service
+│   │   └── models.py            # Pydantic models
+│   ├── agent_system/            # Google ADK agents
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   └── app/
+│   │       ├── components/      # React components
+│   │       ├── chat/           # Chat page
+│   │       └── views/          # Page views
+│   └── package.json
+└── README.md
 ```
 
-### Key Components
-
-- **Chat System**: Firebase authentication + Google ADK integration
-- **Weather Service**: Visual Crossing API integration with Pydantic models
-- **Agent System**: Custom weather tools and sub-agents
-- **Frontend**: Modern React components with TypeScript
-
-## 🚀 Deployment
-
-### Single Container Deployment
-
-The application uses a unified Docker container that serves both frontend and backend:
-
-```bash
-# Build the container
-docker build -t weather-center-chat .
-
-# Run locally
-docker run -p 80:80 weather-center-chat
-
-# Deploy to Render.com
-# 1. Set up GitHub Secrets (see [Firebase Setup Guide](FIREBASE_ENV_SETUP.md))
-# 2. Push to 'deploy' branch
-# 3. Configure single Web Service on Render.com
-```
-
-### Render.com Deployment
-
-1. **Set up GitHub Secrets** (see [Firebase Setup Guide](FIREBASE_ENV_SETUP.md))
-2. **Push to deploy branch**: `git push origin deploy`
-3. **Create single Web Service** on Render.com with:
-   - Branch: `deploy`
-   - Build Command: `docker build -t weather-center-chat .`
-   - Start Command: `docker run -p $PORT:80 weather-center-chat`
-
-### Local Development
-
-```bash
-# Using Docker Compose (separate services)
-docker-compose up
-
-# Using single container
-docker build -t weather-center-chat .
-docker run -p 80:80 weather-center-chat
-```
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 🆘 Support
+## Support
 
 For issues and questions:
-1. Check the documentation
-2. Review existing issues
-3. Create a new issue with detailed information
-
----
-
-**Note**: This application requires valid API keys for Google ADK and Visual Crossing Weather API to function properly. Make sure to set up all environment variables before running the application.
+1. Check the [deployment checklist](DEPLOYMENT_CHECKLIST.md)
+2. Review the [project status](PROJECT_STATUS.md)
+3. Open an issue on GitHub
 
 
 

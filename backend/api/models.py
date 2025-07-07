@@ -2,6 +2,47 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime, date
 
+# Authentication Models
+class GoogleAuthRequest(BaseModel):
+    id_token: str  # Google ID token from frontend
+
+class LoginRequest(BaseModel):
+    email: str
+    password: Optional[str] = None
+    provider: str = "google"  # "google" or "email"
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class AuthResponse(BaseModel):
+    success: bool
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    user_info: Optional[Dict[str, Any]] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+class LogoutRequest(BaseModel):
+    session_id: str
+
+class SessionInfo(BaseModel):
+    session_id: str
+    user_id: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    picture: Optional[str] = None
+    created_at: Optional[datetime] = None
+    last_activity: Optional[datetime] = None
+    is_active: bool
+
+class GoogleUserInfo(BaseModel):
+    email: str
+    name: str
+    picture: Optional[str] = None
+    sub: str  # Google user ID
+
 # Pydantic Models for API
 class WeatherLocation(BaseModel):
     city: str

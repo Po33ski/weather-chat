@@ -10,12 +10,15 @@ from google.genai import types
 import asyncio
 import os
 from datetime import datetime
+from typing import Optional
 
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
-    CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse
+    CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
+    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest
 )
 from .weather_service import WeatherService
+from .auth_service import auth_service
 
 # Load environment variables (if needed)
 load_env_data()
@@ -38,6 +41,7 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     message: str
     conversation_history: list
+    session_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     message: str
@@ -79,6 +83,26 @@ def root():
         "health": "/health"
     }
 
+# --- Authentication Endpoints ---
+
+@app.post("/api/auth/google", response_model=AuthResponse)
+async def google_auth_endpoint(request: GoogleAuthRequest):
+    """Authenticate with Google OAuth"""
+    return await auth_service.authenticate_with_google(request)
+
+@app.post("/api/auth/logout", response_model=AuthResponse)
+async def logout_endpoint(request: LogoutRequest):
+    """Logout user"""
+    return await auth_service.logout_user(request.session_id)
+
+@app.get("/api/auth/session/{session_id}", response_model=SessionInfo)
+async def get_session_info(session_id: str):
+    """Get session information"""
+    session_info = auth_service.get_session_info(session_id)
+    if not session_info:
+        return {"error": "Session not found or inactive"}
+    return session_info
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     try:
@@ -88,13 +112,39 @@ async def chat_endpoint(request: ChatRequest):
                 message="AI chat is not available. Please set the GOOGLE_API_KEY environment variable."
             )
         
+        # Validate session if provided
+        user_id = "anonymous"
+        adk_session_id = None
+        if request.session_id:
+            if not auth_service.validate_session(request.session_id):
+                return ChatResponse(
+                    message="Invalid or expired session. Please login again."
+                )
+            user_data = auth_service.get_user_from_session(request.session_id)
+            if user_data:
+                user_id = user_data["user_id"]
+                adk_session_id = user_data.get("adk_session_id")
+                auth_service.update_session_activity(request.session_id)
+        
         user_message = request.message
         session_service = InMemorySessionService()
-        # The create_session method is async in this version of Google ADK
-        session = await session_service.create_session(app_name="weather_center", user_id="user")  # type: ignore
+        
+        # Use existing ADK session if available, otherwise create new one
+        if adk_session_id:
+            # Try to use existing session
+            try:
+                # For now, we'll create a new session each time since we don't have a way to retrieve existing sessions
+                session = session_service.create_session(app_name="weather_center", user_id=user_id)
+            except Exception:
+                # Fallback to creating new session
+                session = session_service.create_session(app_name="weather_center", user_id=user_id)
+        else:
+            # Create new session
+            session = session_service.create_session(app_name="weather_center", user_id=user_id)
+        
         runner = Runner(agent=agent_module.root_agent, app_name="weather_center", session_service=session_service)
         content = types.Content(role='user', parts=[types.Part(text=user_message)])
-        events = runner.run_async(user_id="user", session_id=session.id, new_message=content)
+        events = runner.run_async(user_id=user_id, session_id=session.id, new_message=content)
         async for event in events:
             if event.is_final_response():
                 text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"

@@ -1,140 +1,151 @@
-# Deployment Checklist - Single Container (Deploy Branch)
+# Weather Center Chat - Deployment Checklist
 
-## 🚀 Deployment Steps
+## Environment Variables Setup
 
-### 1. Add GitHub Secrets
+### Backend Environment Variables (Render.com)
+Set these in your Render.com service environment variables:
 
-Go to your GitHub repository → Settings → Secrets and variables → Actions and add these secrets:
-
-#### Backend Secrets:
-- `VISUAL_CROSSING_API_KEY` - Your Visual Crossing Weather API key
-- `GOOGLE_API_KEY` - Your Google API key for AI chat
-
-#### Frontend Secrets:
-- `NEXT_PUBLIC_API_URL` - Your production URL (e.g., `https://your-app.onrender.com`)
-- `NEXT_PUBLIC_FIREBASE_API_KEY` - `AIzaSyAF211VEk8d_wEFW5qfFYNCJhhPpEkjtbQ`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` - `weather-app-d1527.firebaseapp.com`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID` - `weather-app-d1527`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` - `weather-app-d1527.appspot.com`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` - `674980846342`
-- `NEXT_PUBLIC_FIREBASE_APP_ID` - `1:674980846342:web:ffbb028f47198ced7fdc87`
-- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` - `G-TV3L04WHXG`
-
-### 2. Push to Deploy Branch
-
-```bash
-# Create and switch to deploy branch (if not already done)
-git checkout -b deploy
-
-# Add all changes
-git add .
-
-# Commit changes
-git commit -m "Ready for deployment - single container"
-
-# Push to deploy branch
-git push origin deploy
+```
+VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
+GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+MODEL=gemini-2.0-flash
+DISABLE_WEB_DRIVER=0
+ENVIRONMENT=production
 ```
 
-### 3. Set Up Render.com Service
+### Frontend Environment Variables (Render.com)
+Set these in your Render.com service environment variables:
 
-#### Single Web Service:
-1. Go to [Render.com](https://render.com)
-2. Create new **Web Service**
-3. Connect your GitHub repository
-4. Set **Branch** to `deploy`
-5. Set **Root Directory** to `.` (root of repository)
-6. Set **Build Command**: `docker build -t weather-center-chat .`
-7. Set **Start Command**: `docker run -p $PORT:80 weather-center-chat`
+```
+NEXT_PUBLIC_API_URL=https://your-backend-service.onrender.com
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+```
 
-#### Environment Variables:
-- `VISUAL_CROSSING_API_KEY` - Your Visual Crossing API key
-- `GOOGLE_API_KEY` - Your Google API key
-- `NEXT_PUBLIC_API_URL` - Your app URL (same as the service URL)
-- `NEXT_PUBLIC_FIREBASE_API_KEY` - `AIzaSyAF211VEk8d_wEFW5qfFYNCJhhPpEkjtbQ`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` - `weather-app-d1527.firebaseapp.com`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID` - `weather-app-d1527`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` - `weather-app-d1527.appspot.com`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` - `674980846342`
-- `NEXT_PUBLIC_FIREBASE_APP_ID` - `1:674980846342:web:ffbb028f47198ced7fdc87`
-- `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` - `G-TV3L04WHXG`
+## Google Cloud Setup
 
-### 4. Deploy
+### 1. Google Cloud Project
+- Create a new project or use existing one
+- Enable the following APIs:
+  - Google AI Studio API
+  - Google OAuth2 API
 
-1. **Deploy Single Service**
-   - Click "Create Web Service"
-   - Wait for Docker build and deployment to complete
-   - Your app will be available at the provided URL
+### 2. API Keys
+- Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- Create an API key for Google AI Studio (ADK)
+- Restrict the API key to Google AI Studio API only
 
-2. **Test the Application**
-   - Visit your app URL
-   - Test weather features
-   - Test chat authentication
-   - Test AI chat functionality
+### 3. OAuth Client ID
+- Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- Create OAuth 2.0 Client ID
+- Set authorized JavaScript origins:
+  - `http://localhost:3000` (for development)
+  - `https://your-frontend-domain.com` (for production)
+- Set authorized redirect URIs:
+  - `http://localhost:3000` (for development)
+  - `https://your-frontend-domain.com` (for production)
 
-## ✅ Verification Checklist
+### 4. Visual Crossing Weather API
+- Sign up at [Visual Crossing](https://www.visualcrossing.com/weather-api)
+- Get your API key
 
-- [ ] GitHub Secrets added
-- [ ] Code pushed to `deploy` branch
-- [ ] Single Web Service created on Render
-- [ ] Environment variables set correctly
-- [ ] Docker build completes successfully
-- [ ] Service deploys successfully
-- [ ] Frontend loads correctly
-- [ ] Weather API endpoints work (`/api/weather/*`)
-- [ ] Firebase authentication works
-- [ ] AI chat functionality works
-- [ ] Health check endpoint responds (`/health`)
+## Render.com Deployment
 
-## 🔧 Troubleshooting
+### 1. Backend Service
+- **Name**: `weather-center-chat-backend`
+- **Environment**: `Python 3`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+- **Branch**: `deploy`
 
-### Common Issues:
+### 2. Frontend Service
+- **Name**: `weather-center-chat-frontend`
+- **Environment**: `Node`
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm start`
+- **Branch**: `deploy`
 
-1. **Docker Build Failures**
-   - Check Render logs for specific build errors
-   - Verify all files are present (Dockerfile, nginx.conf, start.sh)
-   - Ensure dependencies are correctly specified
+### 3. Single Container Deployment (Alternative)
+If you prefer to deploy both frontend and backend in one container:
 
-2. **Port Configuration**
-   - Make sure `NEXT_PUBLIC_API_URL` points to your app URL (not `/api`)
-   - The app serves both frontend and API from the same domain
+- **Name**: `weather-center-chat`
+- **Environment**: `Docker`
+- **Dockerfile**: Use the root `Dockerfile`
+- **Branch**: `deploy`
 
-3. **CORS Errors**
-   - CORS is handled by nginx configuration
-   - API requests should go to `/api/*` endpoints
+## Security Considerations
 
-4. **Authentication Issues**
-   - Verify Firebase configuration
-   - Check that authorized domains include your app URL
+### 1. API Key Security
+- Never commit API keys to version control
+- Use environment variables for all sensitive data
+- Restrict API keys to specific domains/IPs
 
-5. **API Key Errors**
-   - Ensure all API keys are valid and have proper permissions
-   - Check that keys are correctly set in environment variables
+### 2. CORS Configuration
+- Update CORS settings in production
+- Only allow your frontend domain
 
-## 📞 Support
+### 3. Rate Limiting
+- Consider implementing rate limiting for API endpoints
+- Monitor usage to prevent abuse
 
-If you encounter issues:
-1. Check Render deployment logs
-2. Verify GitHub Actions workflow runs successfully
-3. Test endpoints individually (`/health`, `/api/weather/current`)
-4. Check browser console for frontend errors
+## Testing Deployment
 
-## 🐳 Docker Details
+### 1. Health Check
+- Test `/health` endpoint
+- Verify all services are running
 
-The single container approach:
-- **Backend**: FastAPI server running on port 8000
-- **Frontend**: Next.js static files served by nginx
-- **Nginx**: Reverse proxy routing `/api/*` to backend, serving frontend for other requests
-- **Health Check**: Available at `/health` endpoint
+### 2. Authentication
+- Test Google OAuth login
+- Verify session management
 
-## 🚀 Benefits of Single Container
+### 3. Chat Functionality
+- Test AI chat with weather queries
+- Verify weather data retrieval
 
-- ✅ Simpler deployment (one service instead of two)
-- ✅ No CORS issues (same domain)
-- ✅ Easier environment variable management
-- ✅ Reduced costs (single service)
-- ✅ Faster deployment
+### 4. Weather API
+- Test current weather endpoint
+- Test forecast endpoint
+- Test historical weather endpoint
 
----
+## Monitoring
 
-**Ready to deploy! 🚀** 
+### 1. Logs
+- Monitor application logs in Render.com
+- Set up error alerting
+
+### 2. Performance
+- Monitor response times
+- Track API usage
+
+### 3. Costs
+- Monitor Google Cloud API usage
+- Track Visual Crossing API usage
+
+## Troubleshooting
+
+### Common Issues
+1. **CORS errors**: Check CORS configuration
+2. **Authentication failures**: Verify Google OAuth setup
+3. **API key errors**: Check environment variables
+4. **Build failures**: Check dependency versions
+
+### Debug Steps
+1. Check Render.com logs
+2. Verify environment variables
+3. Test endpoints locally
+4. Check Google Cloud Console for API usage
+
+## Post-Deployment
+
+### 1. Update Documentation
+- Update README with production URLs
+- Document any environment-specific configurations
+
+### 2. Set Up Monitoring
+- Configure health checks
+- Set up error tracking
+
+### 3. Performance Optimization
+- Enable caching where appropriate
+- Optimize database queries
+- Monitor resource usage 
