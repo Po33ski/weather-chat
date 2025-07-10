@@ -9,13 +9,15 @@ from google.adk.runners import Runner
 from google.genai import types
 import asyncio
 import os
+import json
 from datetime import datetime
 from typing import Optional
 
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
     CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
-    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest
+    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest,
+    ChatResponse, ChatCurrentWeatherResponse, ChatForecastWeatherResponse, ChatHistoryWeatherResponse
 )
 from .weather_service import WeatherService
 from .auth_service import auth_service
@@ -42,10 +44,6 @@ class ChatRequest(BaseModel):
     message: str
     conversation_history: list
     session_id: Optional[str] = None
-
-class ChatResponse(BaseModel):
-    message: str
-    sender: str = "ai"
 
 @app.get("/health")
 def health():
@@ -145,10 +143,39 @@ async def chat_endpoint(request: ChatRequest):
         runner = Runner(agent=agent_module.root_agent, app_name="weather_center", session_service=session_service)
         content = types.Content(role='user', parts=[types.Part(text=user_message)])
         events = runner.run_async(user_id=user_id, session_id=session.id, new_message=content)
+        
+        weather_data = None
+        message = ""
+        
         async for event in events:
             if event.is_final_response():
                 text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"
-                return ChatResponse(message=text or "[Agent error] No response content")
+                
+                # Try to parse as JSON (weather response from callback)
+                try:
+                    if text:
+                        parsed_response = json.loads(text)
+                        if isinstance(parsed_response, dict) and "type" in parsed_response:
+                            # This is a weather response from our callback
+                            message = parsed_response.get("description", "Weather information provided.")
+                            
+                            # Parse weather data based on type
+                            if parsed_response["type"] == "current_weather":
+                                weather_data = ChatCurrentWeatherResponse(**parsed_response)
+                            elif parsed_response["type"] == "forecast_weather":
+                                weather_data = ChatForecastWeatherResponse(**parsed_response)
+                            elif parsed_response["type"] == "history_weather":
+                                weather_data = ChatHistoryWeatherResponse(**parsed_response)
+                        else:
+                            message = text
+                    else:
+                        message = "[Agent error] No response content"
+                except (json.JSONDecodeError, ValueError):
+                    # Not JSON, treat as regular text response
+                    message = text or "[Agent error] No response content"
+                
+                return ChatResponse(message=message, weather_data=weather_data)
+        
         return ChatResponse(message="[Agent error] No response from agent.")
     except Exception as e:
         print(f"Chat endpoint error: {str(e)}")

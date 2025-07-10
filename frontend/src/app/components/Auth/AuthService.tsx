@@ -75,12 +75,12 @@ export const useAuthService = () => {
   const initializeGoogleOAuth = () => {
     if (typeof window !== 'undefined' && (window as any).google) {
       try {
-        (window as any).google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleSignIn,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleSignIn,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
         
         // Render the Google Sign-In button
         const buttonContainer = document.getElementById('google-signin-button');

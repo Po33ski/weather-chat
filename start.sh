@@ -3,7 +3,7 @@
 # Start nginx in background
 echo "Starting nginx..."
 nginx
-
+ 
 # Start backend FastAPI server
 echo "Starting FastAPI backend..."
 cd /app/backend

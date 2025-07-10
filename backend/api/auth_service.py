@@ -142,17 +142,17 @@ class AuthService:
                 
                 # Remove our session
                 del self.user_sessions[session_id]
-                
-                return AuthResponse(
-                    success=True,
+            
+            return AuthResponse(
+                success=True,
                     message="Logout successful"
-                )
+            )
             else:
                 return AuthResponse(
                     success=False,
                     error="Session not found"
-                )
-                
+            )
+            
         except Exception as e:
             return AuthResponse(
                 success=False,
@@ -162,17 +162,17 @@ class AuthService:
     def get_session_info(self, session_id: str) -> Optional[SessionInfo]:
         """Get session information"""
         if session_id in self.user_sessions:
-            session_data = self.user_sessions[session_id]
-            return SessionInfo(
-                session_id=session_id,
-                user_id=session_data["user_id"],
+        session_data = self.user_sessions[session_id]
+        return SessionInfo(
+            session_id=session_id,
+            user_id=session_data["user_id"],
                 email=session_data["email"],
                 name=session_data["name"],
                 picture=session_data.get("picture"),
                 created_at=session_data["created_at"],
                 last_activity=session_data["last_activity"],
-                is_active=session_data["is_active"]
-            )
+            is_active=session_data["is_active"]
+        )
         return None
     
     def validate_session(self, session_id: str) -> bool:
@@ -182,7 +182,7 @@ class AuthService:
     def get_user_from_session(self, session_id: str) -> Optional[Dict[str, Any]]:
         """Get user data from session"""
         if session_id in self.user_sessions:
-            session_data = self.user_sessions[session_id]
+        session_data = self.user_sessions[session_id]
             return {
                 "user_id": session_data["user_id"],
                 "email": session_data["email"],

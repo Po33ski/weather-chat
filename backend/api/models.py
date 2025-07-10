@@ -97,4 +97,49 @@ class WeatherStatsResponse(BaseModel):
     success: bool
     location: str
     stats: Dict[str, Any]
-    error: Optional[str] = None 
+    error: Optional[str] = None
+
+# Chat Response Models with Description and Table Support
+class WeatherDayData(BaseModel):
+    description: str
+    datetime: str
+    temp: float
+    tempmax: float
+    tempmin: float
+    winddir: str
+    windspeed: float
+    conditions: str
+    sunrise: str
+    sunset: str
+    pressure: Optional[float] = None
+    humidity: Optional[float] = None
+
+class ChatCurrentWeatherResponse(BaseModel):
+    type: str = "current_weather"
+    success: bool
+    data: WeatherData
+    description: str
+    show_table: bool = False
+
+class ChatForecastWeatherResponse(BaseModel):
+    type: str = "forecast_weather"
+    success: bool
+    data: List[WeatherDayData]
+    description: str
+    show_table: bool = True
+    location: str
+    period: str = "forecast"
+
+class ChatHistoryWeatherResponse(BaseModel):
+    type: str = "history_weather"
+    success: bool
+    data: List[WeatherDayData]
+    description: str
+    show_table: bool = True
+    location: str
+    period: str = "history"
+
+class ChatResponse(BaseModel):
+    message: str
+    sender: str = "ai"
+    weather_data: Optional[Union[ChatCurrentWeatherResponse, ChatForecastWeatherResponse, ChatHistoryWeatherResponse]] = None 

@@ -1,12 +1,39 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { useAuthService } from '../Auth/AuthService';
+import { WeatherTable } from '../WeatherTable/WeatherTable';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  weatherData?: WeatherData;
+}
+
+interface WeatherDayData {
+  description: string;
+  datetime: string;
+  temp: number;
+  tempmax: number;
+  tempmin: number;
+  winddir: string;
+  windspeed: number;
+  conditions: string;
+  sunrise: string;
+  sunset: string;
+  pressure?: number;
+  humidity?: number;
+}
+
+interface WeatherData {
+  type: 'current_weather' | 'forecast_weather' | 'history_weather';
+  success: boolean;
+  data: WeatherDayData[] | any;
+  description: string;
+  show_table: boolean;
+  location?: string;
+  period?: 'forecast' | 'history';
 }
 
 interface ChatRequest {
@@ -21,6 +48,7 @@ interface ChatRequest {
 interface ChatResponse {
   message: string;
   sender: string;
+  weather_data?: WeatherData;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -105,7 +133,8 @@ export const Chat: React.FC = () => {
           id: (Date.now() + 1).toString(),
           text: data.message,
           sender: 'ai',
-          timestamp: new Date()
+          timestamp: new Date(),
+          weatherData: data.weather_data
         };
         setMessages(prev => [...prev, aiMessage]);
       } else {
@@ -200,6 +229,12 @@ export const Chat: React.FC = () => {
     );
   }
 
+  // Check if any message has weather data that should show a table
+  const hasWeatherTable = messages.some(msg => 
+    msg.weatherData && msg.weatherData.show_table && 
+    Array.isArray(msg.weatherData.data) && msg.weatherData.data.length > 0
+  );
+
   // Main chat interface
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
@@ -241,48 +276,74 @@ export const Chat: React.FC = () => {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
-            <p>Start a conversation with the AI assistant!</p>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.sender === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-800 border border-gray-200'
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-              <p className={`text-xs mt-1 ${
-                message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-              }`}>
-                {formatTime(message.timestamp)}
-              </p>
+      {/* Content Area */}
+      <div className={`flex-1 flex ${hasWeatherTable ? 'flex-row' : 'flex-col'}`}>
+        {/* Messages */}
+        <div className={`overflow-y-auto p-6 space-y-4 ${hasWeatherTable ? 'w-1/2' : 'flex-1'}`}>
+          {messages.length === 0 && (
+            <div className="text-center text-gray-500 mt-8">
+              <p>Start a conversation with the AI assistant!</p>
             </div>
-          </div>
-        ))}
-        
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white text-gray-800 border border-gray-200 px-4 py-2 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                <span className="text-sm">AI is thinking...</span>
+          )}
+          
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  message.sender === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-800 border border-gray-200'
+                }`}
+              >
+                <p className="text-sm">{message.text}</p>
+                <p className={`text-xs mt-1 ${
+                  message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
+                }`}>
+                  {formatTime(message.timestamp)}
+                </p>
               </div>
             </div>
+          ))}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white text-gray-800 border border-gray-200 px-4 py-2 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  <span className="text-sm">AI is thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Weather Table Sidebar */}
+        {hasWeatherTable && (
+          <div className="w-1/2 p-6 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+            {messages.map((message) => {
+              if (message.weatherData && message.weatherData.show_table && 
+                  Array.isArray(message.weatherData.data) && message.weatherData.data.length > 0) {
+                return (
+                  <div key={`weather-${message.id}`} className="mb-6">
+                    <WeatherTable
+                      data={message.weatherData.data}
+                      title={`${message.weatherData.type === 'forecast_weather' ? 'Weather Forecast' : 'Historical Weather'}`}
+                      description={message.weatherData.description}
+                      location={message.weatherData.location || 'Unknown'}
+                      period={message.weatherData.period || 'forecast'}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })}
           </div>
         )}
-        
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}

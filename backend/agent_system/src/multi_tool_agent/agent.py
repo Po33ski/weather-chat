@@ -10,6 +10,7 @@ from ..utils.load_env_data import load_model
 from ..utils.load_env_data import load_google_api_key
 
 from .sub_agents.get_weather.agent import get_weather_agent
+from .callbacks import WeatherResponseCallback
 
 MODEL = load_model()
 GOOGLE_API_KEY = load_google_api_key()
@@ -24,5 +25,6 @@ root_agent = Agent(
     instruction=prompt.ROOT_INSTR,
     sub_agents=[get_weather_agent], 
     tools=[],
+    after_agent_callback=WeatherResponseCallback(),
 )
 

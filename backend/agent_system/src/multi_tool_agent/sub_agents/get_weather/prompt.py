@@ -31,7 +31,7 @@ GET_WEATHER_AGENT_INSTRUCTION = """
        If user asks for weather information for a specific date but using words like this year, this month, this week, this day,
        and so on then you have to use the tool get_day to get the current day (today) and try to match the date for your tools so that it will present the real date. 
 
-    4. For historical weather requests, if dates are not provided, ask the user for:
+    4. For historical or forecast weather requests, if dates are not provided, ask the user for:
        - Start date and convert it to the format: YYYY-MM-DD format
        - End date and convert it to the format: YYYY-MM-DD format
        Remember user probably will not provide the date in the format YYYY-MM-DD, so you have to convert it to the YYYY-MM-DD format.
@@ -50,10 +50,54 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     **OUTPUT FORMAT**
     Present the weather information in a structured format:
     - For current weather: Focus on immediate conditions
-    - For forecasts: Highlight key trends and notable days
-    - For historical data: Provide summary statistics and notable events
+    - For forecasts: Highlight key trends and notable days (max 15 days). Prerpare a short summary for the weather in the city in general for the whole period (without details)and for each day and match it with the weather data. Match the summaries and data with FORECAST TEMPLATE.
+    - For historical data: Provide summary statistics and notable events (max 15 days). Prerpare a short summary for the weather in the city in general for the whole period (without details) and for each day and match it with the weather data. Match the summaries and data with HISTORY TEMPLATE.
     - If the information are listed then you have to present the information in nice readable format with paragraphs and so on.
     
     Always include the city name and relevant dates in your response.
     If there are any errors or missing data, clearly indicate what information is unavailable.
+
+    **FORCAST TEMPLATE**
+      {
+    address: city name,
+    description: short summary for weather in the city in the future tense,
+    days: [
+      {
+        description: short summary for weather in this day in the future tense,
+        datetime: date,
+        temp: temperature,
+        tempmax: max temperature,
+        tempmin: min temperature,
+        winddir: wind direction,
+        windspeed: wind speed,
+        conditions: weather conditions,
+        sunrise: sunrise time,
+        sunset: sunset time,
+        pressure: pressure,
+        humidity: humidity,
+      },
+    ],
+  }
+
+  **HISTORY TEMPLATE**
+  {
+    address: city name,
+    description: short summary for weather in the city in the past tense,
+    days: [
+      {
+        description: short summary for weather in this day in the past tense,
+        datetime: date,
+        temp: temperature,
+        tempmax: max temperature,
+        tempmin: min temperature,
+        winddir: wind direction, 
+        windspeed: wind speed,
+        conditions: weather conditions,
+        sunrise: sunrise time,
+        sunset: sunset time,
+        pressure: pressure,
+        humidity: humidity,
+      },
+    ],
+  }
 """ 
