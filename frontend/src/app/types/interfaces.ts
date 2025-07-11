@@ -139,3 +139,41 @@ export interface ChatResponse {
   message: string;
   sender: string;
 }
+
+export interface WeatherData {
+  location: string;
+  temperature: number;
+  humidity?: number;  // Keep as number (float) to match backend
+  wind_speed?: number;
+  wind_direction?: string | number;  // Can be string or number
+  pressure?: number;
+  visibility?: number;
+  uv_index?: number;
+  conditions?: string;
+  icon?: string;
+  sunrise?: string;  // Added sunrise field
+  sunset?: string;   // Added sunset field
+  timestamp: string;
+  weather_type: string;
+}
+
+export interface CurrentWeatherRequest {
+  location: string;
+}
+
+export interface ForecastWeatherRequest {
+  location: string;
+  days: number;
+}
+
+export interface HistoryWeatherRequest {
+  location: string;
+  start_date: string; // YYYY-MM-DD format
+  end_date: string;   // YYYY-MM-DD format
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
