@@ -1,8 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { useAuthService } from '../Auth/AuthService';
-import { Message, ChatRequest, ChatResponse } from '../../types/interfaces';
-
+import { Message, ChatRequest, ChatApiResponse } from '../../types/interfaces';
+import { weatherApi } from '../../services/weatherApi';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -66,31 +66,19 @@ export const Chat: React.FC = () => {
         sender: msg.sender
       }));
 
-      const requestBody: ChatRequest = {
-        message: userMessage.text,
-        conversation_history: conversationHistory,
-        session_id: sessionId || undefined
-      };
-
-      const response = await fetch(`${API_BASE_URL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (response.ok) {
-        const data: ChatResponse = await response.json();
+      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, sessionId || undefined);
+      if (response.success && response.data) {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.message,
+          text: response.data.message,
           sender: 'ai',
           timestamp: new Date()
         };
+        console.log(aiMessage);
+        
         setMessages(prev => [...prev, aiMessage]);
       } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(response.error || 'Failed to fetch chat response');
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -100,8 +88,8 @@ export const Chat: React.FC = () => {
         sender: 'ai',
         timestamp: new Date()
       };
-       setMessages(prev => [...prev, errorMessage]);
-    }finally {
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
     }
   };

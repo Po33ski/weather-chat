@@ -10,7 +10,7 @@ from google.genai import types
 import asyncio
 import os
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
@@ -44,8 +44,9 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
-    message: str
-    sender: str = "ai"
+    success: bool
+    data: Optional[dict] = None
+    error: Optional[str] = None
 
 @app.get("/health")
 def health():
@@ -109,7 +110,8 @@ async def chat_endpoint(request: ChatRequest):
         # Check if Google API key is available
         if not os.getenv("GOOGLE_API_KEY"):
             return ChatResponse(
-                message="AI chat is not available. Please set the GOOGLE_API_KEY environment variable."
+                success=False,
+                error="AI chat is not available. Please set the GOOGLE_API_KEY environment variable."
             )
         
         # Validate session if provided
@@ -118,7 +120,8 @@ async def chat_endpoint(request: ChatRequest):
         if request.session_id:
             if not auth_service.validate_session(request.session_id):
                 return ChatResponse(
-                    message="Invalid or expired session. Please login again."
+                    success=False,
+                    error="Invalid or expired session. Please login again."
                 )
             user_data = auth_service.get_user_from_session(request.session_id)
             if user_data:
@@ -148,11 +151,20 @@ async def chat_endpoint(request: ChatRequest):
         async for event in events:
             if event.is_final_response():
                 text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"
-                return ChatResponse(message=text or "[Agent error] No response content")
-        return ChatResponse(message="[Agent error] No response from agent.")
+                return ChatResponse(
+                    success=True,
+                    data={"message": text or "[Agent error] No response content", "sender": "ai"}
+                )
+        return ChatResponse(
+            success=False,
+            error="[Agent error] No response from agent."
+        )
     except Exception as e:
         print(f"Chat endpoint error: {str(e)}")
-        return ChatResponse(message=f"Error: {str(e)}")
+        return ChatResponse(
+            success=False,
+            error=f"Error: {str(e)}"
+        )
 
 # --- Weather API Endpoints ---
 weather_service = WeatherService()

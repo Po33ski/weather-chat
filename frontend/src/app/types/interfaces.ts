@@ -135,9 +135,14 @@ export interface ChatRequest {
   session_id?: string;
 }
 
-export interface ChatResponse {
-  message: string;
-  sender: string;
+
+export interface ChatApiResponse {
+  success: boolean;
+  data?: {
+    message: string;
+    sender: string;
+  };
+  error?: string;
 }
 
 export interface WeatherData {
