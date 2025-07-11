@@ -10,8 +10,9 @@ import { normalDateFormatted } from "../functions/functions";
 import { InfoModalContext } from "../contexts/InfoModalContext";
 import { capitalizeFirstLetter } from "../functions/functions";
 import { InfoModalContextType } from "../types/types";
-import { WeatherData as FrontendWeatherData } from "../types/interfaces";
-import { weatherApi, WeatherData as BackendWeatherData } from "../services/weatherApi";
+import { FrontendWeatherData } from "../types/interfaces";
+import { weatherApi} from "../services/weatherApi";
+import { WeatherData as BackendWeatherData } from "../types/interfaces";
 
 export const HistoryWeatherPage = () => {
   const infoModalContext = useContext<InfoModalContextType | null>(

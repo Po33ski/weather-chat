@@ -85,7 +85,7 @@ export interface HistoryAndForecastDay {
   pressure: string | null;
   humidity: string | null;
 }
-export interface WeatherData {
+export interface FrontendWeatherData {
   address: string | null;
   days: [HistoryAndForecastDay];
 }

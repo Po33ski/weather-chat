@@ -7,8 +7,9 @@ import { Loading } from "../components/Loading/Loading";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { MyText } from "../components/MyText/MyText";
 import { capitalizeFirstLetter } from "../functions/functions";
-import { WeatherData as FrontendWeatherData } from "../types/interfaces";
-import { weatherApi, WeatherData as BackendWeatherData } from "../services/weatherApi";
+import { FrontendWeatherData } from "../types/interfaces";
+import { weatherApi} from "../services/weatherApi";
+import { WeatherData as BackendWeatherData } from "../types/interfaces";
 
 export const ForecastWeatherPage = () => {
   const [data, setData] = useState<FrontendWeatherData>({

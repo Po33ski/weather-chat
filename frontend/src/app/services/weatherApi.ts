@@ -50,6 +50,7 @@ class WeatherApiService {
       end_date: endDate
     });
   }
+  
 }
 
 

@@ -18,7 +18,8 @@ import { BrickModalContext } from "../contexts/BrickModalContext";
 import { BrickModalContextType, CityContextType } from "../types/types";
 import { CurrentData } from "../types/interfaces";
 import { CityContext } from "../contexts/CityContextType";
-import { weatherApi, WeatherData } from "../services/weatherApi";
+import { weatherApi} from "../services/weatherApi";
+import { WeatherData } from "../types/interfaces";
 
 export const CurrentWeatherPage = () => {
   const brickModalContext = useContext<BrickModalContextType | null>(

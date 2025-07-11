@@ -100,8 +100,8 @@ export const Chat: React.FC = () => {
         sender: 'ai',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
+       setMessages(prev => [...prev, errorMessage]);
+    }finally {
       setIsLoading(false);
     }
   };
