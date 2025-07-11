@@ -48,6 +48,15 @@ class ChatResponse(BaseModel):
     data: Optional[dict] = None
     error: Optional[str] = None
 
+class UnitSystemRequest(BaseModel):
+    unit_system: str
+    session_id: Optional[str] = None
+
+class UnitSystemResponse(BaseModel):
+    success: bool
+    data: Optional[dict] = None
+    error: Optional[str] = None
+
 @app.get("/health")
 def health():
     """
@@ -164,6 +173,46 @@ async def chat_endpoint(request: ChatRequest):
         return ChatResponse(
             success=False,
             error=f"Error: {str(e)}"
+        )
+
+@app.post("/api/settings/unit-system", response_model=UnitSystemResponse)
+async def update_unit_system(request: UnitSystemRequest):
+    """Update user's preferred unit system"""
+    try:
+        # Validate session if provided
+        user_id = "anonymous"
+        if request.session_id:
+            if not auth_service.validate_session(request.session_id):
+                return UnitSystemResponse(
+                    success=False,
+                    error="Invalid or expired session. Please login again."
+                )
+            user_data = auth_service.get_user_from_session(request.session_id)
+            if user_data:
+                user_id = user_data["user_id"]
+                auth_service.update_session_activity(request.session_id)
+        
+        # Validate unit system
+        valid_systems = ["US", "METRIC", "UK"]
+        if request.unit_system not in valid_systems:
+            return UnitSystemResponse(
+                success=False,
+                error=f"Invalid unit system. Must be one of: {', '.join(valid_systems)}"
+            )
+        
+        # TODO: Store unit system preference in database or session
+        # For now, we'll just log it and return success
+        print(f"User {user_id} updated unit system to: {request.unit_system}")
+        
+        return UnitSystemResponse(
+            success=True,
+            data={"message": f"Unit system updated to {request.unit_system}"}
+        )
+    except Exception as e:
+        print(f"Unit system update error: {str(e)}")
+        return UnitSystemResponse(
+            success=False,
+            error=f"Error updating unit system: {str(e)}"
         )
 
 # --- Weather API Endpoints ---

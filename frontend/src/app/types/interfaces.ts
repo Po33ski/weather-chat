@@ -145,6 +145,19 @@ export interface ChatApiResponse {
   error?: string;
 }
 
+export interface UnitSystemRequest {
+  unit_system: string;
+  session_id?: string;
+}
+
+export interface UnitSystemResponse {
+  success: boolean;
+  data?: {
+    message: string;
+  };
+  error?: string;
+}
+
 export interface WeatherData {
   location: string;
   temperature: number;

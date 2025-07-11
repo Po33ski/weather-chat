@@ -3,11 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import { SYSTEMS } from "@/app/constants/unitSystems";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { UnitSystemContextType } from "@/app/types/types";
+import { weatherApi } from "@/app/services/weatherApi";
+import { useAuthService } from "../Auth/AuthService";
 
 export function SystemSelector() {
   const unitSystemContext = useContext<UnitSystemContextType | null>(
     UnitSystemContext
   );
+  const { sessionId } = useAuthService();
 
   const [isClient, setIsClient] = useState<boolean>(false);
   useEffect(() => {
@@ -25,10 +28,16 @@ export function SystemSelector() {
       {isClient && (
         <select
           value={unitSystem}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-            unitSystemContext?.unitSystem.setToLocalStorage(
-              e.currentTarget.value
-            );
+          onChange={async (e: React.ChangeEvent<HTMLSelectElement>) => {
+            const newUnitSystem = e.currentTarget.value;
+            unitSystemContext?.unitSystem.setToLocalStorage(newUnitSystem);
+            
+            // Send unit system update to backend
+            try {
+              await weatherApi.updateUnitSystem(newUnitSystem, sessionId || undefined);
+            } catch (error) {
+              console.error('Failed to update unit system on backend:', error);
+            }
           }}
           className="border-black border-2 p-4 mr-2 rounded-lg md:mr-6"
         >

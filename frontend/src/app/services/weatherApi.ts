@@ -1,5 +1,5 @@
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-import { ApiResponse, ChatApiResponse, WeatherData } from '../types/interfaces';
+import { ApiResponse, ChatApiResponse, UnitSystemResponse, WeatherData } from '../types/interfaces';
 
 class WeatherApiService {
   private async makeRequest<T>(
@@ -55,6 +55,13 @@ class WeatherApiService {
     return this.makeRequest<{ message: string; sender: string }>('/api/chat', 'POST', {
       message,
       conversation_history: conversationHistory,
+      session_id: sessionId
+    });
+  }
+
+  async updateUnitSystem(unitSystem: string, sessionId?: string): Promise<UnitSystemResponse> {
+    return this.makeRequest<{ message: string }>('/api/settings/unit-system', 'POST', {
+      unit_system: unitSystem,
       session_id: sessionId
     });
   }
