@@ -1,27 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { useAuthService } from '../Auth/AuthService';
+import { Message, ChatRequest, ChatResponse } from '../../types/interfaces';
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-}
-
-interface ChatRequest {
-  message: string;
-  conversation_history: Array<{
-    text: string;
-    sender: string;
-  }>;
-  session_id?: string;
-}
-
-interface ChatResponse {
-  message: string;
-  sender: string;
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 

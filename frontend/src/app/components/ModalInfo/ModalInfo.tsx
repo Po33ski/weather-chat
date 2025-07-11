@@ -15,7 +15,8 @@ export function ModalInfo() {
         <p className="text-base mb-4">
           In this app you can check the weather forecast for most locations in
           the world. In the top left corner you can choose whether you want to
-          check the weather forecast, current weather or past weather.
+          check the weather forecast, current weather or past weather. 
+          You can also ask the chatbot about the weather.
         </p>
         <p className="text-base mb-4">
           In the upper right corner you can change the metric system in which

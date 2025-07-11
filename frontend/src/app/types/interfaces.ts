@@ -118,3 +118,24 @@ export interface LikeData {
   likeId: string;
   userId: string;
 }
+
+export interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
+}
+
+export interface ChatRequest {
+  message: string;
+  conversation_history: Array<{
+    text: string;
+    sender: string;
+  }>;
+  session_id?: string;
+}
+
+export interface ChatResponse {
+  message: string;
+  sender: string;
+}
