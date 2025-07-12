@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { useAuthService } from '../Auth/AuthService';
-import { Message, ChatRequest, ChatApiResponse } from '../../types/interfaces';
+import { useAuthService } from '../../hooks/authService';
+import { Message} from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -11,7 +11,10 @@ export const Chat: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const { isAuthenticated, user, sessionId, loading, logout } = useAuthService();
+  const [googleReady, setGoogleReady] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [buttonKey, setButtonKey] = useState(0);
+  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout } = useAuthService();
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -20,6 +23,78 @@ export const Chat: React.FC = () => {
     setIsClient(true);
   }, []);
 
+  // Initialize Google OAuth and session validation
+  useEffect(() => {
+    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    
+    if (typeof window !== 'undefined' && GOOGLE_CLIENT_ID) {
+      // Load Google OAuth script
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        initializeGoogleOAuth();
+        setGoogleReady(true);
+      };
+      script.onerror = () => {
+        console.error('Failed to load Google OAuth script');
+        setAuthLoading(false);
+      };
+      document.head.appendChild(script);
+    } else {
+      setAuthLoading(false);
+    }
+
+    // Check for existing session
+    const sessionId = localStorage.getItem('sessionId');
+    if (sessionId) {
+      validateSession(sessionId).finally(() => setAuthLoading(false));
+    } else {
+      setAuthLoading(false);
+    }
+  }, []);
+
+  // Re-render Google button when authentication state changes
+  useEffect(() => {
+    if (!isAuthenticated && googleReady) {
+      // Force re-render of the button container
+      setButtonKey(prev => prev + 1);
+      // Small delay to ensure the DOM element is ready
+      setTimeout(() => {
+        initializeGoogleOAuth();
+      }, 100);
+    }
+  }, [isAuthenticated, googleReady]);
+
+  const initializeGoogleOAuth = () => {
+    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window !== 'undefined' && (window as any).google && GOOGLE_CLIENT_ID) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleSignIn,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        
+        // Clear any existing button first
+        const buttonContainer = document.getElementById('google-signin-button');
+        if (buttonContainer) {
+          buttonContainer.innerHTML = '';
+          (window as any).google.accounts.id.renderButton(buttonContainer, {
+            theme: 'outline',
+            size: 'large',
+            width: '100%',
+            text: 'signin_with'
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing Google OAuth:', error);
+      }
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -27,7 +102,7 @@ export const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
+  
   // Check backend connection on component mount
   useEffect(() => {
     checkBackendConnection();
@@ -44,6 +119,8 @@ export const Chat: React.FC = () => {
       setIsConnected(false);
     }
   };
+
+
 
   const handleSendMessage = async () => {
     if (!inputText.trim() || !isAuthenticated) return;
@@ -66,7 +143,7 @@ export const Chat: React.FC = () => {
         sender: msg.sender
       }));
 
-      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, sessionId || undefined);
+      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, sessionId || "");
       if (response.success && response.data) {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -109,7 +186,7 @@ export const Chat: React.FC = () => {
   };
 
   // Show loading state while checking authentication
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -160,7 +237,21 @@ export const Chat: React.FC = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect with Google to access the AI chat feature
                 </p>
-                <div id="google-signin-button"></div>
+                <div id="google-signin-button" key={buttonKey}></div>
+                {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-600">
+                      Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
+                    </p>
+                  </div>
+                )}
+                {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-600">
+                      Loading Google Sign-In...
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -201,7 +292,11 @@ export const Chat: React.FC = () => {
               </span>
             </div>
             <button
-              onClick={logout}
+              onClick={async () => {
+                await logout();
+                // Force re-render of the Google button
+                setButtonKey(prev => prev + 1);
+              }}
               className="text-sm text-gray-600 hover:text-gray-800"
             >
               Sign out

@@ -11,7 +11,7 @@ import asyncio
 import os
 from datetime import datetime
 from typing import Optional, Dict
-
+from agent_system.src.multi_tool_agent.tools.get_user_preferences import set_user_preferences
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
     CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
@@ -154,6 +154,10 @@ async def chat_endpoint(request: ChatRequest):
             # Create new session
             session = session_service.create_session(app_name="weather_center", user_id=user_id)
         
+        # Store the session_id in the ADK session state so the agent can access it
+        if request.session_id:
+            session.state["app_session_id"] = request.session_id
+        
         runner = Runner(agent=agent_module.root_agent, app_name="weather_center", session_service=session_service)
         content = types.Content(role='user', parts=[types.Part(text=user_message)])
         events = runner.run_async(user_id=user_id, session_id=session.id, new_message=content)
@@ -200,8 +204,29 @@ async def update_unit_system(request: UnitSystemRequest):
                 error=f"Invalid unit system. Must be one of: {', '.join(valid_systems)}"
             )
         
-        # TODO: Store unit system preference in database or session
-        # For now, we'll just log it and return success
+        # Store unit system preference in session
+        if request.session_id:
+            # Store in the session data
+            session_data = auth_service.get_user_from_session(request.session_id)
+            if session_data:
+                session_data["unit_system"] = request.unit_system
+                # Update the session with the new unit system preference
+                auth_service.update_session_data(request.session_id, session_data)
+            
+            # Also store in the agent system preferences
+            try:
+                from agent_system.src.multi_tool_agent.tools.get_user_preferences import set_user_preferences
+                preferences = {
+                    "unit_system": request.unit_system,
+                    "user_id": session_data.get("user_id") if session_data else "anonymous",
+                    "email": session_data.get("email") if session_data else "anonymous@example.com",
+                    "name": session_data.get("name") if session_data else "Anonymous User"
+                }
+                set_user_preferences(request.session_id, preferences)
+            except ImportError:
+                # If the agent system is not available, just log it
+                print(f"Agent system preferences not available, but unit system updated: {request.unit_system}")
+        
         print(f"User {user_id} updated unit system to: {request.unit_system}")
         
         return UnitSystemResponse(

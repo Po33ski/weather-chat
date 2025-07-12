@@ -1,10 +1,9 @@
-import styles from "./SystemSelector.module.css";
 import { useContext, useEffect, useState } from "react";
 import { SYSTEMS } from "@/app/constants/unitSystems";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { UnitSystemContextType } from "@/app/types/types";
 import { weatherApi } from "@/app/services/weatherApi";
-import { useAuthService } from "../Auth/AuthService";
+import { useAuthService } from "../../hooks/authService";
 
 export function SystemSelector() {
   const unitSystemContext = useContext<UnitSystemContextType | null>(
@@ -34,7 +33,11 @@ export function SystemSelector() {
             
             // Send unit system update to backend
             try {
-              await weatherApi.updateUnitSystem(newUnitSystem, sessionId || undefined);
+              if (sessionId) {
+                await weatherApi.updateUnitSystem(newUnitSystem, sessionId);
+              } else {
+                console.warn('No session ID available, unit system update skipped');
+              }
             } catch (error) {
               console.error('Failed to update unit system on backend:', error);
             }

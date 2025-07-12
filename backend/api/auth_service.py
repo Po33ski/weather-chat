@@ -197,6 +197,14 @@ class AuthService:
         if session_id in self.user_sessions:
             self.user_sessions[session_id]["last_activity"] = datetime.now()
     
+    def update_session_data(self, session_id: str, session_data: Dict[str, Any]):
+        """Update session data with new information"""
+        if session_id in self.user_sessions:
+            # Update existing session data with new data
+            self.user_sessions[session_id].update(session_data)
+            # Update last activity
+            self.user_sessions[session_id]["last_activity"] = datetime.now()
+    
     def cleanup_expired_sessions(self, max_age_hours: int = 24):
         """Clean up expired sessions"""
         cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
