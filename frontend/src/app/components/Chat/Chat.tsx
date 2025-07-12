@@ -14,7 +14,7 @@ export const Chat: React.FC = () => {
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [buttonKey, setButtonKey] = useState(0);
-  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout } = useAuthService();
+  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser } = useAuthService();
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -271,16 +271,16 @@ export const Chat: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-800">AI Chat Assistant</h1>
               <p className="text-sm text-gray-600">Powered by Google ADK</p>
             </div>
-            {user && (
+            {getUser() && (
               <div className="flex items-center space-x-2">
-                {user.picture && (
+                {getUser()?.picture && (
                   <img 
-                    src={user.picture} 
-                    alt={user.name} 
+                    src={getUser()?.picture} 
+                    alt={getUser()?.name} 
                     className="w-8 h-8 rounded-full"
                   />
                 )}
-                <span className="text-sm text-gray-700">{user.name}</span>
+                <span className="text-sm text-gray-700">{getUser()?.name}</span>
               </div>
             )}
           </div>

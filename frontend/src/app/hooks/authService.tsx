@@ -54,6 +54,7 @@ export const useAuthService = () => {
 
       if (data.success && data.session_id) {
         localStorage.setItem('sessionId', data.session_id);
+        localStorage.setItem('user', JSON.stringify({data: data.user_info, id: data.user_id, email: data.user_info?.email, name: data.user_info?.name, picture: data.user_info?.picture}));
         setAuthState({
           isAuthenticated: true,
           user: data.user_info ? {
@@ -86,6 +87,7 @@ export const useAuthService = () => {
         });
       } else {
         localStorage.removeItem('sessionId');
+        localStorage.removeItem('user');
         setAuthState({
           isAuthenticated: false,
           user: null,
@@ -96,6 +98,7 @@ export const useAuthService = () => {
     } catch (error) {
       console.error('Session validation error:', error);
       localStorage.removeItem('sessionId');
+      localStorage.removeItem('user');
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -122,6 +125,7 @@ export const useAuthService = () => {
     }
 
     localStorage.removeItem('sessionId');
+    localStorage.removeItem('user');
     setAuthState({
       isAuthenticated: false,
       user: null,
@@ -134,11 +138,17 @@ export const useAuthService = () => {
     return localStorage.getItem('sessionId');
   };
 
+  const getUser = (): User | null => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  };
+
   return {
     ...authState,
     handleGoogleSignIn,
     validateSession,
     logout,
     getSessionId,
+    getUser,
   };
 }; 
