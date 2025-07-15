@@ -52,15 +52,18 @@ class WeatherLocation(BaseModel):
 
 class CurrentWeatherRequest(BaseModel):
     location: str
+    unit_system: Optional[str] = None
 
 class ForecastWeatherRequest(BaseModel):
     location: str
     days: int = 7
+    unit_system: Optional[str] = None
 
 class HistoryWeatherRequest(BaseModel):
     location: str
     start_date: date
     end_date: date
+    unit_system: Optional[str] = None
 
 class WeatherData(BaseModel):
     location: str

@@ -190,7 +190,7 @@ weather_service = WeatherService()
 @app.post("/api/weather/current", response_model=CurrentWeatherResponse)
 def get_current_weather(request: CurrentWeatherRequest):
     try:
-        data = weather_service.get_current_weather(request.location)
+        data = weather_service.get_current_weather(request.location, request.unit_system)
         return CurrentWeatherResponse(success=True, data=data)
     except Exception as e:
         return CurrentWeatherResponse(success=False, error=str(e))
@@ -198,7 +198,7 @@ def get_current_weather(request: CurrentWeatherRequest):
 @app.post("/api/weather/forecast", response_model=ForecastWeatherResponse)
 def get_forecast_weather(request: ForecastWeatherRequest):
     try:
-        data = weather_service.get_forecast_weather(request.location, request.days)
+        data = weather_service.get_forecast_weather(request.location, request.days, request.unit_system)
         return ForecastWeatherResponse(success=True, data=data)
     except Exception as e:
         return ForecastWeatherResponse(success=False, error=str(e))
@@ -206,7 +206,7 @@ def get_forecast_weather(request: ForecastWeatherRequest):
 @app.post("/api/weather/history", response_model=HistoryWeatherResponse)
 def get_history_weather(request: HistoryWeatherRequest):
     try:
-        data = weather_service.get_history_weather(request.location, request.start_date, request.end_date)
+        data = weather_service.get_history_weather(request.location, request.start_date, request.end_date, request.unit_system)
         return HistoryWeatherResponse(success=True, data=data)
     except Exception as e:
         return HistoryWeatherResponse(success=False, error=str(e)) 
