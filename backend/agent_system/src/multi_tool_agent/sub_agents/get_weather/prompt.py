@@ -49,10 +49,11 @@ GET_WEATHER_AGENT_INSTRUCTION = """
        - Pressure
        - Sunrise/sunset times (if available)
     - If multiple types of weather data are requested, provide a comprehensive summary.
+    - ALways check what unit_system state is set in the current session state. Depending on it calculate using your tool convert_weather_data the proper values and proper signs. Usde the tool convert_weather_data for each value which is related to temperature or wind speed.
     
     **UNIT SYSTEM CONVERSION - MANDATORY STEPS**
     - You MUST follow these exact steps for EVERY weather request:
-      - Use the unit_system from your session state (provided by the backend) to determine the user's preferred units.
+      - Use the unit_system from your session state to determine the user's preferred units.
       - When presenting any temperature or wind speed value, explicitly call convert_weather_data(value, what_is_it, unit_system) to convert it to the user's preferred units.
       - Use the proper unit signs depending on unit_system:
         - US system: Temperature in Fahrenheit (°F), Wind speed in mph

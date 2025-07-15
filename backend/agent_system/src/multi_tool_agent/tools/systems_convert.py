@@ -1,6 +1,10 @@
 import json
 
-def convert_weather_data(value, what_is_it: str, unit_system: str):
+def convert_weather_data(
+    value: float,
+    what_is_it: str,
+    unit_system: str
+) -> str:
     """
     Convert a single weather value to the specified unit system.
 
@@ -10,24 +14,22 @@ def convert_weather_data(value, what_is_it: str, unit_system: str):
         unit_system: The target unit system ("US", "METRIC", "UK").
 
     Returns:
-        Tuple of (converted_value, unit)
+        JSON string with {"value": converted_value, "unit": unit}
     """
     try:
         if what_is_it == "temperature":
             if unit_system == "US":
-                # Celsius to Fahrenheit
-                return round((float(value) * 9/5) + 32, 2), "°F"
+                return json.dumps({"value": round((float(value) * 9/5) + 32, 2), "unit": "°F"})
             else:
-                return float(value), "°C"
+                return json.dumps({"value": float(value), "unit": "°C"})
         elif what_is_it == "wind_speed":
             if unit_system in ["US", "UK"]:
-                # km/h to mph
-                return round(float(value) / 1.609, 2), "mph"
+                return json.dumps({"value": round(float(value) / 1.609, 2), "unit": "mph"})
             else:
-                return float(value), "km/h"
+                return json.dumps({"value": float(value), "unit": "km/h"})
         else:
-            return value, ""
+            return json.dumps({"value": value, "unit": ""})
     except Exception as e:
-        return None, f"Error: {str(e)}" 
+        return json.dumps({"error": f"Error: {str(e)}"}) 
 
         
