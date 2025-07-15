@@ -124,6 +124,8 @@ export interface Message {
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  unitSystem?: string;
+  userId?: string;
 }
 
 export interface ChatRequest {
@@ -148,6 +150,7 @@ export interface ChatApiResponse {
 export interface UnitSystemRequest {
   unit_system: string;
   session_id?: string;
+  user_id?: string;
 }
 
 export interface UnitSystemResponse {

@@ -139,8 +139,29 @@ export const useAuthService = () => {
   };
 
   const getUser = (): User | null => {
+    // First try to get from authState (current session)
+    if (authState.user) {
+      return authState.user;
+    }
+    
+    // Fallback to localStorage
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        // Return the user data in the correct format
+        return {
+          user_id: parsedUser.id || parsedUser.user_id || '',
+          email: parsedUser.email || '',
+          name: parsedUser.name || '',
+          picture: parsedUser.picture || '',
+        };
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        return null;
+      }
+    }
+    return null;
   };
 
   return {

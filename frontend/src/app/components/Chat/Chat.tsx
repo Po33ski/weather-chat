@@ -1,8 +1,10 @@
 "use client";
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { useAuthService } from '../../hooks/authService';
 import { Message} from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
+import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
+import { UnitSystemContextType } from '../../types/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -17,6 +19,9 @@ export const Chat: React.FC = () => {
   const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser } = useAuthService();
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
+  const [lastUnitSystem, setLastUnitSystem] = useState<string | null>(null);
+
 
   // Fix hydration issue by ensuring client-side rendering
   useEffect(() => {
@@ -108,6 +113,7 @@ export const Chat: React.FC = () => {
     checkBackendConnection();
   }, []);
 
+  // Check if the backend is connected
   const checkBackendConnection = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/health`);
@@ -122,14 +128,20 @@ export const Chat: React.FC = () => {
 
 
 
+  // Send message to the backend
   const handleSendMessage = async () => {
+      // Get current unit system and user id
+      const unitSystem = unitSystemContext?.unitSystem.data || "METRIC";
+      const userId = getUser()?.user_id || "";
     if (!inputText.trim() || !isAuthenticated) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: (Date.now() + 1).toString(),
       text: inputText.trim(),
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      unitSystem: unitSystem,
+      userId: userId
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -140,16 +152,26 @@ export const Chat: React.FC = () => {
       // Prepare conversation history for the API
       const conversationHistory = messages.map(msg => ({
         text: msg.text,
-        sender: msg.sender
+        sender: msg.sender,
+        unitSystem: msg.unitSystem || unitSystem,
+        userId: msg.userId || userId,
       }));
 
-      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, sessionId || "");
+      const response = await weatherApi.getChatResponse(
+        userMessage.text,
+        conversationHistory,
+        sessionId || "",
+        unitSystem,
+        userId
+      );
       if (response.success && response.data) {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: response.data.message,
           sender: 'ai',
-          timestamp: new Date()
+          timestamp: new Date(),
+          unitSystem: unitSystem,
+          userId: userId
         };
         console.log(aiMessage);
         
@@ -163,7 +185,9 @@ export const Chat: React.FC = () => {
         id: (Date.now() + 1).toString(),
         text: 'Sorry, I encountered an error. Please try again later.',
         sender: 'ai',
-        timestamp: new Date()
+        timestamp: new Date(),
+        unitSystem: unitSystem,
+        userId: userId
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {

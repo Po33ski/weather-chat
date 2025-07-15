@@ -3,7 +3,6 @@ import pathlib
 import dotenv
 import json
 from datetime import datetime
-from .systems_convert import convert_weather_data
 
 # Load Visual Crossing API key from .env
 ENV_PATH = pathlib.Path(__file__).parent.parent / ".env"
@@ -25,18 +24,15 @@ def normal_date_formatted(d: datetime) -> str:
         )
     return ""
 
-def get_history_weather(city: str, start_date: str, end_date: str, unit_system: str = "METRIC") -> str:
+def get_history_weather(city: str, start_date: str, end_date: str) -> str:
     """
     Fetch historical weather data for a given city and date range using the Visual Crossing API.
+    Returns the raw JSON response from the API.
     
     Args:
         city: The city name
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        unit_system: The unit system to use (US, METRIC, UK). Defaults to METRIC.
-    
-    Returns:
-        JSON response converted to the specified unit system, or an error message as a string.
     """
     if not city:
         return json.dumps({"error": "No city provided."})
@@ -45,15 +41,11 @@ def get_history_weather(city: str, start_date: str, end_date: str, unit_system: 
     if not API_KEY:
         return json.dumps({"error": "API key not found."})
     
-    # Always fetch in metric (base units) from the API
     url = f"{API_HTTP}{city}/{start_date}/{end_date}?unitGroup=metric&key={API_KEY}&contentType=json"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         weather_data = response.text
-        
-        # Convert to the requested unit system
-        return convert_weather_data(weather_data, unit_system)
-        
+        return weather_data
     except Exception as e:
         return json.dumps({"error": str(e)}) 
