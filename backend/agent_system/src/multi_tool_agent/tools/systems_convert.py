@@ -1,9 +1,11 @@
 import json
+from typing import Optional
 
 def convert_weather_data(
     value: float,
     what_is_it: str,
-    unit_system: str
+    unit_system: Optional[str] = None,
+    tool_context=None
 ) -> str:
     """
     Convert a single weather value to the specified unit system.
@@ -11,12 +13,18 @@ def convert_weather_data(
     Args:
         value: The value to convert (float or int).
         what_is_it: What the value represents ("temperature" or "wind_speed").
-        unit_system: The target unit system ("US", "METRIC", "UK").
+        unit_system: The target unit system ("US", "METRIC", "UK"). If not provided, will use session state.
+        tool_context: (optional) The tool context, used to access session state.
 
     Returns:
         JSON string with {"value": converted_value, "unit": unit}
     """
     try:
+        # If unit_system is not provided, try to get it from tool_context
+        if not unit_system and tool_context and hasattr(tool_context, "state"):
+            unit_system = tool_context.state.get("unit_system", "METRIC")
+        if not unit_system:
+            unit_system = "METRIC"
         if what_is_it == "temperature":
             if unit_system == "US":
                 return json.dumps({"value": round((float(value) * 9/5) + 32, 2), "unit": "°F"})
