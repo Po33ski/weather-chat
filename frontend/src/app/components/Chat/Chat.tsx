@@ -20,7 +20,6 @@ export const Chat: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
-  const [lastUnitSystem, setLastUnitSystem] = useState<string | null>(null);
 
 
   // Fix hydration issue by ensuring client-side rendering

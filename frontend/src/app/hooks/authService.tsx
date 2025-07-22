@@ -15,7 +15,7 @@ interface AuthState {
   loading: boolean;
 }
 
-interface GoogleAuthResponse {
+interface GoogleAuthRes {
   success: boolean;
   session_id?: string;
   user_id?: string;
@@ -50,7 +50,7 @@ export const useAuthService = () => {
         }),
       });
 
-      const data: GoogleAuthResponse = await authResponse.json();
+      const data: GoogleAuthRes = await authResponse.json();
 
       if (data.success && data.session_id) {
         localStorage.setItem('sessionId', data.session_id);

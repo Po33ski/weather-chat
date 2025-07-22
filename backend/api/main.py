@@ -1,16 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
-from agent_system.src.multi_tool_agent.agent import root_agent
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types
-import asyncio
 import os
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
     CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
@@ -18,6 +16,13 @@ from .models import (
 )
 from .weather_service import WeatherService
 from .auth_service import auth_service
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import Session
+import pyotp
+import qrcode
+from io import BytesIO
+from starlette.responses import StreamingResponse
 
 # Load environment variables (if needed)
 load_env_data()
@@ -209,4 +214,98 @@ def get_history_weather(request: HistoryWeatherRequest):
         data = weather_service.get_history_weather(request.location, request.start_date, request.end_date)
         return HistoryWeatherResponse(success=True, data=data)
     except Exception as e:
-        return HistoryWeatherResponse(success=False, error=str(e)) 
+        return HistoryWeatherResponse(success=False, error=str(e))
+
+@app.post("/api/auth/totp/setup")
+async def totp_setup(email: str = Form(...)):
+    """Setup TOTP for a user and return QR code"""
+    try:
+        # Check if user exists, if not create one
+        user = auth_service.get_user_by_email(email)
+        if not user:
+            # Create a new user for TOTP authentication
+            user = auth_service.create_user(email=email, name=email.split('@')[0])
+        
+        # Generate TOTP secret and save it
+        secret = pyotp.random_base32()
+        updated_user = auth_service.set_totp_secret(email, secret)
+        
+        if not updated_user:
+            return {"success": False, "error": "Failed to setup TOTP"}
+        
+        # Generate QR code
+        uri = pyotp.totp.TOTP(secret).provisioning_uri(
+            name=email, 
+            issuer_name="WeatherCenter"
+        )
+        img = qrcode.make(uri)
+        buf = BytesIO()
+        img.save(buf)
+        buf.seek(0)
+        
+        return StreamingResponse(buf, media_type="image/png")
+    except Exception as e:
+        return {"success": False, "error": f"Setup failed: {str(e)}"}
+
+@app.post("/api/auth/totp/verify")
+async def totp_verify(email: str = Form(...), code: str = Form(...)):
+    """Verify TOTP code and create session"""
+    try:
+        if auth_service.verify_totp(email, code):
+            # Get or create user
+            user = auth_service.get_user_by_email(email)
+            if not user:
+                return {"success": False, "error": "User not found"}
+            
+            # Create session similar to Google auth
+            session_id = auth_service._generate_session_id()
+            session_data = {
+                "user_id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "picture": None,  # TOTP users don't have profile pictures
+                "adk_session_id": None,  # Will be created when needed
+                "created_at": datetime.now(),
+                "last_activity": datetime.now(),
+                "is_active": True
+            }
+            
+            auth_service.user_sessions[session_id] = session_data
+            
+            return AuthResponse(
+                success=True,
+                session_id=session_id,
+                user_id=user.id,
+                user_info={
+                    "email": user.email,
+                    "name": user.name,
+                    "picture": None
+                },
+                message="TOTP authentication successful"
+            )
+        else:
+            return AuthResponse(
+                success=False,
+                error="Invalid TOTP code"
+            )
+    except Exception as e:
+        return AuthResponse(
+            success=False,
+            error=f"TOTP verification failed: {str(e)}"
+        )
+
+@app.get("/api/auth/totp/status/{email}")
+async def totp_status(email: str):
+    """Check if a user has TOTP enabled"""
+    try:
+        user = auth_service.get_user_by_email(email)
+        if not user:
+            return {"success": False, "error": "User not found"}
+        
+        return {
+            "success": True,
+            "has_totp": user.is_totp_enabled if user else False,
+            "email": email
+        }
+    except Exception as e:
+        return {"success": False, "error": f"Status check failed: {str(e)}"} 
