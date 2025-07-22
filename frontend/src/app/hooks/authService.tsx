@@ -28,6 +28,19 @@ interface GoogleAuthRes {
   error?: string;
 }
 
+interface TotpAuthRes {
+  success: boolean;
+  session_id?: string;
+  user_id?: string;
+  user_info?: {
+    email: string;
+    name: string;
+    picture?: string;
+  };
+  message?: string;
+  error?: string;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const useAuthService = () => {
@@ -164,6 +177,94 @@ export const useAuthService = () => {
     return null;
   };
 
+  // TOTP Authentication Functions
+  const setupTotp = async (email: string): Promise<string | null> => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('email', email);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/totp/setup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        return url; // Return the QR code URL
+      } else {
+        const errorData = await response.json();
+        console.error('TOTP setup failed:', errorData.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('TOTP setup error:', error);
+      return null;
+    }
+  };
+
+  const verifyTotp = async (email: string, code: string): Promise<TotpAuthRes> => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('email', email);
+      formData.append('code', code);
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/totp/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
+      });
+
+      const data: TotpAuthRes = await response.json();
+
+      if (data.success && data.session_id) {
+        localStorage.setItem('sessionId', data.session_id);
+        localStorage.setItem('user', JSON.stringify({
+          data: data.user_info, 
+          id: data.user_id, 
+          email: data.user_info?.email, 
+          name: data.user_info?.name, 
+          picture: data.user_info?.picture
+        }));
+        setAuthState({
+          isAuthenticated: true,
+          user: data.user_info ? {
+            user_id: data.user_id || '',
+            email: data.user_info.email,
+            name: data.user_info.name,
+            picture: data.user_info.picture,
+          } : null,
+          sessionId: data.session_id,
+          loading: false,
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error('TOTP verification error:', error);
+      return {
+        success: false,
+        error: 'TOTP verification failed'
+      };
+    }
+  };
+
+  const checkTotpStatus = async (email: string): Promise<{ success: boolean; has_totp: boolean; error?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/totp/status/${email}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('TOTP status check error:', error);
+      return { success: false, has_totp: false, error: 'Status check failed' };
+    }
+  };
+
   return {
     ...authState,
     handleGoogleSignIn,
@@ -171,5 +272,8 @@ export const useAuthService = () => {
     logout,
     getSessionId,
     getUser,
+    setupTotp,
+    verifyTotp,
+    checkTotpStatus,
   };
 }; 

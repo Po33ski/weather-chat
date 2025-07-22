@@ -5,6 +5,7 @@ import { Message} from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
 import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
+import { TotpAuth } from '../TotpAuth/TotpAuth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -16,8 +17,9 @@ export const Chat: React.FC = () => {
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [buttonKey, setButtonKey] = useState(0);
-  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser } = useAuthService();
+  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser, setupTotp, verifyTotp, checkTotpStatus } = useAuthService();
   const [isClient, setIsClient] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'google' | 'totp'>('google');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
 
@@ -258,22 +260,65 @@ export const Chat: React.FC = () => {
                   Sign in to use AI Chat
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Connect with Google to access the AI chat feature
+                  Choose your authentication method
                 </p>
-                <div id="google-signin-button" key={buttonKey}></div>
-                {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-sm text-yellow-600">
-                      Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
-                    </p>
+                
+                {/* Authentication Method Toggle */}
+                <div className="flex mb-4 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setAuthMethod('google')}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                      authMethod === 'google'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Google Sign-In
+                  </button>
+                  <button
+                    onClick={() => setAuthMethod('totp')}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                      authMethod === 'totp'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    QR Code (TOTP)
+                  </button>
+                </div>
+
+                {/* Google Authentication */}
+                {authMethod === 'google' && (
+                  <div>
+                    <div id="google-signin-button" key={buttonKey}></div>
+                    {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-600">
+                          Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
+                        </p>
+                      </div>
+                    )}
+                    {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-600">
+                          Loading Google Sign-In...
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-                {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-sm text-blue-600">
-                      Loading Google Sign-In...
-                    </p>
-                  </div>
+
+                {/* TOTP Authentication */}
+                {authMethod === 'totp' && (
+                  <TotpAuth
+                    setupTotp={setupTotp}
+                    verifyTotp={verifyTotp}
+                    checkTotpStatus={checkTotpStatus}
+                    onSuccess={() => {
+                      // Force re-render of the Google button when switching back
+                      setButtonKey(prev => prev + 1);
+                    }}
+                  />
                 )}
               </div>
             </div>
