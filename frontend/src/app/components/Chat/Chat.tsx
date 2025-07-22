@@ -16,13 +16,13 @@ export const Chat: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [buttonKey, setButtonKey] = useState(0);
   const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser, setupTotp, verifyTotp, checkTotpStatus } = useAuthService();
   const [isClient, setIsClient] = useState(false);
   const [authMethod, setAuthMethod] = useState<'google' | 'totp'>('google');
+  const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
-
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Fix hydration issue by ensuring client-side rendering
   useEffect(() => {
@@ -34,20 +34,26 @@ export const Chat: React.FC = () => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     
     if (typeof window !== 'undefined' && GOOGLE_CLIENT_ID) {
-      // Load Google OAuth script
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
+      // Check if Google script is already loaded
+      if ((window as any).google) {
         initializeGoogleOAuth();
         setGoogleReady(true);
-      };
-      script.onerror = () => {
-        console.error('Failed to load Google OAuth script');
-        setAuthLoading(false);
-      };
-      document.head.appendChild(script);
+      } else {
+        // Load Google OAuth script
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          initializeGoogleOAuth();
+          setGoogleReady(true);
+        };
+        script.onerror = () => {
+          console.error('Failed to load Google OAuth script');
+          setAuthLoading(false);
+        };
+        document.head.appendChild(script);
+      }
     } else {
       setAuthLoading(false);
     }
@@ -61,17 +67,40 @@ export const Chat: React.FC = () => {
     }
   }, []);
 
-  // Re-render Google button when authentication state changes
+  // Render Google button when needed
   useEffect(() => {
-    if (!isAuthenticated && googleReady) {
-      // Force re-render of the button container
-      setButtonKey(prev => prev + 1);
-      // Small delay to ensure the DOM element is ready
-      setTimeout(() => {
-        initializeGoogleOAuth();
-      }, 100);
+    console.log('Auth state changed:', { isAuthenticated, googleReady, authMethod, googleButtonRendered });
+    
+    if (!isAuthenticated && googleReady && authMethod === 'google' && googleButtonRef.current && !googleButtonRendered) {
+      console.log('Rendering Google button');
+      renderGoogleButton();
+      setGoogleButtonRendered(true);
     }
-  }, [isAuthenticated, googleReady]);
+    
+    // Clear button when authenticated
+    if (isAuthenticated && googleButtonRendered) {
+      console.log('Clearing Google button - user authenticated');
+      setGoogleButtonRendered(false);
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = '';
+      }
+    }
+    
+    // Cleanup function
+    return () => {
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = '';
+      }
+    };
+  }, [isAuthenticated, googleReady, authMethod, googleButtonRendered]);
+
+  // Reset button rendered state when switching auth methods
+  useEffect(() => {
+    setGoogleButtonRendered(false);
+    if (googleButtonRef.current) {
+      googleButtonRef.current.innerHTML = '';
+    }
+  }, [authMethod]);
 
   const initializeGoogleOAuth = () => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -83,20 +112,27 @@ export const Chat: React.FC = () => {
           auto_select: false,
           cancel_on_tap_outside: true,
         });
-        
-        // Clear any existing button first
-        const buttonContainer = document.getElementById('google-signin-button');
-        if (buttonContainer) {
-          buttonContainer.innerHTML = '';
-          (window as any).google.accounts.id.renderButton(buttonContainer, {
-            theme: 'outline',
-            size: 'large',
-            width: '100%',
-            text: 'signin_with'
-          });
-        }
       } catch (error) {
         console.error('Error initializing Google OAuth:', error);
+      }
+    }
+  };
+
+  const renderGoogleButton = () => {
+    if (typeof window !== 'undefined' && (window as any).google && googleButtonRef.current) {
+      try {
+        // Clear any existing content
+        googleButtonRef.current.innerHTML = '';
+        
+        // Render the button
+        (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+          text: 'signin_with'
+        });
+      } catch (error) {
+        console.error('Error rendering Google button:', error);
       }
     }
   };
@@ -290,7 +326,7 @@ export const Chat: React.FC = () => {
                 {/* Google Authentication */}
                 {authMethod === 'google' && (
                   <div>
-                    <div id="google-signin-button" key={buttonKey}></div>
+                    <div ref={googleButtonRef}></div>
                     {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                       <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                         <p className="text-sm text-yellow-600">
@@ -315,8 +351,14 @@ export const Chat: React.FC = () => {
                     verifyTotp={verifyTotp}
                     checkTotpStatus={checkTotpStatus}
                     onSuccess={() => {
-                      // Force re-render of the Google button when switching back
-                      setButtonKey(prev => prev + 1);
+                      // Reset button state and re-render Google button when switching back
+                      setGoogleButtonRendered(false);
+                      if (googleButtonRef.current) {
+                        googleButtonRef.current.innerHTML = '';
+                        setTimeout(() => {
+                          renderGoogleButton();
+                        }, 100);
+                      }
                     }}
                   />
                 )}
@@ -362,8 +404,14 @@ export const Chat: React.FC = () => {
             <button
               onClick={async () => {
                 await logout();
-                // Force re-render of the Google button
-                setButtonKey(prev => prev + 1);
+                // Reset button state and re-render Google button after logout
+                setGoogleButtonRendered(false);
+                if (googleButtonRef.current) {
+                  googleButtonRef.current.innerHTML = '';
+                  setTimeout(() => {
+                    renderGoogleButton();
+                  }, 100);
+                }
               }}
               className="text-sm text-gray-600 hover:text-gray-800"
             >
