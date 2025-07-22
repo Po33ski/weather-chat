@@ -95,7 +95,7 @@ class AuthService:
             
             # Create Google ADK session
             try:
-                adk_session = self.session_service.create_session(
+                adk_session = await self.session_service.create_session(
                     app_name="weather_center", 
                     user_id=user_id
                 )

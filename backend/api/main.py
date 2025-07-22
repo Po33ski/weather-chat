@@ -158,11 +158,11 @@ async def chat_endpoint(request: ChatRequest):
         session_service = InMemorySessionService()
         if adk_session_id:
             try:
-                session = session_service.create_session(app_name="weather_center", user_id=effective_user_id)
+                session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
             except Exception:
-                session = session_service.create_session(app_name="weather_center", user_id=effective_user_id)
+                session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
         else:
-            session = session_service.create_session(app_name="weather_center", user_id=effective_user_id)
+            session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
         if request.session_id:
             session.state["app_session_id"] = request.session_id
         # Pass unit_system and user_id to the agent via session state for tool access
