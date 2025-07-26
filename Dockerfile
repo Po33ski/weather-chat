@@ -2,33 +2,35 @@
 # Builds both backend and frontend, serves from single container
 
 # Stage 1: Build Backend
-FROM python:3.12-slim as backend-builder
+FROM python:3.12-slim AS backend-builder
 
 # Install system dependencies including PostgreSQL client
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
     libpq-dev \
+    libsnappy-dev \
+    make \
+    gcc \
+    g++ \
+    libc6-dev \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
+# Install uv package manager using pip (more reliable in Docker)
 RUN pip install uv
 
 # Set working directory
 WORKDIR /app
 
-# Copy backend files
-COPY backend/pyproject.toml backend/uv.lock backend/
-
-# Install backend dependencies using uv (simplified for Render compatibility)
-WORKDIR /app/backend
-RUN uv sync
-
-# Copy backend source code
+# Copy backend files first
 COPY backend/ .
 
+# Install backend dependencies using uv sync
+RUN uv sync
+
 # Stage 2: Build Frontend
-FROM node:18-alpine as frontend-builder
+FROM node:18-alpine AS frontend-builder
 
 # Set working directory
 WORKDIR /app
@@ -56,23 +58,22 @@ RUN apt-get update && apt-get install -y \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
+# Install uv package manager using pip (more reliable in Docker)
 RUN pip install uv
 
 # Create app directory
 WORKDIR /app
 
 # Copy backend from builder
-COPY --from=backend-builder /app/backend /app/backend
+COPY --from=backend-builder /app /app/backend
 
 # Copy frontend build from builder
 COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
 COPY --from=frontend-builder /app/frontend/public /app/frontend/public
 COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
 
-# Install frontend production dependencies
+# No need to install frontend dependencies in runtime stage
 WORKDIR /app/frontend
-RUN npm ci --only=production
 
 # Create nginx configuration
 RUN mkdir -p /etc/nginx/sites-available
