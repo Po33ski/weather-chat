@@ -2,7 +2,7 @@
 # Builds both backend and frontend, serves from single container
 
 # Stage 1: Build Backend
-FROM python:3.12-slim AS backend-builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS backend-builder
 
 # Install system dependencies including PostgreSQL client
 RUN apt-get update && apt-get install -y \
@@ -17,9 +17,6 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv package manager using pip (more reliable in Docker)
-RUN pip install uv
-
 # Set working directory
 WORKDIR /app
 
@@ -28,6 +25,9 @@ COPY backend/ .
 
 # Install backend dependencies using uv sync
 RUN uv sync
+
+# Install uvicorn as a tool
+RUN uv tool install uvicorn
 
 # Stage 2: Build Frontend
 FROM node:18-alpine AS frontend-builder
@@ -45,21 +45,17 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
-# Build frontend
+# Build frontend with static export
 RUN npm run build
 
 # Stage 3: Production Runtime
-FROM python:3.12-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
-# Install nginx, PostgreSQL client, and other dependencies
+# Install PostgreSQL client and other dependencies
 RUN apt-get update && apt-get install -y \
-    nginx \
     curl \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
-
-# Install uv package manager using pip (more reliable in Docker)
-RUN pip install uv
 
 # Create app directory
 WORKDIR /app
@@ -67,38 +63,26 @@ WORKDIR /app
 # Copy backend from builder
 COPY --from=backend-builder /app /app/backend
 
-# Copy frontend build from builder
-COPY --from=frontend-builder /app/frontend/.next /app/frontend/.next
-COPY --from=frontend-builder /app/frontend/public /app/frontend/public
-COPY --from=frontend-builder /app/frontend/package*.json /app/frontend/
+# Copy frontend static export from builder
+COPY --from=frontend-builder /app/frontend/out /app/frontend/out
 
-# No need to install frontend dependencies in runtime stage
-WORKDIR /app/frontend
+# Install backend dependencies in runtime stage
+WORKDIR /app/backend
+RUN uv sync
 
-# Create nginx configuration
-RUN mkdir -p /etc/nginx/sites-available
-COPY nginx.conf /etc/nginx/sites-available/default
+# Install uvicorn as a tool in runtime stage
+RUN uv tool install uvicorn
 
 # Create startup script
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Create non-root user for security
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app && \
-    chown -R appuser:appuser /var/log/nginx && \
-    chown -R appuser:appuser /var/lib/nginx && \
-    chown -R appuser:appuser /etc/nginx
-
-# Switch to non-root user
-USER appuser
-
 # Expose port
-EXPOSE 80
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Start the application
 CMD ["/app/start.sh"] 

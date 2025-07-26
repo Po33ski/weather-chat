@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
@@ -41,6 +43,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
 
 class ChatRequest(BaseModel):
     message: str
@@ -92,14 +97,22 @@ def health():
 @app.get("/")
 def root():
     """
-    Root endpoint with basic API information.
+    Serve the main index.html file
     """
-    return {
-        "message": "Weather Center Chat API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health"
-    }
+    return FileResponse("/app/frontend/out/index.html")
+
+@app.get("/{path:path}")
+def serve_static_files(path: str):
+    """
+    Serve static files for all other routes
+    """
+    file_path = f"/app/frontend/out/{path}"
+    
+    # If the path doesn't exist, serve index.html for client-side routing
+    if not os.path.exists(file_path):
+        return FileResponse("/app/frontend/out/index.html")
+    
+    return FileResponse(file_path)
 
 # --- Authentication Endpoints ---
 

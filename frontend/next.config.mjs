@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker
-  output: 'standalone',
+  // Enable static export for Docker with nginx
+  output: 'export',
   
   // Disable server-side image optimization in Docker
   images: {
@@ -12,6 +12,9 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
+  
+  // Disable trailing slash for cleaner URLs
+  trailingSlash: false,
 };
 
 export default nextConfig;
