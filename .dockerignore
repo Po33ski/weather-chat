@@ -1,49 +1,25 @@
 # Git
 .git
 .gitignore
+.gitattributes
 
-# Node.js
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Next.js
-.next
-out
-
-# Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-env
-pip-log.txt
-pip-delete-this-directory.txt
-.tox
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git
-.mypy_cache
-.pytest_cache
-.hypothesis
+# Documentation
+README.md
+DEPLOYMENT.md
+DEPLOYMENT_CHECKLIST.md
+PROJECT_STATUS.md
 
 # Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
+env-scratchpad.sh
+
+# Development files
+test_local.py
+deploy.sh
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
 
@@ -51,77 +27,49 @@ coverage.xml
 .DS_Store
 Thumbs.db
 
-# Documentation
-README.md
-*.md
-
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
-
-# CI/CD
-.github
-.gitlab-ci.yml
-
 # Logs
-logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
 
-# Coverage directory used by tools like istanbul
-coverage
+# Build outputs
+dist/
+build/
+*.egg-info/
 
-# Dependency directories
-jspm_packages/
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
-# Optional npm cache directory
-.npm
+# Temporary files
+*.tmp
+*.temp
 
-# Optional eslint cache
-.eslintcache
+# Backend specific
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.coverage
 
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
+# Frontend specific
+frontend/.next/
+frontend/node_modules/
+frontend/.env*
+frontend/out/
 
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port 
+# GitHub
+.github/ 

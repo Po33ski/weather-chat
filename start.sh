@@ -4,7 +4,7 @@
 echo "Starting nginx..."
 nginx
 
-# Start backend FastAPI server
+# Start backend FastAPI server using uv
 echo "Starting FastAPI backend..."
 cd /app/backend
-python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 
+uv run uvicorn api.main:app --host 0.0.0.0 --port 8000 

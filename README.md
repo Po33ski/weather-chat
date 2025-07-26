@@ -9,6 +9,7 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 - 🔐 **Authentication**: Google OAuth integration
 - 📱 **Responsive Design**: Modern UI with Tailwind CSS
 - 🚀 **Fast Performance**: Optimized for speed and user experience
+- 🐳 **Docker Ready**: Complete containerization support
 
 ## Tech Stack
 
@@ -22,7 +23,8 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 - **FastAPI** - Python web framework
 - **Google ADK** - AI chat functionality
 - **Visual Crossing API** - Weather data
-- **Google OAuth** - Authentication verification
+- **PostgreSQL** - Database
+- **uv** - Modern Python dependency management
 
 ## Quick Start
 
@@ -38,55 +40,75 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
    - Sign up at [Visual Crossing](https://www.visualcrossing.com/weather-api)
    - Get your API key
 
-### Backend Setup
+3. **PostgreSQL Database**
+   - Install PostgreSQL locally or use a cloud service
 
-1. **Clone and navigate to backend**
+### Option 1: Docker (Recommended)
+
+1. **Set environment variables**:
+   ```bash
+   source env-scratchpad.sh
+   ```
+
+2. **Run with Docker Compose** (includes PostgreSQL):
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Or run production container**:
+   ```bash
+   ./deploy-production.sh
+   ```
+
+### Option 2: Local Development
+
+#### Backend Setup
+
+1. **Navigate to backend**:
    ```bash
    cd backend
    ```
 
-2. **Install dependencies**
+2. **Install dependencies**:
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
-3. **Set up environment variables**
+3. **Set up environment variables**:
    ```bash
-   source env-scratchpad.sh
-   # Edit env-scratchpad.sh with your actual API keys
+   source ../env-scratchpad.sh
    ```
 
-4. **Run the backend**
+4. **Run the backend**:
    ```bash
-   uvicorn api.main:app --reload
+   uv run uvicorn api.main:app --reload
    ```
 
-### Frontend Setup
+#### Frontend Setup
 
-1. **Navigate to frontend**
+1. **Navigate to frontend**:
    ```bash
    cd frontend
    ```
 
-2. **Install dependencies**
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Set up environment variables**:
    ```bash
-   source env-scratchpad.sh
-   # Edit env-scratchpad.sh with your actual API keys
+   source ../env-scratchpad.sh
    ```
 
-4. **Run the frontend**
+4. **Run the frontend**:
    ```bash
    npm run dev
    ```
 
 ## Environment Variables
 
-### Environment Variables (env-scratchpad.sh)
+### Required Variables (env-scratchpad.sh)
 ```bash
 # Backend
 export VISUAL_CROSSING_API_KEY="your_visual_crossing_api_key"
@@ -96,6 +118,26 @@ export DATABASE_URL="postgresql+psycopg2://popard:malySlon1@localhost:5432/weath
 # Frontend
 export NEXT_PUBLIC_API_URL="http://localhost:8000"
 export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+```
+
+## Docker Setup
+
+For detailed Docker instructions, see [DOCKER_README.md](DOCKER_README.md).
+
+### Quick Docker Commands
+
+```bash
+# Development with PostgreSQL
+docker-compose up --build
+
+# Production deployment
+./deploy-production.sh
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
 ## API Endpoints
@@ -117,60 +159,34 @@ export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_oauth_client_id"
 - `GET /health` - Health check
 - `GET /` - API information
 
-## Google Cloud Setup
-
-### 1. Enable APIs
-- Google AI Studio API
-- Google OAuth2 API
-
-### 2. Create API Key
-- Go to [Credentials](https://console.cloud.google.com/apis/credentials)
-- Create API key for Google AI Studio
-- Restrict to Google AI Studio API only
-
-### 3. Create OAuth Client ID
-- Go to [Credentials](https://console.cloud.google.com/apis/credentials)
-- Create OAuth 2.0 Client ID
-- Set authorized origins:
-  - `http://localhost:3000` (development)
-  - `https://your-domain.com` (production)
-
 ## Deployment
 
-See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for detailed deployment instructions.
+### Render.com Deployment
+- Use the `render.yaml` configuration
+- Set environment variables in Render dashboard
+- Deploy from GitHub repository
 
-### Quick Deploy to Render.com
-
-1. **Backend Service**
-   - Environment: Python 3
-   - Build: `pip install -r requirements.txt`
-   - Start: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
-
-2. **Frontend Service**
-   - Environment: Node
-   - Build: `npm install && npm run build`
-   - Start: `npm start`
+### Docker Deployment
+- Use `./deploy-production.sh` for production
+- Use `docker-compose.yml` for development
 
 ## Project Structure
 
 ```
 weather-center-chat/
-├── backend/
-│   ├── api/
-│   │   ├── main.py              # FastAPI app
-│   │   ├── auth_service.py      # Authentication service
-│   │   ├── weather_service.py   # Weather API service
-│   │   └── models.py            # Pydantic models
-│   ├── agent_system/            # Google ADK agents
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   └── app/
-│   │       ├── components/      # React components
-│   │       ├── chat/           # Chat page
-│   │       └── views/          # Page views
-│   └── package.json
-└── README.md
+├── backend/                    # FastAPI backend
+│   ├── api/                   # API endpoints
+│   ├── agent_system/          # AI agent system
+│   ├── pyproject.toml         # Python dependencies
+│   └── uv.lock               # Locked dependencies
+├── frontend/                   # Next.js frontend
+│   ├── src/app/               # React components
+│   └── package.json           # Node.js dependencies
+├── docker-compose.yml          # Local development
+├── Dockerfile                  # Production container
+├── env-scratchpad.sh          # Environment variables
+├── deploy-production.sh        # Production deployment
+└── README.md                  # This file
 ```
 
 ## Contributing
@@ -178,19 +194,12 @@ weather-center-chat/
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Test with Docker: `docker-compose up --build`
 5. Submit a pull request
 
 ## License
 
 This project is licensed under the MIT License.
-
-## Support
-
-For issues and questions:
-1. Check the [deployment checklist](DEPLOYMENT_CHECKLIST.md)
-2. Review the [project status](PROJECT_STATUS.md)
-3. Open an issue on GitHub
 
 
 

@@ -4,21 +4,28 @@
 # Stage 1: Build Backend
 FROM python:3.12-slim as backend-builder
 
-# Install system dependencies
+# Install system dependencies including PostgreSQL client
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv
 
 # Set working directory
 WORKDIR /app
 
-# Copy entire backend directory
-COPY backend/ backend/
+# Copy backend files
+COPY backend/pyproject.toml backend/uv.lock backend/
 
-# Install backend dependencies using pip
+# Install backend dependencies using uv
 WORKDIR /app/backend
-RUN pip install -r requirements.txt
+RUN uv sync --frozen --no-dev
+
+# Copy backend source code
+COPY backend/ .
 
 # Stage 2: Build Frontend
 FROM node:18-alpine as frontend-builder
@@ -42,11 +49,15 @@ RUN npm run build
 # Stage 3: Production Runtime
 FROM python:3.12-slim
 
-# Install nginx and other dependencies
+# Install nginx, PostgreSQL client, and other dependencies
 RUN apt-get update && apt-get install -y \
     nginx \
     curl \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv
 
 # Create app directory
 WORKDIR /app
@@ -70,6 +81,16 @@ COPY nginx.conf /etc/nginx/sites-available/default
 # Create startup script
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    chown -R appuser:appuser /var/log/nginx && \
+    chown -R appuser:appuser /var/lib/nginx && \
+    chown -R appuser:appuser /etc/nginx
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 80
