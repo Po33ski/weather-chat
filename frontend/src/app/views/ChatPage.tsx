@@ -10,22 +10,3 @@ export const ChatPage = () => {
     </>
   );
 };
-
-
-
-// import { useAuthState } from "react-firebase-hooks/auth";
-// export const Comments = () => {
-//   const [user] = useAuthState(auth);
-//   return (
-//     <>
-//       {user ? (
-//         <div>
-//           <CreatePost />
-//           <ShowPosts />
-//         </div>
-//       ) : (
-//         <Login />
-//       )}
-//     </>
-//   );
-// };
