@@ -84,6 +84,11 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
    ```bash
    npm run dev
    ```
+### PostgreSQL setup
+
+1. **Start database**
+sudo systemctl start postgresql && sudo systemctl status postgresql --no-pager
+
 
 ## Environment Variables
 
@@ -139,6 +144,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
 - Set authorized origins:
   - `http://localhost:3000` (development)
   - `https://your-domain.com` (production)
+
 
 ## Deployment
 
@@ -196,6 +202,39 @@ For issues and questions:
 1. Check the [deployment checklist](DEPLOYMENT_CHECKLIST.md)
 2. Review the [project status](PROJECT_STATUS.md)
 3. Open an issue on GitHub
+
+## 🎉 **Your Project is Running Successfully!**
+
+### **Access Points:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### **What's Available:**
+✅ **Google OAuth Authentication**  
+✅ **TOTP Authentication** (QR Code)  
+✅ **Chat Interface** with Google ADK  
+✅ **PostgreSQL Database** connected  
+✅ **Weather API Integration**  
+
+### **Quick Test:**
+1. Open http://localhost:3000 in your browser
+2. You should see the authentication page with both Google OAuth and TOTP options
+3. Try logging in with either method
+
+### **If You Need to Stop the Services:**
+```bash
+# Stop backend (Ctrl+C in the backend terminal)
+# Stop frontend (Ctrl+C in the frontend terminal)
+```
+
+### **For Next Time:**
+To make the `DATABASE_URL` permanent, you can add it to your shell profile:
+```bash
+echo 'export DATABASE_URL="postgresql+psycopg2://popard:malySlon1@localhost:5432/weatherdb"' >> ~/.bashrc
+```
+
+Your project is now fully operational! 🚀
 
 
 

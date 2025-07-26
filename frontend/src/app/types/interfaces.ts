@@ -198,3 +198,10 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+export interface TotpAuthProps {
+  setupTotp: (email: string) => Promise<string | null>;
+  verifyTotp: (email: string, code: string) => Promise<any>;
+  checkTotpStatus: (email: string) => Promise<{ success: boolean; has_totp: boolean; error?: string }>;
+  onSuccess: () => void;
+}

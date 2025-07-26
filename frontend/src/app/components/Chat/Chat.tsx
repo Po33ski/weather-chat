@@ -5,6 +5,7 @@ import { Message} from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
 import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
+import { TotpAuth } from '../TotpAuth/TotpAuth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -15,13 +16,12 @@ export const Chat: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [buttonKey, setButtonKey] = useState(0);
-  const { isAuthenticated, user, sessionId, handleGoogleSignIn, validateSession, logout, getUser } = useAuthService();
+  const { isAuthenticated, sessionId, handleGoogleSignIn, validateSession, logout, getUser, setupTotp, verifyTotp, checkTotpStatus } = useAuthService();
   const [isClient, setIsClient] = useState(false);
+  const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
-  const [lastUnitSystem, setLastUnitSystem] = useState<string | null>(null);
-
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Fix hydration issue by ensuring client-side rendering
   useEffect(() => {
@@ -31,23 +31,38 @@ export const Chat: React.FC = () => {
   // Initialize Google OAuth and session validation
   useEffect(() => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    console.log('Google OAuth initialization - CLIENT_ID:', GOOGLE_CLIENT_ID);
     
     if (typeof window !== 'undefined' && GOOGLE_CLIENT_ID) {
-      // Load Google OAuth script
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
+      console.log('Window exists and CLIENT_ID is set');
+      // Check if Google script is already loaded
+      if ((window as any).google) {
+        console.log('Google script already loaded');
         initializeGoogleOAuth();
         setGoogleReady(true);
-      };
-      script.onerror = () => {
-        console.error('Failed to load Google OAuth script');
-        setAuthLoading(false);
-      };
-      document.head.appendChild(script);
+      } else {
+        console.log('Loading Google OAuth script...');
+        // Load Google OAuth script
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          console.log('Google OAuth script loaded successfully');
+          initializeGoogleOAuth();
+          setGoogleReady(true);
+        };
+        script.onerror = () => {
+          console.error('Failed to load Google OAuth script');
+          setAuthLoading(false);
+        };
+        document.head.appendChild(script);
+      }
     } else {
+      console.log('Missing requirements for Google OAuth:', {
+        windowExists: typeof window !== 'undefined',
+        clientId: GOOGLE_CLIENT_ID
+      });
       setAuthLoading(false);
     }
 
@@ -60,17 +75,27 @@ export const Chat: React.FC = () => {
     }
   }, []);
 
-  // Re-render Google button when authentication state changes
+  // Render Google button when needed
   useEffect(() => {
-    if (!isAuthenticated && googleReady) {
-      // Force re-render of the button container
-      setButtonKey(prev => prev + 1);
-      // Small delay to ensure the DOM element is ready
+    console.log('Auth state changed:', { isAuthenticated, googleReady, googleButtonRendered });
+    
+    if (!isAuthenticated && googleReady && googleButtonRef.current && !googleButtonRendered) {
+      console.log('Rendering Google button');
+      // Add a small delay to ensure DOM is ready
       setTimeout(() => {
-        initializeGoogleOAuth();
+        renderGoogleButton();
+        setGoogleButtonRendered(true);
       }, 100);
     }
-  }, [isAuthenticated, googleReady]);
+    
+    // Reset button state when authenticated
+    if (isAuthenticated && googleButtonRendered) {
+      console.log('User authenticated, resetting button state');
+      setGoogleButtonRendered(false);
+    }
+  }, [isAuthenticated, googleReady, googleButtonRendered]);
+
+
 
   const initializeGoogleOAuth = () => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -82,21 +107,52 @@ export const Chat: React.FC = () => {
           auto_select: false,
           cancel_on_tap_outside: true,
         });
-        
-        // Clear any existing button first
-        const buttonContainer = document.getElementById('google-signin-button');
-        if (buttonContainer) {
-          buttonContainer.innerHTML = '';
-          (window as any).google.accounts.id.renderButton(buttonContainer, {
-            theme: 'outline',
-            size: 'large',
-            width: '100%',
-            text: 'signin_with'
-          });
-        }
       } catch (error) {
         console.error('Error initializing Google OAuth:', error);
       }
+    }
+  };
+
+  const renderGoogleButton = () => {
+    console.log('Attempting to render Google button');
+    console.log('Google object exists:', typeof window !== 'undefined' && (window as any).google);
+    console.log('Button ref exists:', googleButtonRef.current);
+    console.log('Google ready state:', googleReady);
+    console.log('Is authenticated:', isAuthenticated);
+    
+    if (typeof window !== 'undefined' && (window as any).google && googleButtonRef.current) {
+      try {
+        // Make sure Google OAuth is initialized
+        const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        console.log('Using CLIENT_ID for button render:', GOOGLE_CLIENT_ID);
+        
+        if (GOOGLE_CLIENT_ID) {
+          (window as any).google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleSignIn,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+        }
+        
+        // Render the button
+        (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+          text: 'signin_with'
+        });
+        
+        console.log('Google button rendered successfully');
+      } catch (error) {
+        console.error('Error rendering Google button:', error);
+      }
+    } else {
+      console.log('Cannot render Google button - missing requirements:', {
+        windowExists: typeof window !== 'undefined',
+        googleExists: typeof window !== 'undefined' && (window as any).google,
+        buttonRefExists: !!googleButtonRef.current
+      });
     }
   };
 
@@ -259,23 +315,75 @@ export const Chat: React.FC = () => {
                   Sign in to use AI Chat
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Connect with Google to access the AI chat feature
+                  Choose your authentication method
                 </p>
-                <div id="google-signin-button" key={buttonKey}></div>
-                {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-sm text-yellow-600">
-                      Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
-                    </p>
+                
+                {/* Google OAuth Button */}
+                <div className="mb-4">
+                  <div ref={googleButtonRef}></div>
+                  
+                  {/* Debug info */}
+                  <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+                    <p>Debug Info:</p>
+                    <p>googleReady: {googleReady.toString()}</p>
+                    <p>CLIENT_ID set: {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? 'Yes' : 'No'}</p>
+                    <p>isAuthenticated: {isAuthenticated.toString()}</p>
+                    <p>googleButtonRendered: {googleButtonRendered.toString()}</p>
                   </div>
-                )}
-                {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-sm text-blue-600">
-                      Loading Google Sign-In...
-                    </p>
+                  
+                  {/* Fallback button for debugging */}
+                  {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                    <button
+                      onClick={() => {
+                        console.log('Manual Google OAuth test');
+                        if (typeof window !== 'undefined' && (window as any).google) {
+                          (window as any).google.accounts.id.prompt();
+                        } else {
+                          console.log('Google OAuth not available');
+                        }
+                      }}
+                      className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Test Google OAuth (Debug)
+                    </button>
+                  )}
+                  
+                  {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-600">
+                        Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
+                      </p>
+                    </div>
+                  )}
+                  {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-sm text-blue-600">
+                        Loading Google Sign-In... (googleReady: {googleReady.toString()})
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
                   </div>
-                )}
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or</span>
+                  </div>
+                </div>
+
+                {/* TOTP Authentication */}
+                <TotpAuth
+                  setupTotp={setupTotp}
+                  verifyTotp={verifyTotp}
+                  checkTotpStatus={checkTotpStatus}
+                  onSuccess={() => {
+                    // Reset button state after TOTP success
+                    setGoogleButtonRendered(false);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -318,8 +426,14 @@ export const Chat: React.FC = () => {
             <button
               onClick={async () => {
                 await logout();
-                // Force re-render of the Google button
-                setButtonKey(prev => prev + 1);
+                // Reset button state and re-render Google button after logout
+                setGoogleButtonRendered(false);
+                if (googleButtonRef.current) {
+                  googleButtonRef.current.innerHTML = '';
+                  setTimeout(() => {
+                    renderGoogleButton();
+                  }, 100);
+                }
               }}
               className="text-sm text-gray-600 hover:text-gray-800"
             >

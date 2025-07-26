@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime, date
+from sqlalchemy import Column, String, Boolean
+from .db import Base
 
 # Authentication Models
 class GoogleAuthRequest(BaseModel):
@@ -101,3 +103,12 @@ class WeatherStatsResponse(BaseModel):
     location: str
     stats: Dict[str, Any]
     error: Optional[str] = None 
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(String, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String)
+    google_id = Column(String, unique=True, index=True)
+    totp_secret = Column(String, nullable=True)
+    is_totp_enabled = Column(Boolean, default=False) 
