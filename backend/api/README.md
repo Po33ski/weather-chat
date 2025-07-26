@@ -12,8 +12,8 @@ cd backend
 pip install -r requirements.txt
 
 # Set up environment (optional for development)
-cp env.example .env
-# Edit .env with your API keys
+source ../../env-scratchpad.sh
+# Edit env-scratchpad.sh with your API keys
 
 # Start the server
 uvicorn api.main:app --reload
@@ -174,8 +174,8 @@ Chat with AI assistant powered by Google ADK.
 ### Required Variables
 | Variable | Description | Source |
 |----------|-------------|---------|
-| `VISUAL_CROSSING_API_KEY` | Visual Crossing Weather API key | GitHub Secrets / .env |
-| `GOOGLE_API_KEY` | Google Cloud API key for ADK | GitHub Secrets / .env |
+| `VISUAL_CROSSING_API_KEY` | Visual Crossing Weather API key | GitHub Secrets / System Environment |
+| `GOOGLE_API_KEY` | Google Cloud API key for ADK | GitHub Secrets / System Environment |
 
 ### Optional Variables
 | Variable | Description | Default |
@@ -189,7 +189,7 @@ Chat with AI assistant powered by Google ADK.
 The API uses an intelligent environment loading system:
 
 1. **System Environment Variables** (highest priority)
-2. **Local .env files** (development fallback)
+2. **System environment variables** (development)
 3. **Automatic verification** in production
 4. **Graceful warnings** in development
 

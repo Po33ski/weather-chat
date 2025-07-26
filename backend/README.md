@@ -31,8 +31,8 @@ uv sync
 uv sync --dev
 
 # Set up environment (optional for development)
-cp env.example .env
-# Edit .env with your API keys
+source ../env-scratchpad.sh
+# Edit env-scratchpad.sh with your API keys
 
 # Start the server
 uv run uvicorn api.main:app --reload
@@ -47,8 +47,8 @@ cd backend
 pip install -e .
 
 # Set up environment (optional for development)
-cp env.example .env
-# Edit .env with your API keys
+source ../env-scratchpad.sh
+# Edit env-scratchpad.sh with your API keys
 
 # Start the server
 uvicorn api.main:app --reload
@@ -187,8 +187,8 @@ Root endpoint with API information.
 ### Required Variables
 | Variable | Description | Source |
 |----------|-------------|---------|
-| `VISUAL_CROSSING_API_KEY` | Visual Crossing Weather API key | GitHub Secrets / .env |
-| `GOOGLE_API_KEY` | Google Cloud API key for ADK | GitHub Secrets / .env |
+| `VISUAL_CROSSING_API_KEY` | Visual Crossing Weather API key | GitHub Secrets / System Environment |
+| `GOOGLE_API_KEY` | Google Cloud API key for ADK | GitHub Secrets / System Environment |
 
 ### Optional Variables
 | Variable | Description | Default |
@@ -203,17 +203,17 @@ Root endpoint with API information.
 The backend uses an intelligent environment loading system:
 
 1. **System Environment Variables** (highest priority)
-2. **Local .env files** (development fallback)
+2. **System environment variables** (development)
 3. **Automatic verification** in production
 4. **Graceful warnings** in development
 
 ### Local Development Setup
 
 ```bash
-# Copy environment template
-cp env.example .env
+# Source environment variables
+source ../env-scratchpad.sh
 
-# Edit .env with your API keys
+# Edit env-scratchpad.sh with your API keys
 VISUAL_CROSSING_API_KEY=your_actual_api_key
 GOOGLE_API_KEY=your_actual_google_key
 ```
@@ -239,8 +239,11 @@ docker run -p 8000:8000 \
   -e GOOGLE_API_KEY="your_key" \
   weather-backend
 
-# Run with .env file
-docker run -p 8000:8000 --env-file .env weather-backend
+# Run with environment variables
+docker run -p 8000:8000 \
+  -e VISUAL_CROSSING_API_KEY="your_key" \
+  -e GOOGLE_API_KEY="your_key" \
+  weather-backend
 ```
 
 ## 📊 Data Models
@@ -389,7 +392,7 @@ See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed instructions.
 ### Environment Variable Management
 - **GitHub Secrets**: For production deployments
 - **Render Environment Variables**: For platform-specific settings
-- **Local .env files**: For development
+- **System environment variables**: For development
 
 ## 🤝 Contributing
 

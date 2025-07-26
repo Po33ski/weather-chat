@@ -81,8 +81,8 @@ def test_backend():
     print("\n" + "=" * 50)
     print("🎉 Testing completed!")
     print("\nNext steps:")
-    print("1. If you see warnings about missing API keys, create a .env file")
-    print("2. Copy backend/env.example to backend/.env and add your API keys")
+    print("1. If you see warnings about missing API keys, set environment variables")
+    print("2. Source env-scratchpad.sh to set your API keys")
     print("3. Restart the backend server")
     print("4. Run this test again")
 

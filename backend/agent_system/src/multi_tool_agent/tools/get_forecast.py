@@ -1,12 +1,9 @@
 import requests
-import pathlib
-import dotenv
+import os
 import json
 
-# Load Visual Crossing API key from .env
-ENV_PATH = pathlib.Path(__file__).parent.parent / ".env"
-values = dotenv.dotenv_values(ENV_PATH)
-API_KEY = values.get("VISUAL_CROSSING_API_KEY")
+# Load Visual Crossing API key from environment variables
+API_KEY = os.getenv("VISUAL_CROSSING_API_KEY")
 API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
 
 def get_forecast(city: str) -> str:

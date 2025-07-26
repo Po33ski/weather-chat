@@ -1,33 +1,13 @@
-import dotenv
 import os
-import pathlib
 from typing import Optional
 
 
 def load_env_data():
     """
-    Loads environment data from .env file if it exists, but prioritizes system environment variables.
-    This allows for deployment scenarios where environment variables are set by the platform.
+    Loads environment data from system environment variables only.
+    This ensures consistent behavior across local development and production.
     """
-    # First, try to load from .env file if it exists (for local development)
-    env_path = pathlib.Path(__file__).parent.parent / "multi_tool_agent" / ".env"
-    if env_path.exists():
-        dotenv.load_dotenv(dotenv_path=env_path)
-        print(f"Loaded environment from: {env_path}")
-    else:
-        # Try alternative .env locations for local development
-        alternative_paths = [
-            pathlib.Path(__file__).parent.parent.parent.parent / ".env",  # backend/.env
-            pathlib.Path(__file__).parent.parent.parent.parent.parent / ".env",  # root/.env
-        ]
-        
-        for alt_path in alternative_paths:
-            if alt_path.exists():
-                dotenv.load_dotenv(dotenv_path=alt_path)
-                print(f"Loaded environment from: {alt_path}")
-                break
-        else:
-            print("No .env file found, using system environment variables")
+    print("Using system environment variables")
     
     # Only verify environment variables in production or when explicitly requested
     if os.getenv("ENVIRONMENT") == "production" or os.getenv("VERIFY_ENV") == "true":
@@ -55,7 +35,7 @@ def verify_environment_variables():
     if missing_vars:
         error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
         print(f"ERROR: {error_msg}")
-        print("Please set these environment variables in your deployment platform or .env file")
+        print("Please set these environment variables in your deployment platform or system environment")
         raise ValueError(error_msg)
     
     print("All required environment variables are available")
@@ -78,7 +58,7 @@ def warn_missing_environment_variables():
     if missing_vars:
         print(f"⚠️  WARNING: Missing environment variables: {', '.join(missing_vars)}")
         print("   Some features may not work properly. Set these variables for full functionality.")
-        print("   For local development, create a .env file in the backend directory.")
+        print("   For local development, source env-scratchpad.sh to set environment variables.")
     else:
         print("✅ All required environment variables are available")
 

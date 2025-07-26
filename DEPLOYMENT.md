@@ -15,13 +15,12 @@ This guide will help you deploy the Weather Center Chat application to [Render.c
 
 The application is designed to work locally with or without API keys. For full functionality, set up your environment variables:
 
-1. **Copy the example environment file**:
+1. **Set up environment variables**:
    ```bash
-   cd backend
-   cp env.example .env
+   source env-scratchpad.sh
    ```
 
-2. **Edit the `.env` file** and add your API keys:
+2. **Edit the `env-scratchpad.sh` file** and add your API keys:
    ```bash
    # Visual Crossing Weather API
    VISUAL_CROSSING_API_KEY=your_actual_api_key_here
@@ -83,7 +82,7 @@ The backend is configured to use environment variables from GitHub Secrets. Set 
 ### How It Works
 
 The backend application is configured to:
-- **Prioritize system environment variables** over `.env` files
+- **Use system environment variables** only
 - **Automatically verify** that required environment variables are available
 - **Provide detailed error messages** if variables are missing
 - **Include environment status** in the health check endpoint
@@ -186,7 +185,7 @@ The backend uses an enhanced environment loading system:
 
 ### Features
 - **Automatic verification** of required environment variables
-- **Fallback support** for local `.env` files
+- **No .env files** - system environment variables only
 - **Detailed error messages** for missing variables
 - **Environment status** in health check endpoint
 

@@ -5,10 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from dotenv import load_dotenv
 import os
 
-load_dotenv()  # This will load variables from a .env file into the environment
+# Environment variables should be set in the system environment
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

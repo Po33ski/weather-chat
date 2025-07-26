@@ -52,8 +52,8 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 
 3. **Set up environment variables**
    ```bash
-   cp env.example .env
-   # Edit .env with your API keys
+   source env-scratchpad.sh
+   # Edit env-scratchpad.sh with your actual API keys
    ```
 
 4. **Run the backend**
@@ -75,9 +75,8 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 
 3. **Set up environment variables**
    ```bash
-   # Create .env.local with:
-   NEXT_PUBLIC_API_URL=http://localhost:8000
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+   source env-scratchpad.sh
+   # Edit env-scratchpad.sh with your actual API keys
    ```
 
 4. **Run the frontend**
@@ -87,20 +86,16 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 
 ## Environment Variables
 
-### Backend (.env)
-```
-VISUAL_CROSSING_API_KEY=your_visual_crossing_api_key
-GOOGLE_API_KEY=your_google_api_key
-GOOGLE_CLIENT_ID=your_google_oauth_client_id
-MODEL=gemini-2.0-flash
-DISABLE_WEB_DRIVER=0
-ENVIRONMENT=development
-```
+### Environment Variables (env-scratchpad.sh)
+```bash
+# Backend
+export VISUAL_CROSSING_API_KEY="your_visual_crossing_api_key"
+export GOOGLE_API_KEY="your_google_api_key"
+export DATABASE_URL="postgresql+psycopg2://popard:malySlon1@localhost:5432/weatherdb"
 
-### Frontend (.env.local)
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+# Frontend
+export NEXT_PUBLIC_API_URL="http://localhost:8000"
+export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_oauth_client_id"
 ```
 
 ## API Endpoints

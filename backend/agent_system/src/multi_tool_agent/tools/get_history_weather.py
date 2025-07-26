@@ -1,13 +1,10 @@
 import requests
-import pathlib
-import dotenv
+import os
 import json
 from datetime import datetime
 
-# Load Visual Crossing API key from .env
-ENV_PATH = pathlib.Path(__file__).parent.parent / ".env"
-values = dotenv.dotenv_values(ENV_PATH)
-API_KEY = values.get("VISUAL_CROSSING_API_KEY")
+# Load Visual Crossing API key from environment variables
+API_KEY = os.getenv("VISUAL_CROSSING_API_KEY")
 API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
 
 def normal_date_formatted(d: datetime) -> str:
