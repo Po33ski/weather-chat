@@ -1,5 +1,5 @@
-import { CurrentWeatherPage } from "./views/CurrentWeatherPage";
+import { ChatPage } from "./views/ChatPage";
 
 export default function Home() {
-  return <CurrentWeatherPage />;
+  return <ChatPage />;
 }

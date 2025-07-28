@@ -7,17 +7,12 @@ import { Loading } from "../components/Loading/Loading";
 import { MyText } from "../components/MyText/MyText";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { normalDateFormatted } from "../functions/functions";
-import { InfoModalContext } from "../contexts/InfoModalContext";
 import { capitalizeFirstLetter } from "../functions/functions";
-import { InfoModalContextType } from "../types/types";
 import { FrontendWeatherData } from "../types/interfaces";
 import { weatherApi} from "../services/weatherApi";
 import { WeatherData as BackendWeatherData } from "../types/interfaces";
 
 export const HistoryWeatherPage = () => {
-  const infoModalContext = useContext<InfoModalContextType | null>(
-    InfoModalContext
-  );
   const [data, setData] = useState<FrontendWeatherData>({
     address: null,
     days: [
