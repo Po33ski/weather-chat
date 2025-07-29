@@ -110,15 +110,9 @@ A comprehensive weather and AI chat application built with Next.js frontend and 
 
 ### Required Variables (env-scratchpad.sh)
 ```bash
-# PostgreSQL Database
-export POSTGRES_DB="weatherdb"
-export POSTGRES_USER="popard"
-export POSTGRES_PASSWORD="malySlon1"
-
 # Backend
 export VISUAL_CROSSING_API_KEY="your_visual_crossing_api_key"
 export GOOGLE_API_KEY="your_google_api_key"
-export DATABASE_URL="postgresql+psycopg2://popard:malySlon1@localhost:5432/weatherdb"
 
 # Frontend
 export NEXT_PUBLIC_API_URL="http://localhost:8000"
