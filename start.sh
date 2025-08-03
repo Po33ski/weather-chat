@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Start backend FastAPI server using uv run
-echo "Starting FastAPI backend..."
+# Start FastAPI backend in the background
 cd /app/backend
-uv run python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 
+uv run python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 &
+
+# Start Nginx in the foreground
+nginx -g 'daemon off;' 

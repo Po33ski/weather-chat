@@ -222,6 +222,12 @@ GOOGLE_API_KEY=your_actual_google_key
 
 ## 🐳 Docker Deployment
 
+### Architecture with Nginx
+- **Nginx** serves static frontend files from `/app/frontend/out`.
+- **Nginx** proxies `/api/` requests to the FastAPI backend running on `127.0.0.1:8000`.
+- All other requests fallback to `index.html` for client-side routing (Next.js/React Router).
+- Both frontend and backend are available on the same domain and port (e.g., `http://localhost` or your Render URL).
+
 ### Dockerfile Features
 - **Multi-stage build** for optimization
 - **Security**: Non-root user execution
@@ -229,6 +235,7 @@ GOOGLE_API_KEY=your_actual_google_key
 - **Environment variable support**
 - **uv dependency management** for faster builds
 - **Uses SQLite as the only database (no Postgres required)**
+- **Nginx reverse proxy for unified frontend/backend serving**
 
 ### Docker Commands
 
@@ -238,11 +245,13 @@ docker build -t weather-backend .
 
 # Run with environment variables
 # (No database configuration needed; SQLite file is created automatically)
-docker run -p 8000:8000 \
+docker run -p 80:80 \
   -e VISUAL_CROSSING_API_KEY="your_key" \
   -e GOOGLE_API_KEY="your_key" \
   weather-backend
 ```
+
+> **Note:** API calls from the frontend should use relative URLs (e.g., `/api/weather/current`).
 
 ## 📊 Data Models
 
@@ -377,14 +386,7 @@ Common error scenarios:
 ## 🚀 Deployment
 
 ### Render.com Deployment
-The backend is configured for deployment to Render.com with:
-
-- **Docker container** deployment
-- **GitHub environment variables** integration
-- **Automatic health checks**
-- **Zero-downtime deployments**
-- **uv dependency management**
-- **Uses SQLite as the only database (no Postgres required)**
+The backend and frontend are both served from the same container using Nginx. The public Render URL serves both the frontend and proxies API requests to the backend.
 
 See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed instructions.
 

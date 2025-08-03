@@ -31,6 +31,8 @@ def check_uv_installed():
 
 def test_health_endpoint():
     """Test the health endpoint if the server is running."""
+    # NOTE: This checks port 8000 for local development.
+    # In production with Nginx, the backend health endpoint is available at http://localhost/health (port 80).
     try:
         # Try to import requests after dependencies are installed
         import requests

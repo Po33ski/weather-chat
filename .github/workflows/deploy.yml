@@ -60,7 +60,6 @@ jobs:
         cd frontend
         npm run build
       env:
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
 
   deploy:
@@ -81,7 +80,6 @@ jobs:
         echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
         echo ""
         echo "Frontend variables:"
-        echo "- NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL != '' }}"
         echo "- NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID != '' }}"
     
     - name: Notify deployment status
@@ -96,6 +94,5 @@ jobs:
         echo "   - VISUAL_CROSSING_API_KEY"
         echo "   - GOOGLE_API_KEY"
         echo "   Frontend:"
-        echo "   - NEXT_PUBLIC_API_URL"
         echo "   - NEXT_PUBLIC_GOOGLE_CLIENT_ID"
         echo "5. Deploy!" 

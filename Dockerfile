@@ -55,6 +55,7 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 RUN apt-get update && apt-get install -y \
     curl \
     libpq5 \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -72,6 +73,9 @@ RUN uv sync
 
 # Install uvicorn as a tool in runtime stage
 RUN uv tool install uvicorn
+
+# Copy nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Create startup script
 COPY start.sh /app/start.sh
