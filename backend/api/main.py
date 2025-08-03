@@ -18,9 +18,6 @@ from .models import (
 )
 from .weather_service import WeatherService
 from .auth_service import auth_service
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.orm import Session
 import pyotp
 import qrcode
 from io import BytesIO
@@ -45,7 +42,7 @@ app.add_middleware(
 )
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
+# app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
 
 class ChatRequest(BaseModel):
     message: str
