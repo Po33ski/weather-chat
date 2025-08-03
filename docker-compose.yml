@@ -5,15 +5,15 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-weatherdb}
-      POSTGRES_USER: ${POSTGRES_USER:-popard}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-malySlon1}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-popard} -d ${POSTGRES_DB:-weatherdb}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg2://popard:malySlon1@postgres:5432/weatherdb}
+      - DATABASE_URL=${DATABASE_URL}
       - VISUAL_CROSSING_API_KEY=${VISUAL_CROSSING_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
