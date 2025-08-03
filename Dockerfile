@@ -45,6 +45,10 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
+# Accept NEXT_PUBLIC_GOOGLE_CLIENT_ID as build arg and set as env
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 # Build frontend with static export
 RUN npm run build
 

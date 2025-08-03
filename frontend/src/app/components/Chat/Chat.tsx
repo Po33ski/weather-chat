@@ -291,96 +291,50 @@ export const Chat: React.FC = () => {
   // Show authentication if user is not logged in
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex flex-col h-screen w-full max-w-4xl mx-auto bg-gray-50">
+        <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">AI Chat Assistant</h1>
-              <p className="text-sm text-gray-600">Powered by Google ADK</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">AI Chat Assistant</h1>
+              <p className="text-xs sm:text-sm text-gray-600">Powered by Google ADK</p>
             </div>
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="text-xs text-gray-500">
                 {isConnected ? 'Connected' : 'Disconnected'}
               </span>
             </div>
           </div>
         </div>
-        
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md">
-            <div className="p-4 bg-white rounded-lg shadow-sm border">
+        <div className="flex-1 flex items-center justify-center p-2 sm:p-6">
+          <div className="w-full max-w-xs sm:max-w-md mx-auto">
+            <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-md border border-gray-100">
               <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-1 sm:mb-2">
                   Sign in to use AI Chat
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-4">
                   Choose your authentication method
                 </p>
-                
                 {/* Google OAuth Button */}
-                <div className="mb-4">
-                  <div ref={googleButtonRef}></div>
-                  
-                  {/* Debug info */}
-                  <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
-                    <p>Debug Info:</p>
-                    <p>googleReady: {googleReady.toString()}</p>
-                    <p>CLIENT_ID set: {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? 'Yes' : 'No'}</p>
-                    <p>isAuthenticated: {isAuthenticated.toString()}</p>
-                    <p>googleButtonRendered: {googleButtonRendered.toString()}</p>
-                  </div>
-                  
-                  {/* Fallback button for debugging */}
-                  {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                    <button
-                      onClick={() => {
-                        console.log('Manual Google OAuth test');
-                        if (typeof window !== 'undefined' && (window as any).google) {
-                          (window as any).google.accounts.id.prompt();
-                        } else {
-                          console.log('Google OAuth not available');
-                        }
-                      }}
-                      className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                    >
-                      Test Google OAuth (Debug)
-                    </button>
-                  )}
-                  
-                  {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                      <p className="text-sm text-yellow-600">
-                        Google OAuth is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.
-                      </p>
-                    </div>
-                  )}
-                  {!googleReady && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                      <p className="text-sm text-blue-600">
-                        Loading Google Sign-In... (googleReady: {googleReady.toString()})
-                      </p>
-                    </div>
-                  )}
+                <div className="mb-3 sm:mb-4 flex flex-col items-center">
+                  <div ref={googleButtonRef} className="w-full flex justify-center" />
                 </div>
-
                 {/* Divider */}
-                <div className="relative mb-4">
+                <div className="relative mb-3 sm:mb-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    <div className="w-full border-t border-gray-200"></div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">or</span>
+                  <div className="relative flex justify-center text-xs sm:text-sm">
+                    <span className="px-2 bg-white text-gray-400">or</span>
                   </div>
                 </div>
-
                 {/* TOTP Authentication */}
                 <TotpAuth
                   setupTotp={setupTotp}
                   verifyTotp={verifyTotp}
                   checkTotpStatus={checkTotpStatus}
                   onSuccess={() => {
-                    // Reset button state after TOTP success
                     setGoogleButtonRendered(false);
                   }}
                 />
