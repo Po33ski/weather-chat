@@ -84,7 +84,7 @@ def main():
     print("\n🎉 Dependency sync completed!")
     print("\nNext steps:")
     print("1. Set up environment variables:")
-        print("   source ../env-scratchpad.sh")
+    print("   source ../env-scratchpad.sh")
     print("   # Edit env-scratchpad.sh with your API keys")
     print("\n2. Start the server:")
     print("   uv run uvicorn api.main:app --reload")

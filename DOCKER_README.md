@@ -57,13 +57,14 @@ The following environment variables are required:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
 | `VISUAL_CROSSING_API_KEY` | Weather API key | Yes |
 | `GOOGLE_API_KEY` | Google AI API key | Yes |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | OAuth client ID | Yes |
 | `MODEL` | AI model (default: gemini-2.0-flash) | No |
 | `DISABLE_WEB_DRIVER` | Web driver setting (default: 0) | No |
 | `ENVIRONMENT` | Environment (default: production) | No |
+
+> **Note:** The backend uses a local SQLite database file (`database.db`) in the backend directory. No external database or `DATABASE_URL` is required. The file is created automatically on first run.
 
 ## Docker Compose Services
 
@@ -77,7 +78,7 @@ The following environment variables are required:
 ### Weather Center Chat Application
 - **Port**: `80`
 - **Health Check**: `http://localhost/health`
-- **Dependencies**: PostgreSQL
+- **Dependencies**: None (uses SQLite for backend)
 
 ## Production Deployment
 
@@ -87,10 +88,10 @@ The following environment variables are required:
 # Set environment variables
 export VISUAL_CROSSING_API_KEY="your_key"
 export GOOGLE_API_KEY="your_key"
-export DATABASE_URL="your_database_url"
 export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_client_id"
 
 # Deploy
+# (No database configuration needed; SQLite file is created automatically)
 docker-compose up -d --build
 ```
 
@@ -101,6 +102,7 @@ docker-compose up -d --build
 source env-scratchpad.sh
 
 # Deploy
+# (No database configuration needed; SQLite file is created automatically)
 ./deploy-production.sh
 ```
 
@@ -119,15 +121,11 @@ source env-scratchpad.sh
    source env-scratchpad.sh
    ```
 
-2. **Database Connection Failed**
-   - Check if PostgreSQL is running
-   - Verify `DATABASE_URL` is correct
-
-3. **Build Fails**
+2. **Build Fails**
    - Check Docker has enough memory (4GB+ recommended)
    - Clear Docker cache: `docker system prune`
 
-4. **Port Already in Use**
+3. **Port Already in Use**
    - Change port in docker-compose.yml
    - Or stop existing service: `docker-compose down`
 
@@ -137,9 +135,6 @@ source env-scratchpad.sh
 # View application logs
 docker-compose logs weather-app
 
-# View database logs
-docker-compose logs postgres
-
 # Follow logs
 docker-compose logs -f weather-app
 ```
@@ -148,12 +143,12 @@ docker-compose logs -f weather-app
 
 ### Development
 - Use `docker-compose up` for local development
-- Includes PostgreSQL database
+- Uses SQLite database (no Postgres required)
 - Hot reloading available
 
 ### Production
 - Use `./deploy-production.sh` for production
-- Requires external database
+- Uses SQLite database (no Postgres required)
 - Optimized for performance
 
 ## Security Features
