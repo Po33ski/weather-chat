@@ -198,3 +198,43 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+export interface User {
+  user_id: string;
+  email: string;
+  name: string;
+  picture?: string;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  sessionId: string | null;
+  loading: boolean;
+}
+
+export interface GoogleAuthRes {
+  success: boolean;
+  session_id?: string;
+  user_id?: string;
+  user_info?: {
+    email: string;
+    name: string;
+    picture?: string;
+  };
+  message?: string;
+  error?: string;
+}
+
+export interface TotpAuthRes {
+  success: boolean;
+  session_id?: string;
+  user_id?: string;
+  user_info?: {
+    email: string;
+    name: string;
+    picture?: string;
+  };
+  message?: string;
+  error?: string;
+}

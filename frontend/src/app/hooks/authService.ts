@@ -1,55 +1,19 @@
 "use client";
 import { useState } from 'react';
+import { User, AuthState, GoogleAuthRes, TotpAuthRes } from '../types/interfaces';
 
-interface User {
-  user_id: string;
-  email: string;
-  name: string;
-  picture?: string;
-}
-
-interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  sessionId: string | null;
-  loading: boolean;
-}
-
-interface GoogleAuthRes {
-  success: boolean;
-  session_id?: string;
-  user_id?: string;
-  user_info?: {
-    email: string;
-    name: string;
-    picture?: string;
-  };
-  message?: string;
-  error?: string;
-}
-
-interface TotpAuthRes {
-  success: boolean;
-  session_id?: string;
-  user_id?: string;
-  user_info?: {
-    email: string;
-    name: string;
-    picture?: string;
-  };
-  message?: string;
-  error?: string;
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const useAuthService = () => {
+
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
     sessionId: null,
     loading: false,
   });
+
 
   const handleGoogleSignIn = async (response: any) => {
     try {
@@ -68,6 +32,7 @@ export const useAuthService = () => {
       if (data.success && data.session_id) {
         localStorage.setItem('sessionId', data.session_id);
         localStorage.setItem('user', JSON.stringify({data: data.user_info, id: data.user_id, email: data.user_info?.email, name: data.user_info?.name, picture: data.user_info?.picture}));
+        localStorage.setItem('isAuthenticated', 'true');
         setAuthState({
           isAuthenticated: true,
           user: data.user_info ? {
@@ -81,6 +46,7 @@ export const useAuthService = () => {
         });
       } else {
         console.error('Google authentication failed:', data.error);
+        localStorage.setItem('isAuthenticated', 'false');
       }
     } catch (error) {
       console.error('Google authentication error:', error);
@@ -136,15 +102,19 @@ export const useAuthService = () => {
         console.error('Logout error:', error);
       }
     }
-
+    localStorage.setItem('isAuthenticated', 'false');
     localStorage.removeItem('sessionId');
     localStorage.removeItem('user');
+    // Trigger storage event for cross-tab updates
+    window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'false' }));
     setAuthState({
       isAuthenticated: false,
       user: null,
       sessionId: null,
       loading: false,
     });
+    // Optionally, force a reload to ensure UI updates everywhere
+    // window.location.reload();
   };
 
   const getSessionId = (): string | null => {
@@ -231,6 +201,7 @@ export const useAuthService = () => {
           name: data.user_info?.name, 
           picture: data.user_info?.picture
         }));
+        localStorage.setItem('isAuthenticated', 'true');
         setAuthState({
           isAuthenticated: true,
           user: data.user_info ? {
