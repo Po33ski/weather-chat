@@ -57,13 +57,14 @@ The following environment variables are required:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
 | `VISUAL_CROSSING_API_KEY` | Weather API key | Yes |
 | `GOOGLE_API_KEY` | Google AI API key | Yes |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | OAuth client ID | Yes |
 | `MODEL` | AI model (default: gemini-2.0-flash) | No |
 | `DISABLE_WEB_DRIVER` | Web driver setting (default: 0) | No |
 | `ENVIRONMENT` | Environment (default: production) | No |
+
+> **Note:** The backend uses a local SQLite database file (`database.db`) in the backend directory. No external database or `DATABASE_URL` is required. The file is created automatically on first run.
 
 ## Docker Compose Services
 
@@ -74,100 +75,23 @@ The following environment variables are required:
 - **Password**: `malySlon1`
 - **Port**: `5432`
 
+## Nginx Reverse Proxy Architecture
+
+- **Nginx** serves static frontend files from `/app/frontend/out`.
+- **Nginx** proxies `/api/` requests to the FastAPI backend running on `127.0.0.1:8000`.
+- All other requests fallback to `index.html` for client-side routing (Next.js/React Router).
+- Both frontend and backend are available on the same domain and port (e.g., `http://localhost` or your Render URL).
+
+> **Note:** API calls from the frontend should use relative URLs (e.g., `/api/weather/current`).
+
 ### Weather Center Chat Application
 - **Port**: `80`
 - **Health Check**: `http://localhost/health`
-- **Dependencies**: PostgreSQL
+- **Dependencies**: None (uses SQLite for backend)
+- **Served by Nginx reverse proxy**
 
 ## Production Deployment
 
 ### Using Docker Compose
 
-```bash
-# Set environment variables
-export VISUAL_CROSSING_API_KEY="your_key"
-export GOOGLE_API_KEY="your_key"
-export DATABASE_URL="your_database_url"
-export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_client_id"
-
-# Deploy
-docker-compose up -d --build
 ```
-
-### Using Production Script
-
-```bash
-# Source environment variables
-source env-scratchpad.sh
-
-# Deploy
-./deploy-production.sh
-```
-
-## Health Checks
-
-- **Application**: `http://localhost/health`
-- **Database**: PostgreSQL health check in docker-compose
-- **Container**: Docker health check configured
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Environment Variables Not Set**
-   ```bash
-   source env-scratchpad.sh
-   ```
-
-2. **Database Connection Failed**
-   - Check if PostgreSQL is running
-   - Verify `DATABASE_URL` is correct
-
-3. **Build Fails**
-   - Check Docker has enough memory (4GB+ recommended)
-   - Clear Docker cache: `docker system prune`
-
-4. **Port Already in Use**
-   - Change port in docker-compose.yml
-   - Or stop existing service: `docker-compose down`
-
-### Logs
-
-```bash
-# View application logs
-docker-compose logs weather-app
-
-# View database logs
-docker-compose logs postgres
-
-# Follow logs
-docker-compose logs -f weather-app
-```
-
-## Development vs Production
-
-### Development
-- Use `docker-compose up` for local development
-- Includes PostgreSQL database
-- Hot reloading available
-
-### Production
-- Use `./deploy-production.sh` for production
-- Requires external database
-- Optimized for performance
-
-## Security Features
-
-- ✅ Non-root user execution
-- ✅ Minimal attack surface
-- ✅ Health checks for monitoring
-- ✅ Environment variable isolation
-- ✅ No secrets in image layers
-
-## Performance Optimizations
-
-- ✅ Multi-stage build reduces image size
-- ✅ Layer caching for faster builds
-- ✅ Nginx for static file serving
-- ✅ Gzip compression enabled
-- ✅ Production-optimized dependencies 

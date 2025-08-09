@@ -20,35 +20,13 @@ if [ -z "$GOOGLE_API_KEY" ]; then
     exit 1
 fi
 
-if [ -z "$DATABASE_URL" ]; then
-    echo "❌ Error: DATABASE_URL environment variable is not set"
-    echo "   Please source env-scratchpad.sh or set the environment variable"
-    exit 1
-fi
-
 if [ -z "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" ]; then
     echo "❌ Error: NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable is not set"
     echo "   Please source env-scratchpad.sh or set the environment variable"
     exit 1
 fi
 
-if [ -z "$POSTGRES_DB" ]; then
-    echo "❌ Error: POSTGRES_DB environment variable is not set"
-    echo "   Please source env-scratchpad.sh or set the environment variable"
-    exit 1
-fi
-
-if [ -z "$POSTGRES_USER" ]; then
-    echo "❌ Error: POSTGRES_USER environment variable is not set"
-    echo "   Please source env-scratchpad.sh or set the environment variable"
-    exit 1
-fi
-
-if [ -z "$POSTGRES_PASSWORD" ]; then
-    echo "❌ Error: POSTGRES_PASSWORD environment variable is not set"
-    echo "   Please source env-scratchpad.sh or set the environment variable"
-    exit 1
-fi
+ 
 
 echo "✅ Environment variables are set"
 
@@ -67,10 +45,6 @@ docker run -d \
     --name weather-center-chat \
     --restart unless-stopped \
     -p 80:80 \
-    -e DATABASE_URL="$DATABASE_URL" \
-    -e POSTGRES_DB="$POSTGRES_DB" \
-    -e POSTGRES_USER="$POSTGRES_USER" \
-    -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
     -e VISUAL_CROSSING_API_KEY="$VISUAL_CROSSING_API_KEY" \
     -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
     -e NEXT_PUBLIC_GOOGLE_CLIENT_ID="$NEXT_PUBLIC_GOOGLE_CLIENT_ID" \

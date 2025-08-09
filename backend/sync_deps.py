@@ -31,6 +31,8 @@ def check_uv_installed():
 
 def test_health_endpoint():
     """Test the health endpoint if the server is running."""
+    # NOTE: This checks port 8000 for local development.
+    # In production with Nginx, the backend health endpoint is available at http://localhost/health (port 80).
     try:
         # Try to import requests after dependencies are installed
         import requests
@@ -84,7 +86,7 @@ def main():
     print("\n🎉 Dependency sync completed!")
     print("\nNext steps:")
     print("1. Set up environment variables:")
-        print("   source ../env-scratchpad.sh")
+    print("   source ../env-scratchpad.sh")
     print("   # Edit env-scratchpad.sh with your API keys")
     print("\n2. Start the server:")
     print("   uv run uvicorn api.main:app --reload")

@@ -60,7 +60,6 @@ jobs:
         cd frontend
         npm run build
       env:
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
 
   deploy:
@@ -79,13 +78,8 @@ jobs:
         echo "Backend variables:"
         echo "- VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY != '' }}"
         echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
-        echo "- DATABASE_URL: ${{ secrets.DATABASE_URL != '' }}"
-        echo "- POSTGRES_DB: ${{ secrets.POSTGRES_DB != '' }}"
-        echo "- POSTGRES_USER: ${{ secrets.POSTGRES_USER != '' }}"
-        echo "- POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD != '' }}"
         echo ""
         echo "Frontend variables:"
-        echo "- NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL != '' }}"
         echo "- NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID != '' }}"
     
     - name: Notify deployment status
@@ -99,11 +93,6 @@ jobs:
         echo "   Backend:"
         echo "   - VISUAL_CROSSING_API_KEY"
         echo "   - GOOGLE_API_KEY"
-        echo "   - DATABASE_URL"
-        echo "   - POSTGRES_DB"
-        echo "   - POSTGRES_USER"
-        echo "   - POSTGRES_PASSWORD"
         echo "   Frontend:"
-        echo "   - NEXT_PUBLIC_API_URL"
         echo "   - NEXT_PUBLIC_GOOGLE_CLIENT_ID"
         echo "5. Deploy!" 
