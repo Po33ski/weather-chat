@@ -45,7 +45,7 @@ export function List({ data }: { data: HistoryAndForecastDay[] }) {
                   {data.map((day) => (
                     <tr key={Math.random()}>
                       <td className="px-6 py-4 whitespace-nowrap bg-gray-50">
-                        {day.datetime}
+                        {typeof day.datetime === "string" ? day.datetime.split("T")[0] : day.datetime}
                       </td>
                       <td className={tdStyle}>
                         {UNIT_SYSTEMS[unitSystem].temperature !== "°C"
