@@ -1,204 +1,148 @@
 # Weather Center Chat
 
-A comprehensive weather and AI chat application built with Next.js frontend and FastAPI backend, featuring Google ADK for AI chat and Google OAuth for authentication.
+AI‑powered weather portal with a modern Next.js frontend and a FastAPI backend. Get current, forecast, and historical weather, chat with an AI assistant (Google ADK), and sign in with Google OAuth or TOTP.
 
-## Features
+## Highlights
 
-- 🌤️ **Weather Data**: Current, forecast, and historical weather information
-- 🤖 **AI Chat**: Powered by Google ADK (Agent Development Kit)
-- 🔐 **Authentication**: Google OAuth integration
-- 📱 **Responsive Design**: Modern UI with Tailwind CSS
-- 🚀 **Fast Performance**: Optimized for speed and user experience
-- 🐳 **Docker Ready**: Complete containerization support
+- 🌤️ Weather data: current, 15‑day forecast, and history
+- 🧠 AI chat: Google ADK (Agent Development Kit)
+- 🔑 Auth: Google OAuth + optional TOTP (QR‑code) login
+- 🌍 i18n: quick language switch (EN/PL)
+- 🧭 Unit systems: METRIC / UK / US switch
+- 🐳 Single Docker image: Nginx serves static Next export and proxies API to FastAPI
+- ⚡ Fast dev flow: uv for Python deps, TypeScript on the frontend
 
 ## Tech Stack
 
-### Frontend
-- **Next.js 14** - React framework
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Google OAuth** - Authentication
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Backend: FastAPI (Python), uv (deps), Google ADK, Visual Crossing Weather API
+- Runtime: Nginx (static + reverse proxy)
+- Data: SQLite (local file) — simple and zero‑config
 
-### Backend
-- **FastAPI** - Python web framework
-- **Google ADK** - AI chat functionality
-- **Visual Crossing API** - Weather data
-- **PostgreSQL** - Database
-- **uv** - Modern Python dependency management
-
-## Quick Start
+## Getting Started
 
 ### Prerequisites
 
-1. **Google Cloud Project**
-   - Create a project at [Google Cloud Console](https://console.cloud.google.com/)
-   - Enable Google AI Studio API
-   - Create an API key for Google ADK
-   - Create OAuth 2.0 Client ID
+1) Google Cloud
+- Create a project in Google Cloud Console
+- Enable AI Studio / Generative APIs (for Google ADK)
+- Create an API key (GOOGLE_API_KEY)
+- Create OAuth 2.0 Client ID (Web) for Google sign‑in
 
-2. **Visual Crossing Weather API**
-   - Sign up at [Visual Crossing](https://www.visualcrossing.com/weather-api)
-   - Get your API key
+2) Visual Crossing
+- Create an account and obtain VISUAL_CROSSING_API_KEY
 
-3. **PostgreSQL Database**
-   - Install PostgreSQL locally or use a cloud service
+### Local (dev)
 
-### Option 1: Docker (Recommended)
+Backend
+```bash
+cd backend
+uv sync
+source ../env-scratchpad.sh
+uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-1. **Set environment variables**:
-   ```bash
-   source env-scratchpad.sh
-   ```
+Frontend
+```bash
+cd frontend
+npm install
+source ../env-scratchpad.sh
+npm run dev
+```
 
-2. **Run with Docker Compose** (includes PostgreSQL):
-   ```bash
-   docker-compose up --build
-   ```
+Notes
+- In local dev you may set `NEXT_PUBLIC_API_URL=http://localhost:8000` so the frontend calls the backend directly.
+- In production use same‑origin (no NEXT_PUBLIC_API_URL), and let Nginx proxy `/api` to FastAPI.
 
-3. **Or run production container**:
-   ```bash
-   ./deploy-production.sh
-   ```
+### Docker (single container)
 
-### Option 2: Local Development
+```bash
+source env-scratchpad.sh
+./deploy-production.sh
+```
 
-#### Backend Setup
+This builds a multi‑stage image:
+- Frontend: Next static export served by Nginx
+- Backend: FastAPI behind Nginx, proxied at `/api`
 
-1. **Navigate to backend**:
-   ```bash
-   cd backend
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   uv sync
-   ```
-
-3. **Set up environment variables**:
-   ```bash
-   source ../env-scratchpad.sh
-   ```
-
-4. **Run the backend**:
-   ```bash
-   uv run uvicorn api.main:app --reload
-   ```
-
-#### Frontend Setup
-
-1. **Navigate to frontend**:
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**:
-   ```bash
-   source ../env-scratchpad.sh
-   ```
-
-4. **Run the frontend**:
-   ```bash
-   npm run dev
-   ```
+Health check: `GET /api/health`
 
 ## Environment Variables
 
-### Required Variables (env-scratchpad.sh)
+Required
 ```bash
 # Backend
 export VISUAL_CROSSING_API_KEY="your_visual_crossing_api_key"
 export GOOGLE_API_KEY="your_google_api_key"
 
 # Frontend
-export NEXT_PUBLIC_API_URL="http://localhost:8000"
 export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+
+# Optional (prod)
+export ENVIRONMENT="production"
+# Only if you do cross‑origin calls
+export PUBLIC_WEB_ORIGIN="https://your-domain"
 ```
 
-## Docker Setup
-
-For detailed Docker instructions, see [DOCKER_README.md](DOCKER_README.md).
-
-### Quick Docker Commands
-
+For local dev only
 ```bash
-# Development with PostgreSQL
-docker-compose up --build
-
-# Production deployment
-./deploy-production.sh
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+export NEXT_PUBLIC_API_URL="http://localhost:8000"
 ```
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/auth/google` - Google OAuth authentication
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/session/{session_id}` - Get session info
+Auth
+- `POST /api/auth/google` — Google OAuth (exchange ID token → session)
+- `POST /api/auth/logout` — Invalidate session
+- `GET /api/auth/session/{session_id}` — Session info
+- `POST /api/auth/totp/setup` — Returns QR code (image/png)
+- `POST /api/auth/totp/verify` — Verifies 6‑digit code and creates session
+- `GET /api/auth/totp/status/{email}` — Check if TOTP is enabled for a user
 
-### Chat
-- `POST /api/chat` - AI chat endpoint
+Chat
+- `POST /api/chat` — AI chat with Google ADK
 
-### Weather
-- `POST /api/weather/current` - Current weather
-- `POST /api/weather/forecast` - Weather forecast
-- `POST /api/weather/history` - Historical weather
+Weather
+- `POST /api/weather/current`
+- `POST /api/weather/forecast`
+- `POST /api/weather/history`
 
-### Health
-- `GET /health` - Health check
-- `GET /` - API information
+Health
+- `GET /api/health`
 
-## Deployment
+## Render.com Deployment
 
-### Render.com Deployment
-- Use the `render.yaml` configuration
-- Set environment variables in Render dashboard
-- Deploy from GitHub repository
-
-### Docker Deployment
-- Use `./deploy-production.sh` for production
-- Use `docker-compose.yml` for development
+- Use `render.yaml` (env: docker) — it builds the Dockerfile and runs Nginx + FastAPI in one container
+- Set env vars in the Render dashboard
+- Use same‑origin in production (no `NEXT_PUBLIC_API_URL`); Nginx proxies `/api` → FastAPI
 
 ## Project Structure
 
 ```
 weather-center-chat/
-├── backend/                    # FastAPI backend
-│   ├── api/                   # API endpoints
-│   ├── agent_system/          # AI agent system
-│   ├── pyproject.toml         # Python dependencies
-│   └── uv.lock               # Locked dependencies
-├── frontend/                   # Next.js frontend
-│   ├── src/app/               # React components
-│   └── package.json           # Node.js dependencies
-├── docker-compose.yml          # Local development
-├── Dockerfile                  # Production container
-├── env-scratchpad.sh          # Environment variables
-├── deploy-production.sh        # Production deployment
-└── README.md                  # This file
+├── backend/
+│   ├── api/                    # FastAPI app (endpoints + services)
+│   ├── agent_system/           # Google ADK agent + tools
+│   ├── pyproject.toml          # Python deps
+│   └── uv.lock                 # Locked deps
+├── frontend/
+│   └── src/app/                # Next.js App Router
+├── Dockerfile                  # Multi‑stage; Nginx serves + proxies
+├── nginx.conf                  # Nginx (static + /api proxy)
+├── render.yaml                 # Render.com config
+├── env-scratchpad.sh           # Local env helper (do not commit secrets)
+└── deploy-production.sh        # Build & run container locally
 ```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with Docker: `docker-compose up --build`
-5. Submit a pull request
+1) Fork → branch → PR
+2) Run locally or via Docker
+3) Keep changes typed (TypeScript) and formatted
 
 ## License
 
-This project is licensed under the MIT License.
+MIT
 
 
 

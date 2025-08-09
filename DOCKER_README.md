@@ -1,97 +1,67 @@
-# Docker Setup for Weather Center Chat
+# Docker Guide (Single‑Container)
 
-This document explains how to build and run the Weather Center Chat application using Docker.
+Run Weather Center Chat as one Docker container: Nginx serves the static Next.js export and proxies `/api` to FastAPI.
 
 ## Prerequisites
 
-- Docker installed on your system
+- Docker installed
 - Environment variables set (see `env-scratchpad.sh`)
 
 ## Quick Start
 
-### 1. Set Environment Variables
-
 ```bash
 source env-scratchpad.sh
-```
-
-### 2. Build and Run with Docker Compose (Recommended for Development)
-
-```bash
-# Build and start all services (PostgreSQL + Application)
-docker-compose up --build
-
-# Or run in background
-docker-compose up -d --build
-```
-
-### 3. Build and Run with Production Script
-
-```bash
-# Build and run production container
 ./deploy-production.sh
 ```
 
-## Docker Configuration
+Build stages in Dockerfile
+1) Backend builder (uv installs Python deps)
+2) Frontend builder (Next.js static export)
+3) Runtime (Nginx + FastAPI)
 
-### Multi-Stage Build
+## How it works
 
-The Dockerfile uses a multi-stage build process:
+- Nginx serves static files from `/app/frontend/out`
+- Nginx proxies `/api/` → `http://127.0.0.1:8000`
+- Health endpoint (through Nginx): `GET /api/health`
+- One public port: `80`
 
-1. **Backend Builder**: Installs Python dependencies using `uv`
-2. **Frontend Builder**: Builds Next.js application
-3. **Production Runtime**: Combines both with nginx
+## Env Vars
 
-### Key Features
+Required
+```bash
+VISUAL_CROSSING_API_KEY=...
+GOOGLE_API_KEY=...
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
+```
 
-- ✅ **Uses `uv`** for fast Python dependency management
-- ✅ **PostgreSQL client libraries** included
-- ✅ **Non-root user** for security
-- ✅ **Health checks** for monitoring
-- ✅ **Nginx reverse proxy** for frontend/backend routing
-- ✅ **Environment variable support**
+Optional
+```bash
+ENVIRONMENT=production
+MODEL=gemini-2.0-flash
+DISABLE_WEB_DRIVER=0
+PUBLIC_WEB_ORIGIN=https://your-domain   # only if doing cross-origin
+```
 
-## Environment Variables
+Note
+- Backend uses a local SQLite file `backend/database.db`. No external DB is required.
+- In production, use same‑origin calls from the frontend; do NOT set `NEXT_PUBLIC_API_URL`.
 
-The following environment variables are required:
+## Development with Compose (optional)
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VISUAL_CROSSING_API_KEY` | Weather API key | Yes |
-| `GOOGLE_API_KEY` | Google AI API key | Yes |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | OAuth client ID | Yes |
-| `MODEL` | AI model (default: gemini-2.0-flash) | No |
-| `DISABLE_WEB_DRIVER` | Web driver setting (default: 0) | No |
-| `ENVIRONMENT` | Environment (default: production) | No |
+```bash
+docker-compose up --build
+```
 
-> **Note:** The backend uses a local SQLite database file (`database.db`) in the backend directory. No external database or `DATABASE_URL` is required. The file is created automatically on first run.
+## Useful
 
-## Docker Compose Services
+```bash
+# View logs
+docker logs -f weather-center-chat
 
-### PostgreSQL Database
-- **Image**: `postgres:16`
-- **Database**: `weatherdb`
-- **User**: `popard`
-- **Password**: `malySlon1`
-- **Port**: `5432`
+# Stop & remove container
+docker stop weather-center-chat || true && docker rm weather-center-chat || true
 
-## Nginx Reverse Proxy Architecture
-
-- **Nginx** serves static frontend files from `/app/frontend/out`.
-- **Nginx** proxies `/api/` requests to the FastAPI backend running on `127.0.0.1:8000`.
-- All other requests fallback to `index.html` for client-side routing (Next.js/React Router).
-- Both frontend and backend are available on the same domain and port (e.g., `http://localhost` or your Render URL).
-
-> **Note:** API calls from the frontend should use relative URLs (e.g., `/api/weather/current`).
-
-### Weather Center Chat Application
-- **Port**: `80`
-- **Health Check**: `http://localhost/health`
-- **Dependencies**: None (uses SQLite for backend)
-- **Served by Nginx reverse proxy**
-
-## Production Deployment
-
-### Using Docker Compose
-
+# Rebuild
+docker build -t weather-center-chat:latest .
 ```
