@@ -1,5 +1,7 @@
 import { Brick } from "../Brick/Brick";
 import { MyText } from "../MyText/MyText";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { capitalizeFirstLetter } from "@/app/functions/functions";
 import { CurrentDataDay } from "@/app/types/interfaces";
 
@@ -11,9 +13,12 @@ export function WeatherView({
   address: string | null;
 }) {
   address = capitalizeFirstLetter(address);
+  const lang = useContext(LanguageContext);
   return (
     <div className="max-w-3xl mx-auto">
-      {address !== null && <MyText>The current weather for {address}:</MyText>}
+      {address !== null && (
+        <MyText>{(lang?.t('weather.currentFor') || '').replace('{{address}}', address)}</MyText>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="flex justify-self-center">
           <Brick

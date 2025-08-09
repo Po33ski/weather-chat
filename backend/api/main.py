@@ -108,28 +108,8 @@ def health():
 def api_health():
     return health()
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
-
-if ENVIRONMENT == "production":
-    @app.get("/")
-    def root():
-        """
-        Serve the main index.html file (production only)
-        """
-        return FileResponse("/app/frontend/out/index.html")
-
-    @app.get("/{path:path}")
-    def serve_static_files(path: str):
-        """
-        Serve static files for all other routes (production only)
-        """
-        file_path = f"/app/frontend/out/{path}"
-
-        # If the path doesn't exist, serve index.html for client-side routing
-        if not os.path.exists(file_path):
-            return FileResponse("/app/frontend/out/index.html")
-
-        return FileResponse(file_path)
+# Static file serving is handled by nginx in production. Do not define catch-all
+# routes here to avoid intercepting /api/* paths.
 
 # --- Authentication Endpoints ---
 

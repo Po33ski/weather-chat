@@ -6,12 +6,15 @@ import { ErrorMessage } from "../components/ErrorMessage/ErrorMessage";
 import { Loading } from "../components/Loading/Loading";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { MyText } from "../components/MyText/MyText";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { capitalizeFirstLetter } from "../functions/functions";
 import { FrontendWeatherData } from "../types/interfaces";
 import { weatherApi} from "../services/weatherApi";
 import { WeatherData as BackendWeatherData } from "../types/interfaces";
 
 export const ForecastWeatherPage = () => {
+  const lang = useContext(LanguageContext);
   const [data, setData] = useState<FrontendWeatherData>({
     address: null,
     days: [
@@ -101,12 +104,9 @@ export const ForecastWeatherPage = () => {
       {isError && <ErrorMessage>{isError}</ErrorMessage>}
       {data["address"] !== null ? (
         <MyText>
-          The weather forecast for {capitalizeFirstLetter(data["address"])} for
-          15 days:
+          {(lang?.t('headline.forecast') || 'Check the forecast for your city!')}
         </MyText>
-      ) : (
-        ""
-      )}
+      ) : ("")}
       {data["address"] ? <List data={data["days"]} /> : <MainPhoto />}
     </>
   );

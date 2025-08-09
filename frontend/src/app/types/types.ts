@@ -25,3 +25,11 @@ export type CityContextType = {
     setToLocalStorage: (newData: unknown) => void;
   };
 };
+
+export type Lang = "en" | "pl";
+
+export type LanguageValue = {
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (k: string) => string;
+};

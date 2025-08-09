@@ -20,6 +20,7 @@ import { CurrentData } from "../types/interfaces";
 import { CityContext } from "../contexts/CityContextType";
 import { weatherApi} from "../services/weatherApi";
 import { WeatherData } from "../types/interfaces";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 
 export const CurrentWeatherPage = () => {
   const brickModalContext = useContext<BrickModalContextType | null>(
@@ -67,6 +68,7 @@ export const CurrentWeatherPage = () => {
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const lang = useContext(LanguageContext);
   const [isError, setIsError] = useState<string | null>(null);
   const [brickModal, setBrickModal] = useState<ReactPortal | null>(null);
 
@@ -194,7 +196,7 @@ export const CurrentWeatherPage = () => {
           />
 
           <ButtonLink path={"/current/hours"}>
-            Weather for every hour
+            {lang?.t('current.hoursCta')}
           </ButtonLink>
         </div>
       ) : (

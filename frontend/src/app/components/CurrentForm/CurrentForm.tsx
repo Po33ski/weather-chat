@@ -1,5 +1,7 @@
 import { useRef, forwardRef } from "react";
 import { Button } from "../Button/Button";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import styles from "./CurrentForm.module.css";
 
 export const CurrentForm = ({
@@ -8,6 +10,7 @@ export const CurrentForm = ({
   onCitySubmit: (cityData: string | undefined) => void;
 }) => {
   const cityInputRef = useRef<HTMLInputElement | null>(null);
+  const lang = useContext(LanguageContext);
 
   function handleSubmit(event: any) {
     event.preventDefault();
@@ -32,7 +35,7 @@ export const CurrentForm = ({
           />
         </div>
         <div>
-          <Button onClick={() => {}}>Check</Button>
+          <Button onClick={() => {}}>{lang?.t('form.check')}</Button>
         </div>
       </form>
     </div>

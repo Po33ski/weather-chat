@@ -6,11 +6,13 @@ import { AuthLoading } from '../components/AuthLoading/AuthLoading';
 import { AuthWindow } from '../components/AuthWindow/AuthWindow';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import { LanguageContext } from '../contexts/LanguageContext';
 
 export const ChatPage = () => {
 
   // All browser-dependent hooks and logic go here
   const auth = useContext(AuthContext);
+  const lang = useContext(LanguageContext);
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);

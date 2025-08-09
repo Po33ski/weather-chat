@@ -5,6 +5,7 @@ import { weatherApi } from '../../services/weatherApi';
 import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
+import { LanguageContext } from '@/app/contexts/LanguageContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
@@ -17,6 +18,7 @@ export const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
   const auth = useContext(AuthContext);
+  const lang = useContext(LanguageContext);
 
   useEffect(() => {
     setIsClient(true);
@@ -129,22 +131,22 @@ export const Chat: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">AI Chat Assistant</h1>
-              <p className="text-sm text-gray-600">Powered by Google ADK</p>
+              <h1 className="text-2xl font-bold text-gray-800">{lang?.t('chat.title')}</h1>
+              <p className="text-sm text-gray-600">{lang?.t('chat.subtitle')}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="text-xs text-gray-500">
-                {isConnected ? 'Connected' : 'Disconnected'}
+                {isConnected ? lang?.t('chat.connected') : lang?.t('chat.disconnected')}
               </span>
             </div>
             <button
               onClick={auth?.logout}
               className="text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded px-3 py-1 ml-4"
             >
-              Sign out
+              {lang?.t('chat.signout')}
             </button>
           </div>
         </div>
@@ -154,7 +156,7 @@ export const Chat: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
-            <p>Start a conversation with the AI assistant!</p>
+            <p>{lang?.t('chat.subtitle')}</p>
           </div>
         )}
         {messages.map((message) => (
@@ -183,7 +185,7 @@ export const Chat: React.FC = () => {
             <div className="bg-white text-gray-800 border border-gray-200 px-4 py-2 rounded-lg">
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                <span className="text-sm">AI is thinking...</span>
+                 <span className="text-sm">{lang?.t('chat.sending')}</span>
               </div>
             </div>
           </div>
@@ -199,7 +201,7 @@ export const Chat: React.FC = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={lang?.t('chat.placeholder')}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
           />
