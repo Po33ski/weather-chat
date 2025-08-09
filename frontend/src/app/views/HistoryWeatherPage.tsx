@@ -5,6 +5,7 @@ import { List } from "../components/List/List";
 import { ErrorMessage } from "../components/ErrorMessage/ErrorMessage";
 import { Loading } from "../components/Loading/Loading";
 import { MyText } from "../components/MyText/MyText";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { MainPhoto } from "../components/MainPhoto/MainPhoto";
 import { normalDateFormatted } from "../functions/functions";
 import { capitalizeFirstLetter } from "../functions/functions";
@@ -13,6 +14,7 @@ import { weatherApi} from "../services/weatherApi";
 import { WeatherData as BackendWeatherData } from "../types/interfaces";
 
 export const HistoryWeatherPage = () => {
+  const lang = useContext(LanguageContext);
   const [data, setData] = useState<FrontendWeatherData>({
     address: null,
     days: [
@@ -109,12 +111,9 @@ export const HistoryWeatherPage = () => {
       <HistoryForm onSubmit={onSubmit} />
       {data["address"] !== null ? (
         <MyText>
-          The weather for {capitalizeFirstLetter(data["address"])} from the
-          past:
+          {(lang?.t('headline.history') || '')}
         </MyText>
-      ) : (
-        ""
-      )}
+      ) : ("")}
       {data["address"] ? <List data={data["days"]} /> : <MainPhoto />}
     </>
   );

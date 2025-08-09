@@ -4,16 +4,10 @@
 # Stage 1: Build Backend
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS backend-builder
 
-# Install system dependencies including PostgreSQL client
+# Install minimal build dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
-    libpq-dev \
-    libsnappy-dev \
-    make \
-    gcc \
-    g++ \
-    libc6-dev \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,16 +39,20 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
+# Accept NEXT_PUBLIC_GOOGLE_CLIENT_ID as build arg and set as env
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 # Build frontend with static export
 RUN npm run build
 
 # Stage 3: Production Runtime
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
-# Install PostgreSQL client and other dependencies
+# Install runtime dependencies (nginx and curl)
 RUN apt-get update && apt-get install -y \
     curl \
-    libpq5 \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -73,16 +71,19 @@ RUN uv sync
 # Install uvicorn as a tool in runtime stage
 RUN uv tool install uvicorn
 
+# Copy nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Create startup script
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Expose port
-EXPOSE 8000
+# Expose HTTP port served by nginx
+EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Health check via nginx → FastAPI
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=5 \
+    CMD curl -f http://localhost/api/health || exit 1
 
 # Start the application
 CMD ["/app/start.sh"] 

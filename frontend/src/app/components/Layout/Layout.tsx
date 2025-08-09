@@ -5,6 +5,7 @@ import { Logo } from "../Logo/Logo";
 import { MainContent } from "../MainContent/MainContent";
 import { MainMenu } from "../MainMenu/MainMenu";
 import { SystemSelector } from "../SystemSelector/SystemSelector";
+import { LanguageSelector } from "../LanguageSelector/LanguageSelector";
 import { TopBar } from "../TopBar/TopBar";
 import { InfoButton } from "../InfoButton/InfoButton";
 import { ContextProviderComponent } from "../ContextProviderComponent/ContextProviderComponent";
@@ -18,7 +19,10 @@ export const Layout = ({ children }: { children: ReactNode }) => {
             <TopBar>
               <MainMenu />
               <Logo />
-              <SystemSelector />
+              <div className="flex items-center gap-2">
+                <LanguageSelector />
+                <SystemSelector />
+              </div>
             </TopBar>
             <main className="flex-1">
               {children}

@@ -1,14 +1,11 @@
 "use client";
 import { useState } from 'react';
-
-interface TotpAuthProps {
-  setupTotp: (email: string) => Promise<string | null>;
-  verifyTotp: (email: string, code: string) => Promise<any>;
-  checkTotpStatus: (email: string) => Promise<{ success: boolean; has_totp: boolean; error?: string }>;
-  onSuccess: () => void;
-}
+import { useContext } from 'react';
+import { LanguageContext } from '@/app/contexts/LanguageContext';
+import type { TotpAuthProps } from '@/app/types/types';
 
 export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, checkTotpStatus, onSuccess }) => {
+  const lang = useContext(LanguageContext);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -101,21 +98,19 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
     <div className="w-full">
       <div className="text-center mb-4">
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {isSetupMode ? 'Setup TOTP Authentication' : 'Verify TOTP Code'}
+          {isSetupMode ? lang?.t('totp.setupTitle') : lang?.t('totp.verifyTitle')}
         </h3>
         <p className="text-sm text-gray-600">
           {isSetupMode 
-            ? 'Enter your email to get a QR code for Google Authenticator'
-            : 'Enter the 6-digit code from your Google Authenticator app'
+            ? lang?.t('auth.chooseMethod')
+            : lang?.t('totp.verifyTitle')
           }
         </p>
       </div>
 
       {/* Email Input */}
       <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-          Email
-        </label>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">{lang?.t('totp.email')}</label>
         <input
           type="email"
           id="email"
@@ -133,7 +128,7 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
           disabled={isLoading || !email}
           className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50"
         >
-          Check TOTP Status
+          {lang?.t('totp.checkStatus')}
         </button>
         
         {isSetupMode ? (
@@ -142,14 +137,14 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
             disabled={isLoading || !email}
             className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
           >
-            {isLoading ? 'Setting up...' : 'Setup TOTP'}
+            {isLoading ? '...' : lang?.t('totp.setupCta')}
           </button>
         ) : (
           <>
             {/* Code Input */}
             <div className="mb-4">
               <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                TOTP Code
+               {lang?.t('totp.verifyTitle')}
               </label>
               <input
                 type="text"
@@ -167,7 +162,7 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
               disabled={isLoading || !email || !code}
               className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
             >
-              {isLoading ? 'Verifying...' : 'Verify Code'}
+               {isLoading ? '...' : lang?.t('totp.verifyCta')}
             </button>
           </>
         )}
@@ -176,7 +171,7 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
       {/* QR Code Display */}
       {qrCodeUrl && (
         <div className="mb-4 text-center">
-          <p className="text-sm text-gray-600 mb-2">Scan this QR code with Google Authenticator:</p>
+          <p className="text-sm text-gray-600 mb-2">{lang?.t('totp.qrHint')}</p>
           <img 
             src={qrCodeUrl} 
             alt="TOTP QR Code" 
@@ -211,7 +206,7 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
           }}
           className="text-sm text-blue-600 hover:text-blue-800"
         >
-          {isSetupMode ? 'Already have TOTP? Verify here' : 'Need to setup TOTP? Click here'}
+          {isSetupMode ? lang?.t('totp.already') : lang?.t('totp.needSetup')}
         </button>
       </div>
     </div>

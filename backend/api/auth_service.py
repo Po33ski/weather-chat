@@ -8,14 +8,17 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from google.adk.sessions import InMemorySessionService
 from .models import AuthResponse, SessionInfo, GoogleAuthRequest, GoogleUserInfo
-from .db import SessionLocal
-from .models import User
-from sqlalchemy.orm import Session
+from database import User, db, initialize as db_initialize
 import pyotp
 import qrcode
 from io import BytesIO
 from fastapi import Depends, Form
 from fastapi.responses import StreamingResponse
+
+# Ensure the database and tables are initialized
+if db.is_closed():
+    db.connect()
+db_initialize()
 
 class AuthService:
     def __init__(self):
@@ -24,8 +27,7 @@ class AuthService:
         self.user_credentials: Dict[str, Dict[str, Any]] = {}  # email -> user_data
         self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
-        self.db = SessionLocal()
-        
+
     def _verify_google_token(self, id_token: str) -> Optional[GoogleUserInfo]:
         """Verify Google ID token and extract user info"""
         try:
@@ -225,19 +227,16 @@ class AuthService:
         for session_id in expired_sessions:
             del self.user_sessions[session_id]
 
-    def get_user_by_email(self, email: str) -> User:
-        return self.db.query(User).filter(User.email == email).first()
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        return User.get_or_none(User.email == email)
 
     def create_user(self, email: str, name: str, google_id: str = None):
-        user = User(
+        user = User.create(
             id=str(uuid.uuid4()),
             email=email,
             name=name,
             google_id=google_id
         )
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
         return user
 
     def set_totp_secret(self, email: str, secret: str):
@@ -245,8 +244,7 @@ class AuthService:
         if user:
             user.totp_secret = secret
             user.is_totp_enabled = True
-            self.db.commit()
-            self.db.refresh(user)
+            user.save()
             return user
         return None
 

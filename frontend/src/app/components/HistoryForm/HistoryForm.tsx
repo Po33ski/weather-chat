@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import { Button } from "../Button/Button";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { Calendar } from "../Calendar/Calendar";
 
 export const HistoryForm = ({
@@ -11,6 +13,7 @@ export const HistoryForm = ({
     endDate: Date
   ) => void;
 }) => {
+  const lang = useContext(LanguageContext);
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
 
@@ -37,7 +40,7 @@ export const HistoryForm = ({
             type="text"
             id="city"
             className="rounded-md px-4 py-2 border-black border-2 w-full"
-            placeholder="City"
+            placeholder={lang?.t('placeholder.city') || 'City'}
           />
         </div>
         <div className="grid grid-cols-1 gap-y-4 mb-4">
@@ -49,7 +52,7 @@ export const HistoryForm = ({
           />
         </div>
         <div>
-          <Button onClick={() => {}}>Check</Button>
+          <Button onClick={() => {}}>{lang?.t('form.check')}</Button>
         </div>
       </form>
     </div>

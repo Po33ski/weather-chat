@@ -27,6 +27,7 @@ jobs:
     - name: Set environment variables
       run: |
         echo "Environment variables are set via GitHub Secrets"
+        echo "Only SQLite is used for the database. No DATABASE_URL or Postgres required."
 
     # Optional: Run your tests or start the server
     - name: Run tests

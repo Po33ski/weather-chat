@@ -6,12 +6,14 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import burger from "../../../../public/burger.png";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 
 export function MainMenu() {
   const pathname: string = usePathname();
-  console.log(pathname);
   const [isMobileNavShown, setIsMobileNavShown] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const langCtx = useContext(LanguageContext);
 
   if (!isMobile && isMobileNavShown) {
     setIsMobileNavShown(false);
@@ -36,8 +38,8 @@ export function MainMenu() {
               className={`${pathname === path ? "underline " : ""} 
               transition-all font-semibold uppercase hover:font-extrabold"`}
             >
-              <Link href={path} onClick={(prev) => setIsMobileNavShown(!prev)}>
-                {optionName}
+              <Link href={path} onClick={() => setIsMobileNavShown(false)}>
+                {langCtx?.t(`menu.${optionName.toLowerCase()}`) ?? optionName}
               </Link>
             </li>
           ))}

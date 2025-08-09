@@ -1,6 +1,8 @@
 import { useRef, forwardRef } from "react";
 import { Button } from "../Button/Button";
-import styles from "./CurrentForm.module.css";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
+//import styles from "./CurrentForm.module.css";
 
 export const CurrentForm = ({
   onCitySubmit,
@@ -8,6 +10,7 @@ export const CurrentForm = ({
   onCitySubmit: (cityData: string | undefined) => void;
 }) => {
   const cityInputRef = useRef<HTMLInputElement | null>(null);
+  const lang = useContext(LanguageContext);
 
   function handleSubmit(event: any) {
     event.preventDefault();
@@ -28,11 +31,11 @@ export const CurrentForm = ({
             type="text"
             id="city"
             className="rounded-md px-4 py-2 border-black border-2"
-            placeholder="City"
+            placeholder={lang?.t('placeholder.city') || 'City'}
           />
         </div>
         <div>
-          <Button onClick={() => {}}>Check</Button>
+          <Button onClick={() => {}}>{lang?.t('form.check')}</Button>
         </div>
       </form>
     </div>
