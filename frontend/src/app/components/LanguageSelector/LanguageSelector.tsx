@@ -12,18 +12,15 @@ export function LanguageSelector() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="lang" className="text-sm text-gray-600">Lang</label>
-      <select
-        id="lang"
-        value={current}
-        onChange={handleChange}
-        className="border border-gray-300 rounded px-2 py-1 text-sm"
-      >
-        <option value="en">EN</option>
-        <option value="pl">PL</option>
-      </select>
-    </div>
+    <select
+      aria-label="Language"
+      value={current}
+      onChange={handleChange}
+      className="border-2 border-black rounded-lg px-3 py-2 text-sm md:text-base bg-white hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option value="en">EN</option>
+      <option value="pl">PL</option>
+    </select>
   );
 }
 

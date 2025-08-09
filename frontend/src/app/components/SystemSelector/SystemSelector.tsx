@@ -23,12 +23,13 @@ export function SystemSelector() {
     <div>
       {isClient && (
         <select
+          aria-label="Unit system"
           value={unitSystem}
           onChange={async (e: React.ChangeEvent<HTMLSelectElement>) => {
             const newUnitSystem = e.currentTarget.value;
             unitSystemContext?.unitSystem.setToLocalStorage(newUnitSystem);
           }}
-          className="border-black border-2 p-4 mr-2 rounded-lg md:mr-6"
+          className="border-2 border-black rounded-lg px-3 py-2 text-sm md:text-base bg-white hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2 md:mr-6"
         >
           <option value={SYSTEMS.METRIC}>{SYSTEMS.METRIC}</option>
           <option value={SYSTEMS.UK}>{SYSTEMS.UK}</option>

@@ -69,6 +69,7 @@ export const CurrentWeatherPage = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const lang = useContext(LanguageContext);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [isError, setIsError] = useState<string | null>(null);
   const [brickModal, setBrickModal] = useState<ReactPortal | null>(null);
 
@@ -134,7 +135,7 @@ export const CurrentWeatherPage = () => {
   };
 
   useEffect(() => {
-    if (cityContext?.city.data) {
+    if (hasSearched && cityContext?.city.data) {
       setIsLoading(true);
       weatherApi.getCurrentWeather(cityContext.city.data)
         .then((response) => {
@@ -153,12 +154,13 @@ export const CurrentWeatherPage = () => {
           setIsLoading(false);
         });
     }
-  }, [cityContext?.city.data, handleError]);
+  }, [hasSearched, cityContext?.city.data, handleError]);
 
   async function onCitySubmit(cityData: string | undefined) {
     if (!cityData) return;
     
     cityContext?.city.setToLocalStorage(cityData);
+    setHasSearched(true);
     setIsLoading(true);
 
     try {
@@ -185,7 +187,9 @@ export const CurrentWeatherPage = () => {
     <>
       <CurrentForm onCitySubmit={onCitySubmit} />
       {isError && <ErrorMessage>{isError}</ErrorMessage>}
-      {data["address"] ? (
+      {!hasSearched ? (
+        <MainPhoto />
+      ) : data["address"] ? (
         <div>
           <WeatherView
             data={{

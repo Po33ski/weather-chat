@@ -3,14 +3,7 @@ import React from 'react';
 import { TotpAuth } from '../TotpAuth/TotpAuth';
 import { useContext } from 'react';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
-
-interface AuthWindowProps {
-  isConnected: boolean;
-  googleButtonRef: React.RefObject<HTMLDivElement>;
-  setupTotp: any;
-  verifyTotp: any;
-  checkTotpStatus: any;
-}
+import type { AuthWindowProps } from '@/app/types/types';
 
 export const AuthWindow: React.FC<AuthWindowProps> = ({
   isConnected,

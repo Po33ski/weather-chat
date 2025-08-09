@@ -8,7 +8,6 @@ import Image from "next/image";
 import burger from "../../../../public/burger.png";
 import { useContext } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
-import { LanguageSelector } from "@/app/components/LanguageSelector/LanguageSelector";
 
 export function MainMenu() {
   const pathname: string = usePathname();
@@ -45,9 +44,6 @@ export function MainMenu() {
             </li>
           ))}
         </ul>
-        <div className="mt-4 md:mt-0">
-          <LanguageSelector />
-        </div>
       </nav>
       <Image
         onClick={() => {

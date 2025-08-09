@@ -2,13 +2,7 @@
 import { useState } from 'react';
 import { useContext } from 'react';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
-
-interface TotpAuthProps {
-  setupTotp: (email: string) => Promise<string | null>;
-  verifyTotp: (email: string, code: string) => Promise<any>;
-  checkTotpStatus: (email: string) => Promise<{ success: boolean; has_totp: boolean; error?: string }>;
-  onSuccess: () => void;
-}
+import type { TotpAuthProps } from '@/app/types/types';
 
 export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, checkTotpStatus, onSuccess }) => {
   const lang = useContext(LanguageContext);
