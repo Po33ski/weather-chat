@@ -103,6 +103,11 @@ def health():
             "error": str(e)
         }
 
+# Mirror health under /api for frontend behind nginx
+@app.get("/api/health")
+def api_health():
+    return health()
+
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
 
 if ENVIRONMENT == "production":

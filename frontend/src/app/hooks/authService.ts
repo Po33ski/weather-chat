@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { User, AuthState, GoogleAuthRes, TotpAuthRes } from '../types/interfaces';
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 const isBrowser = typeof window !== 'undefined';
 
 export const useAuthService = () => {
