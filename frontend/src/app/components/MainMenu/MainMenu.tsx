@@ -9,7 +9,6 @@ import burger from "../../../../public/burger.png";
 
 export function MainMenu() {
   const pathname: string = usePathname();
-  console.log(pathname);
   const [isMobileNavShown, setIsMobileNavShown] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
@@ -36,7 +35,7 @@ export function MainMenu() {
               className={`${pathname === path ? "underline " : ""} 
               transition-all font-semibold uppercase hover:font-extrabold"`}
             >
-              <Link href={path} onClick={(prev) => setIsMobileNavShown(!prev)}>
+              <Link href={path} onClick={() => setIsMobileNavShown(false)}>
                 {optionName}
               </Link>
             </li>
