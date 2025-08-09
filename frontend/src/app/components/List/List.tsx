@@ -6,9 +6,11 @@ import "../../weather_icons_data/css/weather-icons.css";
 import styles from "./List.module.css";
 import { findDirection, systemsConvert } from "@/app/functions/functions";
 import { HistoryAndForecastDay } from "@/app/types/interfaces";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 
 export function List({ data }: { data: HistoryAndForecastDay[] }) {
   const unitSystemContext = useContext(UnitSystemContext);
+  const lang = useContext(LanguageContext);
   const unitSystem =
     unitSystemContext?.unitSystem.data === "US" ||
     unitSystemContext?.unitSystem.data === "METRIC" ||
@@ -27,40 +29,16 @@ export function List({ data }: { data: HistoryAndForecastDay[] }) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className={thStyle}>
-                      Date <i className="wi wi-time-3" />
-                    </th>
-                    <th className={thStyle}>
-                      Max. Temperature {UNIT_SYSTEMS[unitSystem].temperature}{" "}
-                      <i className="wi wi-thermometer" />
-                    </th>
-                    <th className={thStyle}>
-                      Min. Temperature {UNIT_SYSTEMS[unitSystem].temperature}{" "}
-                      <i className="wi wi-thermometer-exterior" />
-                    </th>
-                    <th className={thStyle}>
-                      Wind Direction <i className="wi wi-wind-direction" />
-                    </th>
-                    <th className={thStyle}>
-                      Wind speed {UNIT_SYSTEMS[unitSystem].distance}{" "}
-                      <i className="wi wi-strong-wind" />
-                    </th>
-                    <th className={thStyle}>
-                      Humidity <i className="wi wi-humidity" />
-                    </th>
-                    <th className={thStyle}>
-                      Air Pressure{" hPa "}
-                      <i className="wi wi-barometer" />
-                    </th>
-                    <th className={thStyle}>
-                      Conditions <i className="wi wi-day-cloudy-high" />
-                    </th>
-                    <th className={thStyle}>
-                      Sunrise <i className="wi wi-sunrise" />
-                    </th>
-                    <th className={thStyle}>
-                      Sunset <i className="wi wi-sunset" />
-                    </th>
+                    <th className={thStyle}>{lang?.t('list.date') || 'Date'} <i className="wi wi-time-3" /></th>
+                    <th className={thStyle}>{lang?.t('list.maxTemp') || 'Max. Temperature'} {UNIT_SYSTEMS[unitSystem].temperature} <i className="wi wi-thermometer" /></th>
+                    <th className={thStyle}>{lang?.t('list.minTemp') || 'Min. Temperature'} {UNIT_SYSTEMS[unitSystem].temperature} <i className="wi wi-thermometer-exterior" /></th>
+                    <th className={thStyle}>{lang?.t('list.winddir') || 'Wind Direction'} <i className="wi wi-wind-direction" /></th>
+                    <th className={thStyle}>{lang?.t('list.windspeed') || 'Wind speed'} {UNIT_SYSTEMS[unitSystem].distance} <i className="wi wi-strong-wind" /></th>
+                    <th className={thStyle}>{lang?.t('list.humidity') || 'Humidity'} <i className="wi wi-humidity" /></th>
+                    <th className={thStyle}>{lang?.t('list.pressure') || 'Air Pressure'}{" hPa "} <i className="wi wi-barometer" /></th>
+                    <th className={thStyle}>{lang?.t('list.conditions') || 'Conditions'} <i className="wi wi-day-cloudy-high" /></th>
+                    <th className={thStyle}>{lang?.t('list.sunrise') || 'Sunrise'} <i className="wi wi-sunrise" /></th>
+                    <th className={thStyle}>{lang?.t('list.sunset') || 'Sunset'} <i className="wi wi-sunset" /></th>
                   </tr>
                 </thead>
                 <tbody>

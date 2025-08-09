@@ -24,7 +24,7 @@ export function WeatherView({
           <Brick
             data={data["temp"]}
             kindOfData={"temp"}
-            title={"Current temperature"}
+            title={lang?.t('brick.currentTemp') || 'Current temperature'}
             desc={data["description"]}
           />
         </div>
@@ -32,7 +32,7 @@ export function WeatherView({
           <Brick
             data={data["tempmax"]}
             kindOfData={"tempmax"}
-            title={"Max. temperature"}
+            title={lang?.t('brick.maxTemp') || 'Max. temperature'}
             desc={data["description"]}
           />
         </div>
@@ -40,7 +40,7 @@ export function WeatherView({
           <Brick
             data={data["tempmin"]}
             kindOfData={"tempmin"}
-            title={"Min. temperature"}
+            title={lang?.t('brick.minTemp') || 'Min. temperature'}
             desc={data["description"]}
           />
         </div>
@@ -48,7 +48,7 @@ export function WeatherView({
           <Brick
             data={data["conditions"]}
             kindOfData={"conditions"}
-            title={"Conditions"}
+            title={lang?.t('brick.conditions') || 'Conditions'}
             desc={data["description"]}
           />
         </div>
@@ -56,7 +56,7 @@ export function WeatherView({
           <Brick
             data={data["windspeed"]}
             kindOfData={"windspeed"}
-            title={" Wind speed"}
+            title={lang?.t('brick.windspeed') || 'Wind speed'}
             desc={data["description"]}
           />
         </div>
@@ -64,7 +64,7 @@ export function WeatherView({
           <Brick
             data={data["winddir"]}
             kindOfData={"winddir"}
-            title={" Wind direction"}
+            title={lang?.t('brick.winddir') || 'Wind direction'}
             desc={data["description"]}
           />
         </div>
@@ -72,7 +72,7 @@ export function WeatherView({
           <Brick
             data={data["pressure"]}
             kindOfData={"pressure"}
-            title={"Pressure"}
+            title={lang?.t('brick.pressure') || 'Pressure'}
             desc={data["description"]}
           />
         </div>
@@ -80,7 +80,7 @@ export function WeatherView({
           <Brick
             data={data["humidity"]}
             kindOfData={"humidity"}
-            title={"Humidity"}
+            title={lang?.t('brick.humidity') || 'Humidity'}
             desc={data["description"]}
           />
         </div>
@@ -88,7 +88,7 @@ export function WeatherView({
           <Brick
             data={data["sunrise"]}
             kindOfData={"sunrise"}
-            title={"Sunrise"}
+            title={lang?.t('brick.sunrise') || 'Sunrise'}
             desc={data["description"]}
           />
         </div>
@@ -96,7 +96,7 @@ export function WeatherView({
           <Brick
             data={data["sunset"]}
             kindOfData={"sunset"}
-            title={"Sunset"}
+            title={lang?.t('brick.sunset') || 'Sunset'}
             desc={data["description"]}
           />
         </div>

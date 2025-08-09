@@ -5,9 +5,11 @@ import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
 import { findDirection, systemsConvert } from "@/app/functions/functions";
 import "../../weather_icons_data/css/weather-icons.css";
 import { HoursData } from "@/app/types/interfaces";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 
 export function DayList({ data }: { data: HoursData[] }) {
   const unitSystemContext = useContext(UnitSystemContext);
+  const lang = useContext(LanguageContext);
   const unitSystem =
     unitSystemContext?.unitSystem.data === "US" ||
     unitSystemContext?.unitSystem.data === "METRIC" ||
@@ -26,30 +28,13 @@ export function DayList({ data }: { data: HoursData[] }) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className={thStyle}>
-                      Hour <i className="wi wi-time-3" />
-                    </th>
-                    <th className={thStyle}>
-                      Temperature {UNIT_SYSTEMS[unitSystem].temperature}{" "}
-                      <i className="wi wi-thermometer" />
-                    </th>
-                    <th className={thStyle}>
-                      Wind Direction <i className="wi wi-wind-direction" />
-                    </th>
-                    <th className={thStyle}>
-                      Wind speed {UNIT_SYSTEMS[unitSystem].distance}{" "}
-                      <i className="wi wi-strong-wind" />
-                    </th>
-                    <th className={thStyle}>
-                      Humidity <i className="wi wi-humidity" />
-                    </th>
-                    <th className={thStyle}>
-                      Air Pressure{" hPa "}
-                      <i className="wi wi-barometer" />
-                    </th>
-                    <th className={thStyle}>
-                      Conditions <i className="wi wi-day-cloudy-high" />
-                    </th>
+                    <th className={thStyle}>{lang?.t('day.hour') || 'Hour'} <i className="wi wi-time-3" /></th>
+                    <th className={thStyle}>{lang?.t('day.temp') || 'Temperature'} {UNIT_SYSTEMS[unitSystem].temperature} <i className="wi wi-thermometer" /></th>
+                    <th className={thStyle}>{lang?.t('day.winddir') || 'Wind Direction'} <i className="wi wi-wind-direction" /></th>
+                    <th className={thStyle}>{lang?.t('day.windspeed') || 'Wind speed'} {UNIT_SYSTEMS[unitSystem].distance} <i className="wi wi-strong-wind" /></th>
+                    <th className={thStyle}>{lang?.t('day.humidity') || 'Humidity'} <i className="wi wi-humidity" /></th>
+                    <th className={thStyle}>{lang?.t('day.pressure') || 'Air Pressure'}{" hPa "} <i className="wi wi-barometer" /></th>
+                    <th className={thStyle}>{lang?.t('day.conditions') || 'Conditions'} <i className="wi wi-day-cloudy-high" /></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">

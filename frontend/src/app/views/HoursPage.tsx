@@ -7,6 +7,7 @@ import { API_KEY, API_HTTP } from "../constants/apiConstants";
 import { DayList } from "../components/DayList/DayList";
 import { MyText } from "../components/MyText/MyText";
 import { ButtonLink } from "../components/ButtonLink/ButtonLink";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { CityContextType } from "../types/types";
 import { CurrentData } from "../types/interfaces";
 import { CityContext } from "../contexts/CityContextType";
@@ -14,6 +15,7 @@ import { capitalizeFirstLetter } from "../functions/functions";
 
 export function HoursPage() {
   const cityContext = useContext<CityContextType | null>(CityContext);
+  const lang = useContext(LanguageContext);
   const [data, setData] = useState<CurrentData>({
     address: null,
     currentConditions: {
@@ -123,9 +125,11 @@ export function HoursPage() {
       {isError && <ErrorMessage>{isError}</ErrorMessage>}
       {data["address"] && (
         <div>
-          {address !== null ? <MyText>The weather for {address}:</MyText> : ""}
+          {address !== null ? (
+            <MyText>{(lang?.t('hours.headline') || '').replace('{{address}}', address)}</MyText>
+          ) : ""}
           <DayList data={data["days"][0]["hours"]} />
-          <ButtonLink path={"/current"}>Back</ButtonLink>
+          <ButtonLink path={"/current"}>{lang?.t('common.back')}</ButtonLink>
         </div>
       )}
     </>

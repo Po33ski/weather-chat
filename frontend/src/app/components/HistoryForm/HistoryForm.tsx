@@ -40,7 +40,7 @@ export const HistoryForm = ({
             type="text"
             id="city"
             className="rounded-md px-4 py-2 border-black border-2 w-full"
-            placeholder="City"
+            placeholder={lang?.t('placeholder.city') || 'City'}
           />
         </div>
         <div className="grid grid-cols-1 gap-y-4 mb-4">

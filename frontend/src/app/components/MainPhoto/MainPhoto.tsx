@@ -2,9 +2,12 @@ import styles from "./MainPhoto.module.css";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { MAIN_DESCRIPTIONS, MAIN_HEADERS } from "@/app/constants/descriptions";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { MAIN_PHOTOS } from "@/app/constants/mainPhotos";
 
 export function MainPhoto() {
+  const lang = useContext(LanguageContext);
   let pageName: "current" | "forecast" | "history" | "/";
   let path = "/";
   path = usePathname().slice(1);
@@ -15,10 +18,15 @@ export function MainPhoto() {
   console.log("path:", path);
 
   const photo = path === "/" ? MAIN_PHOTOS["current"] : MAIN_PHOTOS[pageName];
-  const description =
-    path === "/" ? MAIN_DESCRIPTIONS["current"] : MAIN_DESCRIPTIONS[pageName];
-  const header =
-    path === "/" ? MAIN_HEADERS["current"] : MAIN_HEADERS[pageName];
+  const description = path === "/" ? (lang?.t('desc.current') || MAIN_DESCRIPTIONS["current"]) : (pageName === 'current' ? (lang?.t('desc.current') || MAIN_DESCRIPTIONS['current']) : pageName === 'forecast' ? (lang?.t('desc.forecast') || MAIN_DESCRIPTIONS['forecast']) : (lang?.t('desc.history') || MAIN_DESCRIPTIONS['history']));
+  const header = path === "/"
+    ? (lang?.t('headline.current') || MAIN_HEADERS['current'])
+    : (pageName === 'current'
+        ? (lang?.t('headline.current') || MAIN_HEADERS['current'])
+        : pageName === 'forecast'
+          ? (lang?.t('headline.forecast') || MAIN_HEADERS['forecast'])
+          : (lang?.t('headline.history') || MAIN_HEADERS['history'])
+      );
   return (
     <div className="relative h-96 md:h-[250px] xl:h-[500px] overflow-hidden">
       <Image src={photo} layout="fill" objectFit="cover" alt="photo" />

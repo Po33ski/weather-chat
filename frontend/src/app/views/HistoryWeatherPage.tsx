@@ -111,7 +111,7 @@ export const HistoryWeatherPage = () => {
       <HistoryForm onSubmit={onSubmit} />
       {data["address"] !== null ? (
         <MyText>
-          {(lang?.t('desc.history') || '')}
+          {(lang?.t('headline.history') || '')}
         </MyText>
       ) : ("")}
       {data["address"] ? <List data={data["days"]} /> : <MainPhoto />}
