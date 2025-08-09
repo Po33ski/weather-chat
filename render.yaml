@@ -12,13 +12,7 @@ services:
         sync: false
       - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
         sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: POSTGRES_DB
-        sync: false
-      - key: POSTGRES_USER
-        sync: false
-      - key: POSTGRES_PASSWORD
+      - key: GOOGLE_CLIENT_ID
         sync: false
       - key: MODEL
         value: gemini-2.0-flash
@@ -26,5 +20,10 @@ services:
         value: 0
       - key: ENVIRONMENT
         value: production
-    healthCheckPath: /health
+      # Optional:
+      # - key: PUBLIC_WEB_ORIGIN
+      #   value: https://weather-chat-6g4p.onrender.com
+      # - key: VERIFY_ENV
+      #   value: "true"
+    healthCheckPath: /api/health
     autoDeploy: true 
