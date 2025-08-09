@@ -1,9 +1,10 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User, AuthState, GoogleAuthRes, TotpAuthRes } from '../types/interfaces';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const isBrowser = typeof window !== 'undefined';
 
 export const useAuthService = () => {
 
@@ -11,8 +12,42 @@ export const useAuthService = () => {
     isAuthenticated: false,
     user: null,
     sessionId: null,
-    loading: false,
+    loading: true,
   });
+
+  // Hydrate auth state from memory/localStorage on first mount
+  useEffect(() => {
+    if (!isBrowser) {
+      setAuthState((s) => ({ ...s, loading: false }));
+      return;
+    }
+    const sessionId = window.localStorage.getItem('sessionId');
+    const userRaw = window.localStorage.getItem('user');
+    if (sessionId) {
+      let user: User | null = null;
+      if (userRaw) {
+        try {
+          const parsed = JSON.parse(userRaw);
+          user = {
+            user_id: parsed.id || parsed.user_id || '',
+            email: parsed.email || '',
+            name: parsed.name || '',
+            picture: parsed.picture || '',
+          };
+        } catch {}
+      }
+      setAuthState({
+        isAuthenticated: true,
+        user,
+        sessionId,
+        loading: false,
+      });
+      // Optionally refresh session info in background
+      validateSession(sessionId).catch(() => {});
+    } else {
+      setAuthState((s) => ({ ...s, loading: false }));
+    }
+  }, []);
 
 
   const handleGoogleSignIn = async (response: any) => {
@@ -29,10 +64,13 @@ export const useAuthService = () => {
 
       const data: GoogleAuthRes = await authResponse.json();
 
-      if (data.success && data.session_id) {
-        localStorage.setItem('sessionId', data.session_id);
-        localStorage.setItem('user', JSON.stringify({data: data.user_info, id: data.user_id, email: data.user_info?.email, name: data.user_info?.name, picture: data.user_info?.picture}));
-        localStorage.setItem('isAuthenticated', 'true');
+      if (data.success && data.session_id && isBrowser) {
+        window.localStorage.setItem('sessionId', data.session_id);
+        window.localStorage.setItem('user', JSON.stringify({data: data.user_info, id: data.user_id, email: data.user_info?.email, name: data.user_info?.name, picture: data.user_info?.picture}));
+        window.localStorage.setItem('isAuthenticated', 'true');
+        try {
+          window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'true' }));
+        } catch {}
         setAuthState({
           isAuthenticated: true,
           user: data.user_info ? {
@@ -65,8 +103,10 @@ export const useAuthService = () => {
           loading: false,
         });
       } else {
-        localStorage.removeItem('sessionId');
-        localStorage.removeItem('user');
+        if (isBrowser) {
+          window.localStorage.removeItem('sessionId');
+          window.localStorage.removeItem('user');
+        }
         setAuthState({
           isAuthenticated: false,
           user: null,
@@ -76,8 +116,10 @@ export const useAuthService = () => {
       }
     } catch (error) {
       console.error('Session validation error:', error);
-      localStorage.removeItem('sessionId');
-      localStorage.removeItem('user');
+      if (isBrowser) {
+        window.localStorage.removeItem('sessionId');
+        window.localStorage.removeItem('user');
+      }
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -88,7 +130,7 @@ export const useAuthService = () => {
   };
 
   const logout = async (): Promise<void> => {
-    const sessionId = localStorage.getItem('sessionId');
+    const sessionId = isBrowser ? window.localStorage.getItem('sessionId') : null;
     if (sessionId) {
       try {
         await fetch(`${API_BASE_URL}/api/auth/logout`, {
@@ -102,11 +144,20 @@ export const useAuthService = () => {
         console.error('Logout error:', error);
       }
     }
-    localStorage.setItem('isAuthenticated', 'false');
-    localStorage.removeItem('sessionId');
-    localStorage.removeItem('user');
-    // Trigger storage event for cross-tab updates
-    window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'false' }));
+    // Ensure Google auto sign-in is disabled so button doesn't auto-login user again
+    try {
+      if (isBrowser && (window as any).google?.accounts?.id?.disableAutoSelect) {
+        (window as any).google.accounts.id.disableAutoSelect();
+      }
+    } catch {}
+    if (isBrowser) {
+      window.localStorage.setItem('isAuthenticated', 'false');
+      window.localStorage.removeItem('sessionId');
+      window.localStorage.removeItem('user');
+      try {
+        window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'false' }));
+      } catch {}
+    }
     setAuthState({
       isAuthenticated: false,
       user: null,
@@ -118,7 +169,7 @@ export const useAuthService = () => {
   };
 
   const getSessionId = (): string | null => {
-    return localStorage.getItem('sessionId');
+    return isBrowser ? window.localStorage.getItem('sessionId') : null;
   };
 
   const getUser = (): User | null => {
@@ -128,7 +179,7 @@ export const useAuthService = () => {
     }
     
     // Fallback to localStorage
-    const user = localStorage.getItem('user');
+    const user = isBrowser ? window.localStorage.getItem('user') : null;
     if (user) {
       try {
         const parsedUser = JSON.parse(user);
@@ -192,16 +243,19 @@ export const useAuthService = () => {
 
       const data: TotpAuthRes = await response.json();
 
-      if (data.success && data.session_id) {
-        localStorage.setItem('sessionId', data.session_id);
-        localStorage.setItem('user', JSON.stringify({
+      if (data.success && data.session_id && isBrowser) {
+        window.localStorage.setItem('sessionId', data.session_id);
+        window.localStorage.setItem('user', JSON.stringify({
           data: data.user_info, 
           id: data.user_id, 
           email: data.user_info?.email, 
           name: data.user_info?.name, 
           picture: data.user_info?.picture
         }));
-        localStorage.setItem('isAuthenticated', 'true');
+        window.localStorage.setItem('isAuthenticated', 'true');
+        try {
+          window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'true' }));
+        } catch {}
         setAuthState({
           isAuthenticated: true,
           user: data.user_info ? {
@@ -227,7 +281,8 @@ export const useAuthService = () => {
 
   const checkTotpStatus = async (email: string): Promise<{ success: boolean; has_totp: boolean; error?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/totp/status/${email}`);
+      const encodedEmail = encodeURIComponent(email);
+      const response = await fetch(`${API_BASE_URL}/api/auth/totp/status/${encodedEmail}`);
       const data = await response.json();
       return data;
     } catch (error) {

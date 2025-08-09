@@ -4,23 +4,13 @@ import React from "react";
 import { Chat } from "../components/Chat/Chat";
 import { AuthLoading } from '../components/AuthLoading/AuthLoading';
 import { AuthWindow } from '../components/AuthWindow/AuthWindow';
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
 export const ChatPage = () => {
 
   // All browser-dependent hooks and logic go here
-  const { useIsAuthenticated } = require('../hooks/useIsAuthenticated');
-  const { useAuthService } = require('../hooks/authService');
-  const isAuthenticated = useIsAuthenticated();
-  const {
-    handleGoogleSignIn,
-    validateSession,
-    logout,
-    getUser,
-    getSessionId,
-    setupTotp,
-    verifyTotp,
-    checkTotpStatus,
-  } = useAuthService();
+  const auth = useContext(AuthContext);
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -51,10 +41,10 @@ export const ChatPage = () => {
     } else {
       setAuthLoading(false);
     }
-    // Validate session if present
-    const sessionId = localStorage.getItem('sessionId');
-    if (sessionId) {
-      validateSession(sessionId).finally(() => setAuthLoading(false));
+    // Validate session if present, but only if not already authenticated
+    const sessionId = typeof window !== 'undefined' ? localStorage.getItem('sessionId') : null;
+    if (!auth?.isAuthenticated && sessionId) {
+      auth?.validateSession(sessionId).finally(() => setAuthLoading(false));
     } else {
       setAuthLoading(false);
     }
@@ -63,15 +53,15 @@ export const ChatPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated && googleReady) {
+    if (!(auth?.isAuthenticated) && googleReady) {
       (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
         theme: 'outline',
         size: 'large',
-        width: '100%',
+        width: 300,
         text: 'signin_with',
       });
     }
-  }, [isAuthenticated, googleReady]);
+  }, [auth?.isAuthenticated, googleReady]);
 
   const initializeGoogleOAuth = () => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -79,7 +69,7 @@ export const ChatPage = () => {
       try {
         (window as any).google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
-          callback: handleGoogleSignIn,
+          callback: auth?.handleGoogleSignIn,
           auto_select: false,
           cancel_on_tap_outside: true,
         });
@@ -109,14 +99,14 @@ export const ChatPage = () => {
     return <AuthLoading />;
   }
 
-  if (!isAuthenticated) {
+  if (!(auth?.isAuthenticated)) {
     return (
       <AuthWindow
         isConnected={isConnected}
         googleButtonRef={googleButtonRef}
-        setupTotp={setupTotp}
-        verifyTotp={verifyTotp}
-        checkTotpStatus={checkTotpStatus}
+        setupTotp={auth?.setupTotp}
+        verifyTotp={auth?.verifyTotp}
+        checkTotpStatus={auth?.checkTotpStatus}
       />
     );
   }

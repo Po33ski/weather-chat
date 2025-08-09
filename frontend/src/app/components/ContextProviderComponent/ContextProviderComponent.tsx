@@ -1,11 +1,13 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { useLocalStorage } from "@/app/hooks/useLocalStorage";
 import { SYSTEMS } from "@/app/constants/unitSystems";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { BrickModalContext } from "@/app/contexts/BrickModalContext";
 import { InfoModalContext } from "@/app/contexts/InfoModalContext";
 import { CityContext } from "@/app/contexts/CityContextType";
+import { AuthContext } from "@/app/contexts/AuthContext";
 import { BrickModalData } from "@/app/types/interfaces";
+import { useAuthService } from "@/app/hooks/authService";
 
 export const ContextProviderComponent = ({
   children,
@@ -23,19 +25,24 @@ export const ContextProviderComponent = ({
     desc: null,
   });
 
+  const auth = useAuthService();
+  const authValue = useMemo(() => auth, [auth.isAuthenticated, auth.user, auth.sessionId, auth.loading]);
+
   return (
-    <CityContext.Provider value={{ city }}>
-      <UnitSystemContext.Provider value={{ unitSystem }}>
-        <BrickModalContext.Provider
-          value={{ isModalShown, setIsModalShown, modalData, setModalData }}
-        >
-          <InfoModalContext.Provider
-            value={{ isInfoModalShown, setIsInfoModalShown }}
+    <AuthContext.Provider value={authValue}>
+      <CityContext.Provider value={{ city }}>
+        <UnitSystemContext.Provider value={{ unitSystem }}>
+          <BrickModalContext.Provider
+            value={{ isModalShown, setIsModalShown, modalData, setModalData }}
           >
-            {children}
-          </InfoModalContext.Provider>
-        </BrickModalContext.Provider>
-      </UnitSystemContext.Provider>
-    </CityContext.Provider>
+            <InfoModalContext.Provider
+              value={{ isInfoModalShown, setIsInfoModalShown }}
+            >
+              {children}
+            </InfoModalContext.Provider>
+          </BrickModalContext.Provider>
+        </UnitSystemContext.Provider>
+      </CityContext.Provider>
+    </AuthContext.Provider>
   );
 };

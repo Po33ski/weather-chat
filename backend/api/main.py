@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
@@ -33,15 +33,27 @@ app = FastAPI(
 )
 
 # Allow CORS for local frontend
+# Configure CORS
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# In production behind nginx, frontend and backend share the same origin
+# You may add your public domain here if needed
+public_domain = os.getenv("PUBLIC_WEB_ORIGIN")
+if public_domain:
+    allowed_origins.append(public_domain)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust in production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount static files
+# Mount static files (conditioned for production only)
 # app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
 
 class ChatRequest(BaseModel):
@@ -91,25 +103,28 @@ def health():
             "error": str(e)
         }
 
-@app.get("/")
-def root():
-    """
-    Serve the main index.html file
-    """
-    return FileResponse("/app/frontend/out/index.html")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
 
-@app.get("/{path:path}")
-def serve_static_files(path: str):
-    """
-    Serve static files for all other routes
-    """
-    file_path = f"/app/frontend/out/{path}"
-    
-    # If the path doesn't exist, serve index.html for client-side routing
-    if not os.path.exists(file_path):
+if ENVIRONMENT == "production":
+    @app.get("/")
+    def root():
+        """
+        Serve the main index.html file (production only)
+        """
         return FileResponse("/app/frontend/out/index.html")
-    
-    return FileResponse(file_path)
+
+    @app.get("/{path:path}")
+    def serve_static_files(path: str):
+        """
+        Serve static files for all other routes (production only)
+        """
+        file_path = f"/app/frontend/out/{path}"
+
+        # If the path doesn't exist, serve index.html for client-side routing
+        if not os.path.exists(file_path):
+            return FileResponse("/app/frontend/out/index.html")
+
+        return FileResponse(file_path)
 
 # --- Authentication Endpoints ---
 
@@ -128,7 +143,7 @@ async def get_session_info(session_id: str):
     """Get session information"""
     session_info = auth_service.get_session_info(session_id)
     if not session_info:
-        return {"error": "Session not found or inactive"}
+        return JSONResponse(status_code=404, content={"success": False, "error": "Session not found or inactive"})
     return session_info
 
 @app.post("/api/chat", response_model=ChatResponse)

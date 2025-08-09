@@ -4,7 +4,7 @@ import { Message } from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
 import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
-import { useAuthService } from '../../hooks/authService';
+import { AuthContext } from '@/app/contexts/AuthContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -16,7 +16,7 @@ export const Chat: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
-  const { logout } = useAuthService();
+  const auth = useContext(AuthContext);
 
   useEffect(() => {
     setIsClient(true);
@@ -141,7 +141,7 @@ export const Chat: React.FC = () => {
               </span>
             </div>
             <button
-              onClick={logout}
+              onClick={auth?.logout}
               className="text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded px-3 py-1 ml-4"
             >
               Sign out
