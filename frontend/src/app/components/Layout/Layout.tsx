@@ -7,7 +7,6 @@ import { MainMenu } from "../MainMenu/MainMenu";
 import { SystemSelector } from "../SystemSelector/SystemSelector";
 import { LanguageSelector } from "../LanguageSelector/LanguageSelector";
 import { TopBar } from "../TopBar/TopBar";
-import { InfoButton } from "../InfoButton/InfoButton";
 import { ContextProviderComponent } from "../ContextProviderComponent/ContextProviderComponent";
 
 export const Layout = ({ children }: { children: ReactNode }) => {

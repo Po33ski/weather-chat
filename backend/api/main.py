@@ -42,7 +42,7 @@ allowed_origins = [
 # In production behind nginx, frontend and backend share the same origin
 # You may add your public domain here if needed
 public_domain = os.getenv("PUBLIC_WEB_ORIGIN")
-if public_domain:
+if public_domain: 
     allowed_origins.append(public_domain)
 
 app.add_middleware(

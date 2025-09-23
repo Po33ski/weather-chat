@@ -25,5 +25,5 @@ services:
       #   value: https://weather-chat-6g4p.onrender.com
       # - key: VERIFY_ENV
       #   value: "true"
-    healthCheckPath: /api/health
+    healthCheckPath: /api/ 
     autoDeploy: true 

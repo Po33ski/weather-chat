@@ -54,6 +54,16 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     - If multiple types of weather data are requested, provide a comprehensive summary.
     - If user ask for just for some particular information of the weather like temperature, wind speed, humidity, pressure, sunrise/sunset times, then you have to provide only the information for this question and update your CONTEXT TEMPLATE with the information you provided to the user.
     
+     **CONTEXT TEMPLATE**
+    {
+        "city": "city_name",
+        "date": "date",
+        "date_range": "date_range",
+        "weather_information_type": "forecast | history | current weather information",
+        "specific_weather_information": "specific_weather_information",
+        "language": "language_name",
+    }
+    
     **OUTPUT FORMAT**
     Present the weather information in a structured format:
     - For current weather: Focus on immediate conditions
@@ -63,16 +73,6 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     
     Always include the city name and relevant dates in your response.
     If there are any errors or missing data, clearly indicate what information is unavailable.
-
-    **CONTEXT TEMPLATE**
-    {
-        "city": "city_name",
-        "date": "date",
-        "date_range": "date_range",
-        "weather_information_type": "forecast | history | current weather information",
-        "specific_weather_information": "specific_weather_information",
-        "language": "language_name",
-    }
 """ 
 
 
