@@ -1,16 +1,8 @@
 name: Deploy Weather Center Chat
 
 on:
-  workflow_dispatch:
-    inputs:
-      steps:
-        description: 'Select which steps to run in the pipeline (integration checks or all steps)'
-        required: true
-        type: choice
-        options:
-          - test
-          - all
-        default: 'all'
+  push:
+    branches: [ deploy ]
 
 
 env:
@@ -20,7 +12,6 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    if: ${{ inputs.steps == 'all' || inputs.steps == 'test'}}
     steps:
     - uses: actions/checkout@v4
     
@@ -65,7 +56,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/deploy' && needs.test.result == 'success') || (github.event_name == 'workflow_dispatch' && inputs.steps == 'all' && needs.test.result == 'success') }}
+    if: github.ref == 'refs/heads/deploy' 
     
     steps:
     - uses: actions/checkout@v4
