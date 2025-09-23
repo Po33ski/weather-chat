@@ -1,8 +1,6 @@
 name: Deploy Weather Center Chat
 
 on:
-  push:
-    branches: [ deploy ]
   workflow_dispatch:
     inputs:
       steps:
