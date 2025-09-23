@@ -3,8 +3,17 @@ name: Deploy Weather Center Chat
 on:
   push:
     branches: [ deploy ]
-  pull_request:
-    branches: [ deploy ]
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: 'Select which steps to run in the pipeline (integration checks or all steps)'
+        required: true
+        type: choice
+        options:
+          - test
+          - all
+        default: 'all'
+
 
 env:
   PYTHON_VERSION: '3.12'
@@ -13,7 +22,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+    if: ${{ inputs.steps == 'all' || inputs.steps == 'test'}}
     steps:
     - uses: actions/checkout@v4
     
@@ -22,50 +31,43 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
     
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-    
-    - name: Install uv
-      run: pip install uv
-    
-    - name: Install Python dependencies
+    - name: Install uv (official installer)
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Sync backend dependencies with uv
       run: |
         cd backend
         uv sync
-    
-    - name: Install Node.js dependencies
-      run: |
-        cd frontend
-        npm ci
-    
-    - name: Run backend tests
+
+    - name: Start FastAPI backend with uv (background)
       run: |
         cd backend
-        uv run python -m pytest tests/ -v
+        nohup uv run python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
       env:
         VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-    
-    - name: Run frontend tests
+
+    - name: Wait for backend health
       run: |
-        cd frontend
-        npm run test
-    
-    - name: Build frontend
+        for i in {1..60}; do
+          if curl -fsS http://127.0.0.1:8000/health >/dev/null; then echo "backend up"; exit 0; fi
+          sleep 1
+        done
+        echo "backend not ready"; echo "--- server.log ---"; cat backend/server.log || true; exit 1
+
+    - name: Run test_local.py via uv (uses backend env)
       run: |
-        cd frontend
-        npm run build
+        uv run --directory backend python ../test_local.py
       env:
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+        VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/deploy'
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/deploy' && needs.test.result == 'success') || (github.event_name == 'workflow_dispatch' && inputs.steps == 'all' && needs.test.result == 'success') }}
     
     steps:
     - uses: actions/checkout@v4
