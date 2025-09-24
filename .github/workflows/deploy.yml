@@ -10,16 +10,21 @@ env:
   NODE_VERSION: '18'
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-
     - name: Build Docker image (Nginx + FastAPI)
       run: |
         docker build \
           --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
           -t weather-center-chat:ci .
+
+  test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
 
     - name: Run container
       run: |
@@ -69,7 +74,7 @@ jobs:
         docker rm -f app || true
 
 
-  deploy:
+  render_deploy:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/deploy' 
