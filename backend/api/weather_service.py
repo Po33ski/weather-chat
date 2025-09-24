@@ -1,7 +1,6 @@
-import os
 import requests
 from datetime import datetime, date, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from .models import WeatherData
 from agent_system.src.utils.load_env_data import load_env_data, load_visual_crossing_api_key
 
@@ -160,3 +159,8 @@ class WeatherService:
         end_str = end_date.strftime('%Y-%m-%d')
         data = self._make_api_request(location, start_str, end_str, "days")
         return self._parse_history_weather(data, location) 
+
+
+# --- Weather API Endpoints ---
+# Create global instance
+weather_service = WeatherService()

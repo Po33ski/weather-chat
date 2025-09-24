@@ -99,3 +99,26 @@ class WeatherStatsResponse(BaseModel):
     location: str
     stats: Dict[str, Any]
     error: Optional[str] = None 
+
+class ChatRequest(BaseModel):
+    message: str
+    conversation_history: list[dict]  # Each dict should have text, sender, unitSystem, userId
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    unit_system: Optional[str] = None
+
+class ChatResponse(BaseModel):
+    success: bool
+    data: Optional[dict] = None
+    error: Optional[str] = None
+    user_id: Optional[str] = None
+
+class UnitSystemRequest(BaseModel):
+    unit_system: str
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+
+class UnitSystemResponse(BaseModel):
+    success: bool
+    data: Optional[dict] = None
+    error: Optional[str] = None

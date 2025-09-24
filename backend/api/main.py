@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
 from google.adk.sessions import InMemorySessionService
@@ -9,13 +8,13 @@ from google.adk.runners import Runner
 from google.genai import types
 import os
 from datetime import datetime
-from typing import Optional
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
     CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
-    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest
+    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest, 
+    ChatRequest, ChatResponse
 )
-from .weather_service import WeatherService
+from .weather_service import weather_service
 from .auth_service import auth_service
 import pyotp
 import qrcode
@@ -54,29 +53,6 @@ app.add_middleware(
 
 # Mount static files (conditioned for production only)
 # app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
-
-class ChatRequest(BaseModel):
-    message: str
-    conversation_history: list[dict]  # Each dict should have text, sender, unitSystem, userId
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-    unit_system: Optional[str] = None
-
-class ChatResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
-    user_id: Optional[str] = None
-
-class UnitSystemRequest(BaseModel):
-    unit_system: str
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-
-class UnitSystemResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
 
 @app.get("/health")
 def health():
@@ -198,8 +174,6 @@ async def chat_endpoint(request: ChatRequest):
             error=f"Error: {str(e)}"
         )
 
-# --- Weather API Endpoints ---
-weather_service = WeatherService()
 
 @app.post("/api/weather/current", response_model=CurrentWeatherResponse)
 def get_current_weather(request: CurrentWeatherRequest):
