@@ -14,37 +14,59 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python
+
+    - name: Build Docker image (Nginx + FastAPI)
+      run: |
+        docker build \
+          --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
+          -t weather-center-chat:ci .
+
+    - name: Run container
+      run: |
+        docker run -d --name app -p 8080:80 \
+          -e VISUAL_CROSSING_API_KEY='${{ secrets.VISUAL_CROSSING_API_KEY }}' \
+          -e GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}' \
+          -e NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
+          -e MODEL='gemini-2.0-flash' \
+          -e DISABLE_WEB_DRIVER='0' \
+          -e ENVIRONMENT='production' \
+          weather-center-chat:ci
+
+    - name: Wait for health via Nginx
+      run: |
+        for i in {1..120}; do
+          if curl -fsS http://localhost:8080/api/health >/dev/null; then echo "nginx+backend up"; exit 0; fi
+          sleep 1
+        done
+        echo "service not ready"; docker logs app || true; exit 1
+
+    - name: Set up Python (for client tests)
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-    
+
     - name: Install uv (official installer)
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Sync backend dependencies with uv
+    - name: Sync backend deps for requests
       run: |
         cd backend
         uv sync
 
-    - name: Start FastAPI backend with uv (background)
+    - name: Run test_local.py against Nginx
       run: |
-        cd backend
-        nohup uv run python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 > server.log 2>&1 &
+        BACKEND_BASE_URL=http://localhost:8080 uv run --directory backend python ../test_local.py
       env:
         VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
-    - name: Wait for backend health
+    - name: Teardown container
+      if: always()
       run: |
-        for i in {1..60}; do
-          if curl -fsS http://127.0.0.1:8000/health >/dev/null; then echo "backend up"; exit 0; fi
-          sleep 1
-        done
-        echo "backend not ready"; echo "--- server.log ---"; cat backend/server.log || true; exit 1
+        docker logs app || true
+        docker rm -f app || true
 
 
   deploy:

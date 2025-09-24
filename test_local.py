@@ -36,7 +36,9 @@ def test_health():
 def test_root():
     print("2) Root endpoint...")
     resp = _get("/")
-    assert resp.status_code == 200, f"/ status {resp.status_code}"
+    # When testing via Nginx (CI), this should be 200. If someone points BASE_URL to bare FastAPI,
+    # it may be 404 because backend does not define "/". Keep a friendly assertion message.
+    assert resp.status_code == 200, f"/ status {resp.status_code} (hint: use Nginx URL, not bare FastAPI)"
     data = resp.json()
     assert "message" in data and isinstance(data["message"], str)
     print("   ✅ / ok")
