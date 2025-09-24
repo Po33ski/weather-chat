@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info

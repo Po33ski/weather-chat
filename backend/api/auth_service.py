@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 if db.is_closed():
     db.connect()
 db_initialize()
-
+ 
 class AuthService:
     def __init__(self):
         self.session_service = InMemorySessionService()
