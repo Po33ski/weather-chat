@@ -19,12 +19,28 @@ jobs:
         docker build \
           --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
           -t weather-center-chat:ci .
+    - name: Save Docker image as artifact
+      run: |
+        docker save weather-center-chat:ci -o image.tar
+    - name: Upload image artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-image
+        path: image.tar
 
   test:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Download image artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: app-image
+        path: .
+    - name: Load Docker image
+      run: |
+        docker load -i image.tar
 
     - name: Run container
       run: |
