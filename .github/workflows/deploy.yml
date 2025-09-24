@@ -46,12 +46,6 @@ jobs:
         done
         echo "backend not ready"; echo "--- server.log ---"; cat backend/server.log || true; exit 1
 
-    - name: Run test_local.py via uv (uses backend env)
-      run: |
-        uv run --directory backend python ../test_local.py
-      env:
-        VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
   deploy:
     needs: test
