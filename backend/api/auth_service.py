@@ -146,7 +146,7 @@ class AuthService:
                 # Note: Google ADK sessions are managed by InMemorySessionService
                 # They will be cleaned up automatically when the service is restarted
                 
-                # Remove our session
+                # Remove our session (invalidate completely)
                 del self.user_sessions[session_id]
                 
                 return AuthResponse(
