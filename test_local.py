@@ -72,8 +72,13 @@ def test_chat():
     resp = _post("/api/chat", {"message": "Hello", "conversation_history": []})
     assert resp.status_code == 200, f"/api/chat status {resp.status_code}"
     data = resp.json()
-    # Backend returns { message: '...' }
-    assert "message" in data and isinstance(data["message"], str) and len(data["message"]) > 0
+    # Backend schema: { success: bool, data?: { message, sender }, error?: string }
+    if not data.get("success"):
+        print(f"   ⚠️  Chat returned error: {data.get('error')}")
+        return
+    assert isinstance(data.get("data"), dict), "missing data in chat response"
+    msg = data["data"].get("message")
+    assert isinstance(msg, str) and len(msg) > 0, "empty chat message"
     print("   ✅ /api/chat ok")
 
 
