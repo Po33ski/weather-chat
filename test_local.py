@@ -45,8 +45,6 @@ def test_root():
     ct = resp.headers.get("Content-Type", "")
     assert "text/html" in ct or "text/" in ct, f"unexpected content-type: {ct}"
     assert resp.text and "<html" in resp.text.lower(), "root did not return HTML"
-    data = resp.json()
-    assert "message" in data and isinstance(data["message"], str)
     print("   ✅ / ok")
 
 
