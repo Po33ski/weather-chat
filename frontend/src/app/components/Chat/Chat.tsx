@@ -7,6 +7,7 @@ import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
 import { extractWeatherJsonBlock, stripWeatherJsonBlock, type AiWeatherPayload } from '@/app/utils/formatAiWeather';
+import { AiWeatherPanel } from '@/app/components/AiWeatherPanel/AiWeatherPanel';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
@@ -227,31 +228,7 @@ export const Chat: React.FC = () => {
 
       {/* AI Weather Panel */}
       <aside className="border-t lg:border-t-0 lg:border-l border-gray-200 bg-white p-4 overflow-y-auto">
-        {aiWeather ? (
-          <div className="space-y-4">
-            {aiWeather.meta?.city && (
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">{aiWeather.meta.city}</span>
-                {aiWeather.meta.kind && <span className="ml-2">({aiWeather.meta.kind})</span>}
-                {aiWeather.meta.date && <div>{aiWeather.meta.date}</div>}
-                {aiWeather.meta.date_range && <div>{aiWeather.meta.date_range}</div>}
-              </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {aiWeather.items?.map((it, idx) => (
-                <div key={idx} className="flex items-center gap-3 rounded-lg border p-3 bg-gray-50">
-                  <span className="text-xl">{it.emoji || '🌤️'}</span>
-                  <div>
-                    <div className="text-sm font-semibold">{it.label}</div>
-                    {it.value && <div className="text-sm text-gray-700">{it.value}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500">{lang?.t('chat.subtitle')}</div>
-        )}
+        <AiWeatherPanel payload={aiWeather} />
       </aside>
     </div>
   );
