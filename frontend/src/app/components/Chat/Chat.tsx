@@ -6,6 +6,7 @@ import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
+import { extractWeatherJsonBlock, stripWeatherJsonBlock, type AiWeatherPayload } from '@/app/utils/formatAiWeather';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
@@ -15,6 +16,7 @@ export const Chat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [aiWeather, setAiWeather] = useState<AiWeatherPayload | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
   const auth = useContext(AuthContext);
@@ -50,8 +52,13 @@ export const Chat: React.FC = () => {
   // Send message to the backend
   const handleSendMessage = async () => {
     const unitSystem = unitSystemContext?.unitSystem.data || 'METRIC';
-    // You may want to get userId from context or props if needed
-    const userId = '';
+    // Pull identifiers from auth context so backend can link conversation
+    const sessionId = auth?.sessionId || '';
+    const userId = auth?.user?.user_id || '';
+    if (auth?.loading || !auth?.isAuthenticated || !sessionId) {
+      // Avoid sending until auth state is ready and session is available
+      return;
+    }
     if (!inputText.trim()) return;
 
     const userMessage: Message = {
@@ -78,14 +85,17 @@ export const Chat: React.FC = () => {
       const response = await weatherApi.getChatResponse(
         userMessage.text,
         conversationHistory,
-        '', // sessionId, if needed, can be passed as a prop
+        sessionId,
         unitSystem,
         userId
       );
       if (response.success && response.data) {
+        const payload = extractWeatherJsonBlock(response.data.message);
+        setAiWeather(payload);
+        const humanText = stripWeatherJsonBlock(response.data.message);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: response.data.message,
+          text: humanText || response.data.message,
           sender: 'ai',
           timestamp: new Date(),
           unitSystem: unitSystem,
@@ -125,9 +135,9 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
+    <div className="lg:grid lg:grid-cols-3 h-screen max-w-6xl mx-auto bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 lg:col-span-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div>
@@ -153,7 +163,7 @@ export const Chat: React.FC = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 lg:col-span-2">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             <p>{lang?.t('chat.subtitle')}</p>
@@ -194,7 +204,7 @@ export const Chat: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      <div className="bg-white border-t border-gray-200 p-4 lg:col-span-2">
         <div className="flex space-x-4">
           <input
             type="text"
@@ -207,13 +217,42 @@ export const Chat: React.FC = () => {
           />
           <button
             onClick={handleSendMessage}
-            disabled={!inputText.trim() || isLoading}
+            disabled={!auth?.isAuthenticated || auth?.loading || !inputText.trim() || isLoading}
             className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
           </button>
         </div>
       </div>
+
+      {/* AI Weather Panel */}
+      <aside className="border-t lg:border-t-0 lg:border-l border-gray-200 bg-white p-4 overflow-y-auto">
+        {aiWeather ? (
+          <div className="space-y-4">
+            {aiWeather.meta?.city && (
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">{aiWeather.meta.city}</span>
+                {aiWeather.meta.kind && <span className="ml-2">({aiWeather.meta.kind})</span>}
+                {aiWeather.meta.date && <div>{aiWeather.meta.date}</div>}
+                {aiWeather.meta.date_range && <div>{aiWeather.meta.date_range}</div>}
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {aiWeather.items?.map((it, idx) => (
+                <div key={idx} className="flex items-center gap-3 rounded-lg border p-3 bg-gray-50">
+                  <span className="text-xl">{it.emoji || '🌤️'}</span>
+                  <div>
+                    <div className="text-sm font-semibold">{it.label}</div>
+                    {it.value && <div className="text-sm text-gray-700">{it.value}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">{lang?.t('chat.subtitle')}</div>
+        )}
+      </aside>
     </div>
   );
 };

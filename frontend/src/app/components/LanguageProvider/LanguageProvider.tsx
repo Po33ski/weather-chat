@@ -135,7 +135,7 @@ const pl: Dictionary = {
   "hours.headline": "Pogoda dla {{address}}:",
   "common.back": "Wróć",
   "common.close": "Zamknij",
-  "brick.currentTemp": "Temperatura",
+  "brick.currentTemp": "Temperatura", 
   "brick.maxTemp": "Temp. maks.",
   "brick.minTemp": "Temp. min.",
   "brick.conditions": "Warunki",
@@ -163,7 +163,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLangState(l);
     if (typeof window !== "undefined") localStorage.setItem("lang", l);
   };
-
+ 
   const dict = lang === "pl" ? pl : en;
   const t = (k: string) => dict[k] ?? k;
 

@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Request, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel
 from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
 import agent_system.src.multi_tool_agent.agent as agent_module
 from google.adk.sessions import InMemorySessionService
@@ -10,13 +8,13 @@ from google.adk.runners import Runner
 from google.genai import types
 import os
 from datetime import datetime
-from typing import Optional
 from .models import (
     CurrentWeatherRequest, ForecastWeatherRequest, HistoryWeatherRequest,
     CurrentWeatherResponse, ForecastWeatherResponse, HistoryWeatherResponse,
-    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest
+    AuthResponse, LogoutRequest, SessionInfo, GoogleAuthRequest, 
+    ChatRequest, ChatResponse
 )
-from .weather_service import WeatherService
+from .weather_service import weather_service
 from .auth_service import auth_service
 import pyotp
 import qrcode
@@ -42,7 +40,7 @@ allowed_origins = [
 # In production behind nginx, frontend and backend share the same origin
 # You may add your public domain here if needed
 public_domain = os.getenv("PUBLIC_WEB_ORIGIN")
-if public_domain:
+if public_domain: 
     allowed_origins.append(public_domain)
 
 app.add_middleware(
@@ -55,29 +53,6 @@ app.add_middleware(
 
 # Mount static files (conditioned for production only)
 # app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
-
-class ChatRequest(BaseModel):
-    message: str
-    conversation_history: list[dict]  # Each dict should have text, sender, unitSystem, userId
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-    unit_system: Optional[str] = None
-
-class ChatResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
-    user_id: Optional[str] = None
-
-class UnitSystemRequest(BaseModel):
-    unit_system: str
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-
-class UnitSystemResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
 
 @app.get("/health")
 def health():
@@ -140,47 +115,44 @@ async def chat_endpoint(request: ChatRequest):
                 error="AI chat is not available. Please set the GOOGLE_API_KEY environment variable."
             )
 
-        # Extract latest unitSystem and userId from the last message in conversation_history if present
+        # Determine effective unit system (prefer last message, then request, default METRIC)
         last_msg = request.conversation_history[-1] if request.conversation_history else None
-        effective_unit_system = None
-        effective_user_id = None
-        if last_msg:
-            effective_unit_system = last_msg.get("unitSystem")
-            effective_user_id = last_msg.get("userId")
-        if not effective_unit_system:
-            effective_unit_system = request.unit_system or "METRIC"
-        if not effective_user_id:
-            effective_user_id = request.user_id or "anonymous"
+        effective_unit_system = (last_msg.get("unitSystem") if last_msg else None) or request.unit_system or "METRIC"
 
+        # Require a valid app session to use chat
+        if not request.session_id or not auth_service.validate_session(request.session_id):
+            return ChatResponse(
+                success=False,
+                error="Authentication required. Please sign in again."
+            )
+
+        effective_user_id = request.user_id or "anonymous"
         adk_session_id = None
-        if request.session_id:
-            if not auth_service.validate_session(request.session_id):
-                return ChatResponse(
-                    success=False,
-                    error="Invalid or expired session. Please login again."
-                )
-            user_data = auth_service.get_user_from_session(request.session_id)
-            if user_data:
-                effective_user_id = user_data["user_id"]
-                adk_session_id = user_data.get("adk_session_id")
-                auth_service.update_session_activity(request.session_id)
-        user_message = request.message
-        session_service = InMemorySessionService()
-        if adk_session_id:
-            try:
-                session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
-            except Exception:
-                session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
-        else:
-            session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
-        if request.session_id:
-            session.state["app_session_id"] = request.session_id
-        # Pass unit_system and user_id to the agent via session state for tool access
-        session.state["unit_system"] = effective_unit_system
-        session.state["user_id"] = effective_user_id
+
+        # Reuse a single long-lived session service across requests
+        session_service = auth_service.session_service
+
+        # Retrieve user and any existing ADK session id from the stored app session
+        session_rec = auth_service.user_sessions.get(request.session_id)
+        if session_rec:
+            effective_user_id = session_rec.get("user_id", effective_user_id)
+            adk_session_id = session_rec.get("adk_session_id")
+            auth_service.update_session_activity(request.session_id)
+
+        # Ensure we have an ADK session bound to this app session
+        if not adk_session_id:
+            adk_session = await session_service.create_session(app_name="weather_center", user_id=effective_user_id)
+            adk_session_id = adk_session.id
+            auth_service.update_session_data(request.session_id, {"adk_session_id": adk_session_id})
+
+        # Build runner using the shared session_service
         runner = Runner(agent=agent_module.root_agent, app_name="weather_center", session_service=session_service)
-        content = types.Content(role='user', parts=[types.Part(text=user_message)])
-        events = runner.run_async(user_id=effective_user_id, session_id=session.id, new_message=content)
+        content = types.Content(role='user', parts=[types.Part(text=request.message)])
+
+        # Prefer running within the established ADK session when available
+        selected_session_id = adk_session_id
+
+        events = runner.run_async(user_id=effective_user_id, session_id=selected_session_id, new_message=content)
         async for event in events:
             if event.is_final_response():
                 text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"
@@ -199,8 +171,6 @@ async def chat_endpoint(request: ChatRequest):
             error=f"Error: {str(e)}"
         )
 
-# --- Weather API Endpoints ---
-weather_service = WeatherService()
 
 @app.post("/api/weather/current", response_model=CurrentWeatherResponse)
 def get_current_weather(request: CurrentWeatherRequest):

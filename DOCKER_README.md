@@ -40,7 +40,7 @@ Optional
 ENVIRONMENT=production
 MODEL=gemini-2.0-flash
 DISABLE_WEB_DRIVER=0
-PUBLIC_WEB_ORIGIN=https://your-domain   # only if doing cross-origin
+PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
 ```
 
 Note

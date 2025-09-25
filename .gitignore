@@ -1,8 +1,13 @@
+###############################
+# Root .gitignore (consolidated)
+###############################
+
 # Environment Variables
 env-scratchpad.sh
 .env
 .env.local
 .env.*.local
+.env*.local
 
 # IDE
 .vscode/
@@ -22,7 +27,7 @@ yarn-error.log*
 
 # Dependencies
 node_modules/
-__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -31,16 +36,31 @@ env/
 venv/
 .venv/
 
-# Build outputs
+# Frontend build artifacts
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+frontend/coverage/
+frontend/.pnp
+frontend/.pnp.js
+frontend/.yarn/install-state.gz
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/build/
+
+# Backend build artifacts
 dist/
 build/
 *.egg-info/
 
-# Database
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
+# Certificates/keys
+*.pem
+
 # Temporary files
 *.tmp
-*.temp 
+*.temp

@@ -15,7 +15,7 @@ services:
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: MODEL
-        value: gemini-2.0-flash
+        value: gemini-2.5-flash
       - key: DISABLE_WEB_DRIVER
         value: 0
       - key: ENVIRONMENT
@@ -25,5 +25,5 @@ services:
       #   value: https://weather-chat-6g4p.onrender.com
       # - key: VERIFY_ENV
       #   value: "true"
-    healthCheckPath: /api/health
+    healthCheckPath: /api/ 
     autoDeploy: true 

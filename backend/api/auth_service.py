@@ -1,25 +1,20 @@
 import os
 import uuid
 import hashlib
-import secrets
 import requests
-import json
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from google.adk.sessions import InMemorySessionService
 from .models import AuthResponse, SessionInfo, GoogleAuthRequest, GoogleUserInfo
 from database import User, db, initialize as db_initialize
 import pyotp
-import qrcode
-from io import BytesIO
-from fastapi import Depends, Form
-from fastapi.responses import StreamingResponse
+
 
 # Ensure the database and tables are initialized
 if db.is_closed():
     db.connect()
 db_initialize()
-
+ 
 class AuthService:
     def __init__(self):
         self.session_service = InMemorySessionService()
@@ -151,7 +146,7 @@ class AuthService:
                 # Note: Google ADK sessions are managed by InMemorySessionService
                 # They will be cleaned up automatically when the service is restarted
                 
-                # Remove our session
+                # Remove our session (invalidate completely)
                 del self.user_sessions[session_id]
                 
                 return AuthResponse(
