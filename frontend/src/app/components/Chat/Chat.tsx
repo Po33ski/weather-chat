@@ -90,6 +90,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         userId
       );
       if (response.success && response.data) {
+        console.log(response.data);
         const parsed = parseAiMessage(response.data.message);
         onMetaChange && onMetaChange(parsed.metaData);
         onDataChange && onDataChange(parsed.aiChatData);

@@ -125,7 +125,7 @@ export const ChatPage = () => {
         </div>
         {/* AI Weather Panel below chat */}
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <AiWeatherPanel payload={{ meta: { city: aiMeta?.city ?? null, kind: aiMeta?.kind ?? null, date: aiMeta?.date ?? null, date_range: aiMeta?.date_range ?? null, language: aiMeta?.language ?? null, unit_system: aiMeta?.unit_system ?? null }, items: [] } as any} />
+          <AiWeatherPanel meta={aiMeta} data={aiData} />
         </div>
       </div>
     </>

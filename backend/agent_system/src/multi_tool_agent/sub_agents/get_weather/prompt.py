@@ -43,8 +43,8 @@ GET_WEATHER_AGENT_INSTRUCTION = """
        Remember user probably will not provide the date in the format YYYY-MM-DD, so you have to convert it to the YYYY-MM-DD format for your tools.
        If user provided different date format, then you have to convert it to the YYYY-MM-DD format for your tools.
       - If user provide a date range but using day of week like monday, tuesday, wednesday, thursday, friday, saturday, sunday, then you should know from context for which date range the user is asking for.
-    - Present the weather information in your OUTPUT FORMAT.
-    - If multiple types of weather data are requested, provide a comprehensive summarybut only in the human text and not in the JSON. At the end explain to the user taht you can provide exactly data but only for one city/date range/weather information type.
+    - Present the weather information in your OUTPUT FORMAT section.
+    - If multiple types of weather data are requested, provide a comprehensive summary but only in the human text and not in the JSON. At the end explain to the user taht you can provide exactly data but only for one city/date range/weather information type.
     - If user ask for just for some particular information of the weather like temperature, wind speed, humidity, pressure, sunrise/sunset times, then you have to provide only the information for this question and update your CONTEXT TEMPLATE with the information you provided to the user.
     
      **CONTEXT TEMPLATE**
@@ -66,18 +66,25 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     - Do NOT put any other text below or above the fenced block besides the short text.
     - Do NOT add extra fences or code blocks. Only one weather-json block.
     - The UI will parse the human text as the part before the fenced block, and the JSON from inside the fenced block.
-
-    Example skeleton (follow exactly):
+    - Example output:
+    ```
     Found the requested weather information.
-
+    ```
     ```weather-json
     { ... JSON as specified below ... }
     ```
+
+
 
     **JSON FORMAT**
     INSTRUCTIONS FOR JSON FORMAT (VERY IMPORTANT):
     - Detect user's requested kind from your CONTEXT TEMPLATE (current | forecast | history) and output ONE of the schemas from your JSON FORMAT section.
     - Put only the raw data from the weather information, do not add any other text or comments. Do not add any units or other information.
+    - Do not use bullet points in the JSON. 
+    - Use only commas. 
+    - Use only the fields that are in the JSON FORMAT section. 
+    - Do not add any other fields.
+    - use '{' '}' and [] as in the example.
     - in [] may be many objects because there can be many days, so you have to put them all in the JSON.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range appropriately.
