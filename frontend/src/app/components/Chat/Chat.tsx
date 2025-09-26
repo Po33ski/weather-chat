@@ -6,7 +6,6 @@ import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
-import { stripWeatherJsonBlock } from '@/app/utils/formatAiWeather';
 import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 
@@ -18,7 +17,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [aiWeather, setAiWeather] = useState<AiWeatherPayload | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
   const auth = useContext(AuthContext);
@@ -95,7 +93,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         const parsed = parseAiMessage(response.data.message);
         onMetaChange && onMetaChange(parsed.metaData);
         onDataChange && onDataChange(parsed.aiChatData);
-        const humanText = parsed.humanText || stripWeatherJsonBlock(response.data.message);
+        const humanText = parsed.humanText;
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: humanText || response.data.message,
