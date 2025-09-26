@@ -5,6 +5,8 @@ import { WeatherView } from "@/app/components/WeatherView/WeatherView";
 import { Brick } from "@/app/components/Brick/Brick";
 import { List } from "@/app/components/List/List";
 import type { HistoryAndForecastDay } from "@/app/types/interfaces";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 
 // Map common labels to Brick kindOfData keys
 const KIND_MAP: Array<{ match: RegExp; kind: string }> = [
@@ -37,6 +39,7 @@ function parseNumberLike(value?: string): number | null {
 }
 
 export function AiWeatherPanel({ payload }: { payload: AiWeatherPayload | null }) {
+  const lang = useContext(LanguageContext);
   const kind = payload?.meta?.kind ?? null;
 
   // Build a partial CurrentDataDay object from items (best-effort)
@@ -76,7 +79,7 @@ export function AiWeatherPanel({ payload }: { payload: AiWeatherPayload | null }
   }, [payload, kind]);
 
   if (!payload) {
-    return <div className="text-sm text-gray-500">Brak danych do wyświetlenia.</div>;
+    return <div className="text-sm text-gray-500">{lang?.t('chat.subtitle')}</div>;
   }
 
   // Preferred rich rendering for current weather using existing tiles
@@ -116,12 +119,12 @@ export function AiWeatherPanel({ payload }: { payload: AiWeatherPayload | null }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="text-sm text-gray-600">
-        {payload.meta?.city && <span className="font-semibold">{payload.meta.city}</span>}
-        {payload.meta?.date && <div>{payload.meta.date}</div>}
-        {payload.meta?.date_range && <div>{payload.meta.date_range}</div>}
-      </div>
+      <div className="space-y-4">
+        <div className="text-sm text-gray-600">
+          {payload.meta?.city && <span className="font-semibold">{payload.meta.city}</span>}
+          {payload.meta?.date && <div>{payload.meta.date}</div>}
+          {payload.meta?.date_range && <div>{payload.meta.date_range}</div>}
+        </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {(payload.items || []).map((it, idx) => {
           const kindOfData = toKind(it.label || "") || "conditions";
