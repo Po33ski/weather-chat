@@ -6,11 +6,13 @@ import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
-import { extractWeatherJsonBlock, stripWeatherJsonBlock, type AiWeatherPayload } from '@/app/utils/formatAiWeather';
+import { stripWeatherJsonBlock } from '@/app/utils/formatAiWeather';
+import { parseAiMessage } from '@/app/utils/parseAiMessage';
+import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
-export const Chat: React.FC<{ onAiPayload?: (p: AiWeatherPayload | null) => void }> = ({ onAiPayload }) => {
+export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataChange?: (d: AiChatData | null) => void }> = ({ onMetaChange, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -90,10 +92,10 @@ export const Chat: React.FC<{ onAiPayload?: (p: AiWeatherPayload | null) => void
         userId
       );
       if (response.success && response.data) {
-        const payload = extractWeatherJsonBlock(response.data.message);
-        setAiWeather(payload);
-        onAiPayload && onAiPayload(payload);
-        const humanText = stripWeatherJsonBlock(response.data.message);
+        const parsed = parseAiMessage(response.data.message);
+        onMetaChange && onMetaChange(parsed.metaData);
+        onDataChange && onDataChange(parsed.aiChatData);
+        const humanText = parsed.humanText || stripWeatherJsonBlock(response.data.message);
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: humanText || response.data.message,

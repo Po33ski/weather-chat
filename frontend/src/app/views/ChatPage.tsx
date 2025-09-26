@@ -3,15 +3,17 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { Chat } from "../components/Chat/Chat";
 import { AiWeatherPanel } from "../components/AiWeatherPanel/AiWeatherPanel";
-import type { AiWeatherPayload } from "@/app/utils/formatAiWeather";
+import type { AiMeta, AiChatData } from "@/app/types/aiChat";
 import { AuthLoading } from '../components/AuthLoading/AuthLoading';
 import { AuthWindow } from '../components/AuthWindow/AuthWindow';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { LanguageContext } from '../contexts/LanguageContext';
 
+
 export const ChatPage = () => {
-  const [aiWeather, setAiWeather] = useState<AiWeatherPayload | null>(null);
+  const [aiMeta, setAiMeta] = useState<AiMeta | null>(null);
+  const [aiData, setAiData] = useState<AiChatData | null>(null);
 
   // All browser-dependent hooks and logic go here
   const auth = useContext(AuthContext);
@@ -119,12 +121,11 @@ export const ChatPage = () => {
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         {/* Chat (shorter) */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-[45vh] overflow-y-auto">
-          <Chat onAiPayload={setAiWeather} />
+          <Chat onMetaChange={setAiMeta} onDataChange={setAiData} />
         </div>
-
         {/* AI Weather Panel below chat */}
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <AiWeatherPanel payload={aiWeather} />
+          <AiWeatherPanel payload={{ meta: { city: aiMeta?.city ?? null, kind: aiMeta?.kind ?? null, date: aiMeta?.date ?? null, date_range: aiMeta?.date_range ?? null, language: aiMeta?.language ?? null, unit_system: aiMeta?.unit_system ?? null }, items: [] } as any} />
         </div>
       </div>
     </>

@@ -28,7 +28,7 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     - If you recognize that user use different specific weather information then you should change the specific weather information in your CONTEXT TEMPLATE to the specific weather information which user is currently using.
     - Analyze the user's request (and your CONTEXT TEMPLATE) to determine what type of weather information they need:
        - Current weather: Use get_current_weather
-       - Future forecast: Use get_forecast
+       - Future forecast/Prediction: Use get_forecast
        - Historical data: Use get_history_weather with appropriate date range
     - If user asks for weather saying: today, tomorrow, yestarday or something similar then use your tool get_day to get the current day (today) and try to match the date for your tools so that it will present the real date.
        - If user asks for yesterday then you have to substract one day from the current day.
@@ -43,15 +43,8 @@ GET_WEATHER_AGENT_INSTRUCTION = """
        Remember user probably will not provide the date in the format YYYY-MM-DD, so you have to convert it to the YYYY-MM-DD format for your tools.
        If user provided different date format, then you have to convert it to the YYYY-MM-DD format for your tools.
       - If user provide a date range but using day of week like monday, tuesday, wednesday, thursday, friday, saturday, sunday, then you should know from context for which date range the user is asking for.
-    - Present the weather information in a clear, organized format including:
-       - Temperature (current, high/low, or range)
-       - Weather conditions
-       - Wind speed and direction
-       - Humidity
-       - Pressure
-       - Sunrise/sunset times (if available)
-       and other information that you can get from the weather information!
-    - If multiple types of weather data are requested, provide a comprehensive summary.
+    - Present the weather information in your OUTPUT FORMAT.
+    - If multiple types of weather data are requested, provide a comprehensive summarybut only in the human text and not in the JSON. At the end explain to the user taht you can provide exactly data but only for one city/date range/weather information type.
     - If user ask for just for some particular information of the weather like temperature, wind speed, humidity, pressure, sunrise/sunset times, then you have to provide only the information for this question and update your CONTEXT TEMPLATE with the information you provided to the user.
     
      **CONTEXT TEMPLATE**
@@ -65,11 +58,11 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     }
     
     **OUTPUT FORMAT (STRICT, THREE TEMPLATES)**
-    SINGLE MESSAGE OUTPUT CONTRACT (VERY IMPORTANT):
+    INSTRUCTIONS FOR OUTPUT FORMAT (VERY IMPORTANT):
     - You MUST return everything in ONE message/string in the following order:
       a) Short human text (1–3 sentences). No lists/bullets.
       b) A blank line.
-      c) Exactly ONE fenced JSON block labeled weather-json.
+      c) Exactly ONE fenced JSON block labeled weather-json see your JSON FORMAT section.
     - Do NOT put any other text below or above the fenced block besides the short text.
     - Do NOT add extra fences or code blocks. Only one weather-json block.
     - The UI will parse the human text as the part before the fenced block, and the JSON from inside the fenced block.
@@ -81,8 +74,15 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     { ... JSON as specified below ... }
     ```
 
-    Detect user's requested kind from your CONTEXT TEMPLATE (current | forecast | history) and output ONE of the following schemas:
-
+    **JSON FORMAT**
+    INSTRUCTIONS FOR JSON FORMAT (VERY IMPORTANT):
+    - Detect user's requested kind from your CONTEXT TEMPLATE (current | forecast | history) and output ONE of the schemas from your JSON FORMAT section.
+    - Put only the raw data from the weather information, do not add any other text or comments. Do not add any units or other information.
+    - in [] may be many objects because there can be many days, so you have to put them all in the JSON.
+    - Include only the JSON inside the fence. No extra markdown/comments inside the block.
+    - Fill meta.city and meta.kind always; set date/date_range appropriately.
+    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
+  
     a) CURRENT WEATHER TEMPLATE
     ```weather-json
     {
@@ -95,13 +95,13 @@ GET_WEATHER_AGENT_INSTRUCTION = """
         "unit_system": "US|METRIC|UK"
       },
       "current": {
-        "temp": "18 °C",
-        "tempmax": "19 °C",
-        "tempmin": "12 °C",
-        "windspeed": "22 km/h",
-        "winddir": "180",
-        "pressure": "1016 hPa",
-        "humidity": "65%",
+        "temp": 18,
+        "tempmax": 19,
+        "tempmin": 12,
+        "windspeed": 22,
+        "winddir": 180,
+        "pressure": 1016,
+        "humidity": 65,
         "sunrise": "06:12",
         "sunset": "19:18",
         "conditions": "Lekki deszcz"
@@ -123,16 +123,16 @@ GET_WEATHER_AGENT_INSTRUCTION = """
       "days": [
         {
           "datetime": "2025-08-04",
-          "temp": "18 °C",
-          "tempmax": "21 °C",
-          "tempmin": "14 °C",
-          "winddir": "200",
-          "windspeed": "18 km/h",
+          "temp": 18,
+          "tempmax": 21,
+          "tempmin": 14,
+          "winddir": 200,
+          "windspeed": 18,
           "conditions": "Pochmurno",
           "sunrise": "06:10",
           "sunset": "19:20",
-          "pressure": "1014 hPa",
-          "humidity": "68%"
+          "pressure": 1014,
+          "humidity": 68
         }
       ]
     }
@@ -152,23 +152,24 @@ GET_WEATHER_AGENT_INSTRUCTION = """
       "days": [
         {
           "datetime": "2025-08-01",
-          "temp": "17 °C",
-          "tempmax": "19 °C",
-          "tempmin": "13 °C",
-          "winddir": "160",
-          "windspeed": "12 km/h",
+          "temp": 17,
+          "tempmax": 19,
+          "tempmin": 13,
+          "winddir": 160,
+          "windspeed": 12,
           "conditions": "Przelotne opady",
           "sunrise": "06:05",
           "sunset": "19:25",
-          "pressure": "1018 hPa",
-          "humidity": "70%"
+          "pressure": 1018,
+          "humidity": 70
         }
       ]
     }
     ```
 
     RULES:
-    - Use user's language and convert values to unit_system before output.
+    - JSON MUST contain only raw numeric values without unit symbols (no °C, km/h, %, hPa). The UI will format units.
+    - Short human text can be minimal and should avoid numeric details; rely on JSON for data.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range appropriately.
     - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
