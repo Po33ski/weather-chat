@@ -3,6 +3,8 @@ import { useMemo } from "react";
 import type { AiWeatherPayload, AiWeatherItem } from "@/app/utils/formatAiWeather";
 import { WeatherView } from "@/app/components/WeatherView/WeatherView";
 import { Brick } from "@/app/components/Brick/Brick";
+import { List } from "@/app/components/List/List";
+import type { HistoryAndForecastDay } from "@/app/types/interfaces";
 
 // Map common labels to Brick kindOfData keys
 const KIND_MAP: Array<{ match: RegExp; kind: string }> = [
@@ -91,6 +93,28 @@ export function AiWeatherPanel({ payload }: { payload: AiWeatherPayload | null }
   }
 
   // Fallback: render items as Brick tiles side-by-side using label/value
+  // If forecast/history with days[] -> render List
+  if ((kind === "forecast" || kind === "history") && Array.isArray((payload as any).days)) {
+    const days: HistoryAndForecastDay[] = ((payload as any).days || []).map((d: any) => ({
+      datetime: d.datetime ?? null,
+      temp: parseNumberLike(d.temp),
+      tempmax: parseNumberLike(d.tempmax),
+      tempmin: parseNumberLike(d.tempmin),
+      winddir: parseNumberLike(d.winddir),
+      windspeed: parseNumberLike(d.windspeed),
+      conditions: d.conditions ?? null,
+      sunrise: d.sunrise ?? null,
+      sunset: d.sunset ?? null,
+      pressure: d.pressure ?? null,
+      humidity: d.humidity ?? null,
+    }));
+    return (
+      <div className="space-y-4">
+        <List data={days as any} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="text-sm text-gray-600">
