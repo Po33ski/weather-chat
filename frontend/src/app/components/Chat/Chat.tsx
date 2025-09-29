@@ -165,7 +165,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
       </div>
 
       {/* Messages */}
-      <div className="hidden md:block flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-600 mt-8">
             <p>{lang?.t('chat.subtitle')}</p>
@@ -206,7 +206,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
       </div>
 
       {/* Input */}
-      <div className="hidden md:block bg-white/80 backdrop-blur border-t border-blue-200 p-3 sm:p-4 rounded-b-2xl">
+      <div className="bg-white/80 backdrop-blur border-t border-blue-200 p-3 sm:p-4 rounded-b-2xl">
         <div className="flex gap-2 sm:gap-4">
           <input
             type="text"
