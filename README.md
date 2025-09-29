@@ -174,10 +174,6 @@ weather-center-chat/
   - `List` for forecast/history
 - Global Language and Unit contexts drive formatting; AI JSON stays unit‑agnostic.
 
-## License
-
-MIT
-
 
 
 
