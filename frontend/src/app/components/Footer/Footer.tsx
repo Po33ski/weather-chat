@@ -16,9 +16,9 @@ export function Footer() {
   }, []);
   return (
     <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-center md:text-left">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="justify-self-start text-left">
             <p className="text-sm text-gray-300">
               Created by <span className="font-semibold text-white">Jarek Popardowski</span>
             </p>
@@ -26,13 +26,10 @@ export function Footer() {
               Weather Center Chat Application
             </p>
           </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-300">
-              © 2024 Weather Center
-            </div>
-            <InfoButton />
-          </div>
+
+          <div className="justify-self-center text-center text-sm text-gray-300">© 2025 Weather Center</div>
+
+          <div className="justify-self-end"><InfoButton /></div>
         </div>
       </div>
       {infoModalContext?.isInfoModalShown && infoModal}

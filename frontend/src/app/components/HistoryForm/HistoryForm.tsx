@@ -32,12 +32,12 @@ export const HistoryForm = ({
     <div className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 py-12">
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 w-full max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="text-center mb-6">
+          {/* <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">
               {lang?.t('form.historyWeather') || 'Weather History'}
             </h2>
             <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div>
-          </div>
+          </div> */}
           
           <div>
             <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">

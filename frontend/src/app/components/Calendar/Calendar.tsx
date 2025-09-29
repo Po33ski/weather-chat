@@ -24,7 +24,7 @@ export function Calendar({
   const now = new Date();
   // <div className="mt-[100px] -mb-[100px] transform rotate-90 md:transform-none md:mt-0 md:mb-0">
   return (
-    <div className="flex flex-col md:flex-row items-center md:gap-x-4 space-y-4 md:space-y-0">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6">
       <div className="flex-1 w-full">
         <DatePicker
           id="startDate"
@@ -40,9 +40,9 @@ export function Calendar({
         />
       </div>
       
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center md:mx-2">
         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-          <i className="wi wi-direction-right text-blue-600 text-lg" />
+          <i className="wi wi-direction-right text-blue-600 text-lg rotate-90 md:rotate-0" />
         </div>
       </div>
 

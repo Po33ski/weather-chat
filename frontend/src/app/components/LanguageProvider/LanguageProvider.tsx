@@ -52,6 +52,7 @@ const en: Dictionary = {
   "day.pressure": "Air Pressure",
   "day.conditions": "Conditions",
   "form.check": "Check",
+  "form.dateRange": "Date Range",
   "desc.current": "Enter the location for which you want to check the weather for today in the search box at the top.",
   "desc.forecast": "Enter the location for which you want to check the weather forecast for the next 15 days in the search box at the top.",
   "desc.history": "Enter the location you want to find past weather for in the search box at the top. Please check the weather for a maximum of 2 weeks due to server restrictions",

@@ -27,10 +27,10 @@ export const CurrentForm = ({
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 w-full max-w-md">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            {/* <h2 className="text-2xl font-bold text-gray-800 mb-2">
               {lang?.t('form.currentWeather') || 'Current Weather'}
-            </h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div>
+            </h2> */}
+            {/* <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div> */}
           </div>
           
           <div>

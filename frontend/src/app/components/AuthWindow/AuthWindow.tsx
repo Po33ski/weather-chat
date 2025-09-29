@@ -14,16 +14,16 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
 }) => {
   const lang = useContext(LanguageContext);
   return (
-    <div className="flex flex-col h-screen w-full max-w-4xl mx-auto bg-gray-50">
-      <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center justify-between">
+    <div className="flex flex-col h-screen w-full max-w-4xl mx-auto bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-sm">
+      <div className="bg-white/80 backdrop-blur border-b border-blue-200 px-4 py-3 sm:px-6 sm:py-4 rounded-t-2xl">
+        <div className="grid grid-cols-[1fr_auto] items-center">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{lang?.t('chat.title')}</h1>
-            <p className="text-xs sm:text-sm text-gray-600">{lang?.t('chat.subtitle')}</p>
+            <p className="hidden sm:block text-xs sm:text-sm text-gray-600">{lang?.t('chat.subtitle')}</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="justify-self-end flex items-center space-x-2">
             <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-xs text-gray-500">
+            <span className="hidden sm:inline text-xs text-gray-500">
               {isConnected ? lang?.t('chat.connected') : lang?.t('chat.disconnected')}
             </span>
           </div>
@@ -31,7 +31,7 @@ export const AuthWindow: React.FC<AuthWindowProps> = ({
       </div>
       <div className="flex-1 flex items-center justify-center p-2 sm:p-6">
         <div className="w-full max-w-xs sm:max-w-md mx-auto">
-          <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-md border border-gray-100">
+          <div className="p-3 sm:p-5 bg-white rounded-2xl shadow-md border border-blue-100">
             <div className="text-center">
               <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-1 sm:mb-2">{lang?.t('auth.signinTitle')}</h3>
               <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-4">{lang?.t('auth.chooseMethod')}</p>
