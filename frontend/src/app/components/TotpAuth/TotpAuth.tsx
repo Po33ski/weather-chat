@@ -10,6 +10,7 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
   const [code, setCode] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isSetupMode, setIsSetupMode] = useState(true);
+  const [stage, setStage] = useState<'entry' | 'setupOrVerify'>('entry');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -97,15 +98,21 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
   return (
     <div className="w-full">
       <div className="text-center mb-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {isSetupMode ? lang?.t('totp.setupTitle') : lang?.t('totp.verifyTitle')}
-        </h3>
-        <p className="text-sm text-gray-600">
-          {isSetupMode 
-            ? lang?.t('auth.chooseMethod')
-            : lang?.t('totp.verifyTitle')
-          }
-        </p>
+        {stage === 'entry' ? (
+          <>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">TOTP Authentication</h3>
+            <p className="text-sm text-gray-600">Enter email, then continue</p>
+          </>
+        ) : (
+          <>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {isSetupMode ? lang?.t('totp.setupTitle') : lang?.t('totp.verifyTitle')}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {isSetupMode ? 'Generate QR and scan in the app' : 'Enter your 6-digit code'}
+            </p>
+          </>
+        )}
       </div>
 
       {/* Email Input */}
@@ -121,52 +128,75 @@ export const TotpAuth: React.FC<TotpAuthProps> = ({ setupTotp, verifyTotp, check
         />
       </div>
 
-      {/* Action Buttons */}
-      <div className="mb-4 space-y-2">
-        <button
-          onClick={handleCheckStatus}
-          disabled={isLoading || !email}
-          className="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 disabled:opacity-50"
-        >
-          {lang?.t('totp.checkStatus')}
-        </button>
-        
-        {isSetupMode ? (
+      {/* Primary CTA first */}
+      {stage === 'entry' ? (
+        <div className="mb-4 space-y-2">
           <button
-            onClick={handleSetup}
+            onClick={async () => {
+              await handleCheckStatus();
+              setStage('setupOrVerify');
+            }}
             disabled={isLoading || !email}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
-            {isLoading ? '...' : lang?.t('totp.setupCta')}
+            Zaloguj się z TOTP
           </button>
-        ) : (
-          <>
-            {/* Code Input */}
-            <div className="mb-4">
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-               {lang?.t('totp.verifyTitle')}
-              </label>
-              <input
-                type="text"
-                id="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter 6-digit code"
-                maxLength={6}
-              />
-            </div>
-            
+        </div>
+      ) : (
+        <div className="mb-4 space-y-2">
+          {isSetupMode ? (
             <button
-              onClick={handleVerify}
-              disabled={isLoading || !email || !code}
-              className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
+              onClick={handleSetup}
+              disabled={isLoading || !email}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-               {isLoading ? '...' : lang?.t('totp.verifyCta')}
+              {isLoading ? '...' : lang?.t('totp.setupCta')}
             </button>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              {/* Code Input */}
+              <div className="mb-4">
+                <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+                 {lang?.t('totp.verifyTitle')}
+                </label>
+                <input
+                  type="text"
+                  id="code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter 6-digit code"
+                  maxLength={6}
+                />
+              </div>
+              
+              <button
+                onClick={handleVerify}
+                disabled={isLoading || !email || !code}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
+                 {isLoading ? '...' : lang?.t('totp.verifyCta')}
+              </button>
+            </>
+          )}
+
+          {/* Switch Mode */}
+          <div className="text-center">
+            <button
+              onClick={() => {
+                setIsSetupMode(!isSetupMode);
+                setQrCodeUrl(null);
+                setCode('');
+                setError(null);
+                setSuccess(null);
+              }}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {isSetupMode ? lang?.t('totp.already') : lang?.t('totp.needSetup')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* QR Code Display */}
       {qrCodeUrl && (

@@ -18,12 +18,20 @@ export function WeatherView({
   address = capitalizeFirstLetter(address);
   const lang = useContext(LanguageContext);
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4">
       {address !== null && (
-        <MyText>{(lang?.t('weather.currentFor') || '').replace('{{address}}', address)}</MyText>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            {(lang?.t('weather.currentFor') || '').replace('{{address}}', address)}
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div>
+        </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="flex justify-self-center">
+      
+      {/* Main weather cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Temperature cards - highlighted */}
+        <div className="sm:col-span-2 lg:col-span-1">
           <Brick
             data={data["temp"]}
             kindOfData={"temp"}
@@ -32,7 +40,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["tempmax"]}
             kindOfData={"tempmax"}
@@ -41,7 +50,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["tempmin"]}
             kindOfData={"tempmin"}
@@ -50,8 +60,9 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
+        
         {whereFrom !== 'chat' && (
-          <div className="flex justify-self-center">
+          <div>
             <Brick
               data={data["conditions"]}
               kindOfData={"conditions"}
@@ -61,7 +72,8 @@ export function WeatherView({
             />
           </div>
         )}
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["windspeed"]}
             kindOfData={"windspeed"}
@@ -70,7 +82,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["winddir"]}
             kindOfData={"winddir"}
@@ -79,7 +92,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["pressure"]}
             kindOfData={"pressure"}
@@ -88,7 +102,8 @@ export function WeatherView({
             whereFrom={whereFrom}
             />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["humidity"]}
             kindOfData={"humidity"}
@@ -97,7 +112,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["sunrise"]}
             kindOfData={"sunrise"}
@@ -106,7 +122,8 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
+        
+        <div>
           <Brick
             data={data["sunset"]}
             kindOfData={"sunset"}
