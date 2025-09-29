@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactPortal } from "react";
+import { createPortal } from "react-dom";
 import React from "react";
 import { Chat } from "../components/Chat/Chat";
 import { AiWeatherPanel } from "../components/AiWeatherPanel/AiWeatherPanel";
@@ -9,22 +10,32 @@ import { AuthWindow } from '../components/AuthWindow/AuthWindow';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { LanguageContext } from '../contexts/LanguageContext';
+import { BrickModalContext } from "../contexts/BrickModalContext";
+import type { BrickModalContextType } from "../types/types";
+import { ModalBrick } from "../components/ModalBrick/ModalBrick";
+
 
 
 export const ChatPage = () => {
   const [aiMeta, setAiMeta] = useState<AiMeta | null>(null);
   const [aiData, setAiData] = useState<AiChatData | null>(null);
+  const [brickModal, setBrickModal] = useState<ReactPortal | null>(null);
 
   // All browser-dependent hooks and logic go here
   const auth = useContext(AuthContext);
+  const brickModalContext = useContext<BrickModalContextType | null>(BrickModalContext);
   const lang = useContext(LanguageContext);
   const [googleReady, setGoogleReady] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const googleButtonRef = React.useRef<HTMLDivElement>(null);
 
+
+
   // Google OAuth initialization
   useEffect(() => {
+    const portal = createPortal(<ModalBrick />, document.body);
+    setBrickModal(portal);
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (typeof window !== 'undefined' && GOOGLE_CLIENT_ID) {
       if ((window as any).google) {
@@ -70,6 +81,12 @@ export const ChatPage = () => {
     }
   }, [auth?.isAuthenticated, googleReady]);
 
+  useEffect(() => {
+    const createBrickModal = createPortal(<ModalBrick />, document.body);
+    setBrickModal(createBrickModal);
+
+  }, []);
+  
   const initializeGoogleOAuth = () => {
     const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (typeof window !== 'undefined' && (window as any).google && GOOGLE_CLIENT_ID) {
@@ -127,6 +144,7 @@ export const ChatPage = () => {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <AiWeatherPanel meta={aiMeta} data={aiData} />
         </div>
+        {brickModalContext?.isModalShownInChatWeatherPage && brickModal}
       </div>
     </>
   );

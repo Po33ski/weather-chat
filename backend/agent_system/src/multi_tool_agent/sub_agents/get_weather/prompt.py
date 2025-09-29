@@ -60,7 +60,7 @@ GET_WEATHER_AGENT_INSTRUCTION = """
     **OUTPUT FORMAT (STRICT, THREE TEMPLATES)**
     INSTRUCTIONS FOR OUTPUT FORMAT (VERY IMPORTANT):
     - You MUST return everything in ONE message/string in the following order:
-      a) Short human text (1–3 sentences). No lists/bullets.
+      a) Short human text (1–3 sentences) which includes weather conditions plus it may include other interesting information about the weather if you can not put it in the JSON. No lists/bullets.
       b) A blank line.
       c) Exactly ONE fenced JSON block labeled weather-json see your JSON FORMAT section.
     - Do NOT put any other text below or above the fenced block besides the short text.
