@@ -2,9 +2,10 @@ import { useContext } from "react";
 import { Icon } from "../Icon/Icon";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { BrickModalContext } from "@/app/contexts/BrickModalContext";
-import { checkSign, findDirection } from "@/app/functions/functions";
+import { checkSign, findDirection, translateConditions } from "@/app/functions/functions";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { systemsConvert } from "@/app/functions/functions";
-import { UnitSystemContextType } from "@/app/types/types";
+import { UnitSystemContextType, WhereFromType } from "@/app/types/types";
 import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
 
 export function Brick({
@@ -12,16 +13,19 @@ export function Brick({
   kindOfData,
   title,
   desc,
+  whereFrom,
 }: {
   data: number | string | null;
   kindOfData: string;
   title: string;
   desc: string | null;
+  whereFrom: WhereFromType;
 }) {
   const unitSystemContext = useContext<UnitSystemContextType | null>(
     UnitSystemContext
   );
   const brickModalContext = useContext(BrickModalContext);
+  const lang = useContext(LanguageContext);
 
   const unitSystem =
     unitSystemContext?.unitSystem.data === "US" ||
@@ -30,7 +34,8 @@ export function Brick({
       ? unitSystemContext?.unitSystem.data
       : "METRIC";
   function handleOnClick() {
-    brickModalContext?.setIsModalShown(true);
+    whereFrom === "current weather" && brickModalContext?.setIsModalShownInCurrentWeatherPage?.(true);
+    whereFrom === "chat" && brickModalContext?.setIsModalShownInChatPage?.(true);
     brickModalContext?.setModalData({
       data: data,
       kindOfData: kindOfData,
@@ -64,6 +69,8 @@ export function Brick({
                   ? systemsConvert.toMiles(data)
                   : data
                 : data
+              : kindOfData === "conditions"
+              ? translateConditions(String(data), (lang?.lang as any) || 'en')
               : data}
           </div>
           <div>{checkSign(kindOfData, unitSystem)}</div>

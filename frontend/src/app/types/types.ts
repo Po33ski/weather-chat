@@ -1,8 +1,10 @@
 import { BrickModalData } from "./interfaces";
 
 export type BrickModalContextType = {
-  isModalShown: boolean;
-  setIsModalShown: (modalData: boolean) => void;
+  isModalShownInCurrentWeatherPage: boolean;
+  isModalShownInChatWeatherPage: boolean;
+  setIsModalShownInCurrentWeatherPage: (modalData: boolean) => void;
+  setIsModalShownInChatPage: (modalData: boolean) => void;
   modalData: BrickModalData;
   setModalData: (modalData: BrickModalData) => void;
 };
@@ -64,3 +66,5 @@ export type AuthContextType = {
   verifyTotp: (email: string, code: string) => Promise<import("./interfaces").TotpAuthRes>;
   checkTotpStatus: (email: string) => Promise<{ success: boolean; has_totp: boolean; error?: string }>;
 };
+
+export type WhereFromType = "current weather" | "chat";

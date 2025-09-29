@@ -8,6 +8,7 @@ import {
   findDirection,
   systemsConvert,
 } from "@/app/functions/functions";
+import { translateConditions } from "@/app/functions/functions";
 import { Button } from "../Button/Button";
 import { whatImage } from "@/app/functions/functions";
 import {
@@ -15,6 +16,9 @@ import {
   UnitSystemContextType,
 } from "@/app/types/types";
 import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
+import { LanguageContext } from "@/app/contexts/LanguageContext";
+
+
 export function ModalBrick() {
   const unitSystemContext = useContext<UnitSystemContextType | null>(
     UnitSystemContext
@@ -22,6 +26,7 @@ export function ModalBrick() {
   const brickModalContext = useContext<BrickModalContextType | null>(
     BrickModalContext
   );
+  const lang = useContext(LanguageContext);
 
   const data =
     typeof brickModalContext?.modalData.data === "string" ||
@@ -72,10 +77,11 @@ export function ModalBrick() {
                     ? systemsConvert.toMiles(dataN)
                     : dataN
                   : dataN) ||
-                  ((kindOfData === "conditions" ||
-                    kindOfData === "sunset" ||
-                    kindOfData === "sunrise") &&
-                    data)}{" "}
+                  (kindOfData === "conditions"
+                    ? translateConditions(String(data), (lang?.lang as any) || 'en')
+                    : (kindOfData === "sunset" || kindOfData === "sunrise")
+                    ? data
+                    : undefined)}{" "}
                 {checkSign(kindOfData, unitSystem)}
                 {kindOfData === "winddir" && findDirection(dataN)}
               </div>
@@ -91,11 +97,14 @@ export function ModalBrick() {
           </p>
           <div className="mt-6 flex justify-center">
             <Button
-              onClick={() =>
-                brickModalContext?.setIsModalShown(
-                  !brickModalContext.isModalShown
-                )
-              }
+              onClick={() => {
+                if (brickModalContext?.isModalShownInCurrentWeatherPage) {
+                  brickModalContext?.setIsModalShownInCurrentWeatherPage?.(false);
+                }
+                if ((brickModalContext as any)?.isModalShownInChatWeatherPage) {
+                  (brickModalContext as any)?.setIsModalShownInChatPage?.(false);
+                }
+              }}
             >
               Close
             </Button>

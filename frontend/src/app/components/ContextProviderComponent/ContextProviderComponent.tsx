@@ -17,7 +17,8 @@ export const ContextProviderComponent = ({
 }) => {
   const unitSystem = useLocalStorage("unit", SYSTEMS.METRIC);
   const city = useLocalStorage("city", "");
-  const [isModalShown, setIsModalShown] = useState(false);
+  const [isModalShownInCurrentWeatherPage, setIsModalShownInCurrentWeatherPage] = useState(false);
+  const [isModalShownInChatWeatherPage, setIsModalShownInChatPage] = useState(false);
   const [isInfoModalShown, setIsInfoModalShown] = useState<boolean>(false);
   const [modalData, setModalData] = useState<BrickModalData>({
     data: null,
@@ -35,7 +36,14 @@ export const ContextProviderComponent = ({
         <CityContext.Provider value={{ city }}>
           <UnitSystemContext.Provider value={{ unitSystem }}>
             <BrickModalContext.Provider
-              value={{ isModalShown, setIsModalShown, modalData, setModalData }}
+              value={{
+                isModalShownInCurrentWeatherPage,
+                isModalShownInChatWeatherPage,
+                setIsModalShownInCurrentWeatherPage,
+                setIsModalShownInChatPage,
+                modalData,
+                setModalData,
+              }}
             >
               <InfoModalContext.Provider
                 value={{ isInfoModalShown, setIsInfoModalShown }}

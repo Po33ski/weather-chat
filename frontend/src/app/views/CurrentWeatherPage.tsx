@@ -76,6 +76,7 @@ export const CurrentWeatherPage = () => {
   useEffect(() => {
     const createBrickModal = createPortal(<ModalBrick />, document.body);
     setBrickModal(createBrickModal);
+
   }, []);
 
   const handleError = useCallback((e: Error) => {
@@ -197,6 +198,7 @@ export const CurrentWeatherPage = () => {
               ...data["currentConditions"],
             }}
             address={data["address"]}
+            whereFrom={'current weather'}
           />
 
           <ButtonLink path={"/current/hours"}>
@@ -206,7 +208,7 @@ export const CurrentWeatherPage = () => {
       ) : (
         <MainPhoto />
       )}
-      {brickModalContext?.isModalShown && brickModal}
+      {brickModalContext?.isModalShownInCurrentWeatherPage && brickModal}
     </>
   );
 };

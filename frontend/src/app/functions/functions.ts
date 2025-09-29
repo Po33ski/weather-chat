@@ -227,3 +227,24 @@ export const findDirection = (data: number | null | string) => {
     }
   } else return "";
 };
+
+// Translate canonical English conditions to localized label for UI display.
+// Note: image/icon matchers should continue to receive English.
+export function translateConditions(
+  conditions: string | null,
+  lang: "en" | "pl"
+): string {
+  if (!conditions || lang === "en") return conditions || "";
+  const map: Record<string, string> = {
+    "Partially cloudy": "Częściowe zachmurzenie",
+    "Rain, Partially cloudy": "Deszcz, częściowe zachmurzenie",
+    "Overcast": "Pochmurno",
+    "Rain, Overcast": "Deszcz, pochmurno",
+    "Snow, Rain, Partially cloudy": "Śnieg, deszcz, częściowe zachmurzenie",
+    "Snow, Rain, Overcast": "Śnieg, deszcz, pochmurno",
+    "Clear": "Bezchmurnie",
+    "Snow, Overcast": "Śnieg, pochmurno",
+    "Snow, Partially cloudy": "Śnieg, częściowe zachmurzenie",
+  };
+  return map[conditions] || conditions;
+}

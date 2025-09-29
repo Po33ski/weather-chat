@@ -3,14 +3,17 @@ import { MyText } from "../MyText/MyText";
 import { useContext } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { capitalizeFirstLetter } from "@/app/functions/functions";
-import { CurrentDataDay } from "@/app/types/interfaces";
+import { CurrentDataDay} from "@/app/types/interfaces";
+import { WhereFromType } from "@/app/types/types";
 
 export function WeatherView({
   data,
   address,
+  whereFrom,
 }: {
   data: CurrentDataDay;
   address: string | null;
+  whereFrom: WhereFromType;
 }) {
   address = capitalizeFirstLetter(address);
   const lang = useContext(LanguageContext);
@@ -26,6 +29,7 @@ export function WeatherView({
             kindOfData={"temp"}
             title={lang?.t('brick.currentTemp') || 'Current temperature'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -34,6 +38,7 @@ export function WeatherView({
             kindOfData={"tempmax"}
             title={lang?.t('brick.maxTemp') || 'Max. temperature'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -42,6 +47,7 @@ export function WeatherView({
             kindOfData={"tempmin"}
             title={lang?.t('brick.minTemp') || 'Min. temperature'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -50,6 +56,7 @@ export function WeatherView({
             kindOfData={"conditions"}
             title={lang?.t('brick.conditions') || 'Conditions'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -58,6 +65,7 @@ export function WeatherView({
             kindOfData={"windspeed"}
             title={lang?.t('brick.windspeed') || 'Wind speed'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -66,6 +74,7 @@ export function WeatherView({
             kindOfData={"winddir"}
             title={lang?.t('brick.winddir') || 'Wind direction'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -74,7 +83,8 @@ export function WeatherView({
             kindOfData={"pressure"}
             title={lang?.t('brick.pressure') || 'Pressure'}
             desc={data["description"]}
-          />
+            whereFrom={whereFrom}
+            />
         </div>
         <div className="flex justify-self-center">
           <Brick
@@ -82,6 +92,7 @@ export function WeatherView({
             kindOfData={"humidity"}
             title={lang?.t('brick.humidity') || 'Humidity'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -90,6 +101,7 @@ export function WeatherView({
             kindOfData={"sunrise"}
             title={lang?.t('brick.sunrise') || 'Sunrise'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
         <div className="flex justify-self-center">
@@ -98,6 +110,7 @@ export function WeatherView({
             kindOfData={"sunset"}
             title={lang?.t('brick.sunset') || 'Sunset'}
             desc={data["description"]}
+            whereFrom={whereFrom}
           />
         </div>
       </div>

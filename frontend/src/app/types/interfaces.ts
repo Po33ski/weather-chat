@@ -57,6 +57,7 @@ export interface CurrentDataDay {
   humidity: number | null;
   hours: [HoursData];
 }
+
 export interface CurrentData {
   address: string | null;
   currentConditions: {

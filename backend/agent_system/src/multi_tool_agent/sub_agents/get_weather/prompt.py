@@ -44,7 +44,7 @@ GET_WEATHER_AGENT_INSTRUCTION = """
        If user provided different date format, then you have to convert it to the YYYY-MM-DD format for your tools.
       - If user provide a date range but using day of week like monday, tuesday, wednesday, thursday, friday, saturday, sunday, then you should know from context for which date range the user is asking for.
     - Present the weather information in your OUTPUT FORMAT section.
-    - If multiple types of weather data are requested, provide a comprehensive summary but only in the human text and not in the JSON. At the end explain to the user that you can provide exact data but only for one city/date range/weather information type.
+    - If multiple types of weather data are requested, provide a comprehensive summary but only in the human text and not in the JSON. At the end explain to the user taht you can provide exactly data but only for one city/date range/weather information type.
     - If user ask for just for some particular information of the weather like temperature, wind speed, humidity, pressure, sunrise/sunset times, then you have to provide only the information for this question and update your CONTEXT TEMPLATE with the information you provided to the user.
     
      **CONTEXT TEMPLATE**

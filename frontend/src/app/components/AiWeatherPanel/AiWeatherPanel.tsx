@@ -30,7 +30,7 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
 
       {/* Preferred render using existing components */}
       {resolvedKind === 'current' && data?.current && (
-        <WeatherView data={data.current} address={meta?.city ?? null} />
+        <WeatherView data={data.current} address={meta?.city ?? null} whereFrom={'chat'} />
       )}
 
       {(resolvedKind === 'forecast' || resolvedKind === 'history' || (!resolvedKind && Array.isArray(data?.days))) && Array.isArray(data?.days) && (
