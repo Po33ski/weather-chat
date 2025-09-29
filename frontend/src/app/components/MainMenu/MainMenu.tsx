@@ -25,7 +25,7 @@ export function MainMenu() {
           isMobileNavShown
             ? "fixed right-2  bg-white z-20 top-0 py-[100px] w-[50%] opacity-[0.9] min-h-screen text-center "
             : "hidden"
-        } md:block lg:block pl-8`}
+        } md:block lg:block`}
       >
         <ul
           className={`flex text-xl lg:text-base gap-10 ${
@@ -49,7 +49,7 @@ export function MainMenu() {
         onClick={() => {
           setIsMobileNavShown((prevValue) => !prevValue);
         }}
-        className=" md:hidden lg:hidden z-30 mx-2"
+        className=" md:hidden lg:hidden z-30"
         src={burger}
         alt="burger-button"
         width={32}

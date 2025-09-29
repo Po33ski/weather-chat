@@ -104,7 +104,9 @@ export function ModalBrick() {
           {/* Additional info */}
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 mb-6">
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Current Reading</div>
+              <div className="text-sm text-gray-600 mb-1">
+                {lang?.lang === 'pl' ? 'Aktualny odczyt' : 'Current Reading'}
+              </div>
               <div className="text-lg font-semibold text-gray-800">
                 {brickModalContext?.modalData.title}
               </div>

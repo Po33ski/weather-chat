@@ -16,7 +16,7 @@ export function LanguageSelector() {
       aria-label="Language"
       value={current}
       onChange={handleChange}
-      className="border-2 border-black rounded-lg px-3 py-2 text-sm md:text-base bg-white hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="bg-white border border-blue-300 rounded-xl px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
     >
       <option value="en">EN</option>
       <option value="pl">PL</option>
