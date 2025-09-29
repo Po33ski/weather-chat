@@ -6,10 +6,12 @@ import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
+import { parseAiMessage } from '@/app/utils/parseAiMessage';
+import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
-export const Chat: React.FC = () => {
+export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataChange?: (d: AiChatData | null) => void }> = ({ onMetaChange, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -50,8 +52,13 @@ export const Chat: React.FC = () => {
   // Send message to the backend
   const handleSendMessage = async () => {
     const unitSystem = unitSystemContext?.unitSystem.data || 'METRIC';
-    // You may want to get userId from context or props if needed
-    const userId = '';
+    // Pull identifiers from auth context so backend can link conversation
+    const sessionId = auth?.sessionId || '';
+    const userId = auth?.user?.user_id || '';
+    if (auth?.loading || !auth?.isAuthenticated || !sessionId) {
+      // Avoid sending until auth state is ready and session is available
+      return;
+    }
     if (!inputText.trim()) return;
 
     const userMessage: Message = {
@@ -78,14 +85,19 @@ export const Chat: React.FC = () => {
       const response = await weatherApi.getChatResponse(
         userMessage.text,
         conversationHistory,
-        '', // sessionId, if needed, can be passed as a prop
+        sessionId,
         unitSystem,
         userId
       );
       if (response.success && response.data) {
+        console.log(response.data);
+        const parsed = parseAiMessage(response.data.message);
+        onMetaChange && onMetaChange(parsed.metaData);
+        onDataChange && onDataChange(parsed.aiChatData);
+        const humanText = parsed.humanText;
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: response.data.message,
+          text: humanText || response.data.message,
           sender: 'ai',
           timestamp: new Date(),
           unitSystem: unitSystem,
@@ -125,7 +137,7 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
+    <div className="flex flex-col h-[40vh] max-w-4xl mx-auto bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -207,7 +219,7 @@ export const Chat: React.FC = () => {
           />
           <button
             onClick={handleSendMessage}
-            disabled={!inputText.trim() || isLoading}
+            disabled={!auth?.isAuthenticated || auth?.loading || !inputText.trim() || isLoading}
             className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send

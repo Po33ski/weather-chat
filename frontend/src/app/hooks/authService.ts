@@ -3,11 +3,27 @@ import { useEffect, useState } from 'react';
 import { User, AuthState, GoogleAuthRes, TotpAuthRes } from '../types/interfaces';
 
 
+// Builds the API base URL for the browser:
+// - prefers NEXT_PUBLIC_API_URL when provided (same-origin in prod recommended)
+// - falls back to http://localhost:8000 in development
+// The value is baked by Next.js during build for client bundles.
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
+
+// Runtime guard to avoid using browser-only APIs (window/localStorage) during SSR/SSG
 const isBrowser = typeof window !== 'undefined';
 
+/**
+ * React hook that centralizes authentication state and actions for the app.
+ *
+ * Responsibilities:
+ * - Hydrate auth state from localStorage on first mount (client only)
+ * - Keep an in-memory source of truth for { isAuthenticated, user, sessionId }
+ * - Perform auth flows (Google sign-in, TOTP verify, logout)
+ * - Validate and refresh session details from the backend
+ * - Broadcast state changes by dispatching a 'storage' event, so other tabs/components can react
+ */
 export const useAuthService = () => {
 
   const [authState, setAuthState] = useState<AuthState>({
@@ -17,7 +33,9 @@ export const useAuthService = () => {
     loading: true,
   });
 
-  // Hydrate auth state from memory/localStorage on first mount
+  // Hydrate auth state from localStorage on first mount (client only).
+  // This allows the UI to reflect persisted sessions immediately, then optionally
+  // validates the session with the backend in the background for freshness.
   useEffect(() => {
     if (!isBrowser) {
       setAuthState((s) => ({ ...s, loading: false }));
@@ -44,7 +62,7 @@ export const useAuthService = () => {
         sessionId,
         loading: false,
       });
-      // Optionally refresh session info in background
+      // Optionally refresh session info in the background so the user data stays current
       validateSession(sessionId).catch(() => {});
     } else {
       setAuthState((s) => ({ ...s, loading: false }));
@@ -52,6 +70,11 @@ export const useAuthService = () => {
   }, []);
 
 
+  /**
+   * Handles Google Identity Services sign-in response.
+   * On success, persists session to localStorage, notifies listeners via 'storage',
+   * and updates in-memory auth state.
+   */
   const handleGoogleSignIn = async (response: any) => {
     try {
       const authResponse = await fetch(`${API_BASE_URL}/api/auth/google`, {
@@ -70,6 +93,8 @@ export const useAuthService = () => {
         window.localStorage.setItem('sessionId', data.session_id);
         window.localStorage.setItem('user', JSON.stringify({data: data.user_info, id: data.user_id, email: data.user_info?.email, name: data.user_info?.name, picture: data.user_info?.picture}));
         window.localStorage.setItem('isAuthenticated', 'true');
+        // Dispatching a 'storage' event ensures same-tab listeners react immediately,
+        // not only other tabs (native event normally fires across tabs).
         try {
           window.dispatchEvent(new StorageEvent('storage', { key: 'isAuthenticated', newValue: 'true' }));
         } catch {}
@@ -93,6 +118,10 @@ export const useAuthService = () => {
     }
   };
 
+  /**
+   * Validates the current session with the backend and updates in-memory state accordingly.
+   * Clears persisted session on error or invalidation to keep the UI consistent.
+   */
   const validateSession = async (sessionId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/session/${sessionId}`);
@@ -131,6 +160,10 @@ export const useAuthService = () => {
     }
   };
 
+  /**
+   * Logs out from the backend (best-effort), disables Google auto-select, clears persisted
+   * session, broadcasts change, and resets in-memory auth state.
+   */
   const logout = async (): Promise<void> => {
     const sessionId = isBrowser ? window.localStorage.getItem('sessionId') : null;
     if (sessionId) {
@@ -170,10 +203,15 @@ export const useAuthService = () => {
     // window.location.reload();
   };
 
+  /** Returns the current session id from localStorage (client only). */
   const getSessionId = (): string | null => {
     return isBrowser ? window.localStorage.getItem('sessionId') : null;
   };
 
+  /**
+   * Returns the current user: prefers in-memory state and falls back to localStorage.
+   * Ensures the returned object matches the expected User shape.
+   */
   const getUser = (): User | null => {
     // First try to get from authState (current session)
     if (authState.user) {
@@ -201,6 +239,7 @@ export const useAuthService = () => {
   };
 
   // TOTP Authentication Functions
+  /** Requests TOTP setup and returns a blob URL with the QR code (or null on error). */
   const setupTotp = async (email: string): Promise<string | null> => {
     try {
       const formData = new URLSearchParams();
@@ -229,6 +268,10 @@ export const useAuthService = () => {
     }
   };
 
+  /**
+   * Verifies a TOTP code; on success persists session and updates state
+   * analogous to the Google sign-in flow.
+   */
   const verifyTotp = async (email: string, code: string): Promise<TotpAuthRes> => {
     try {
       const formData = new URLSearchParams();
@@ -281,6 +324,7 @@ export const useAuthService = () => {
     }
   };
 
+  /** Checks whether a user has TOTP enabled. */
   const checkTotpStatus = async (email: string): Promise<{ success: boolean; has_totp: boolean; error?: string }> => {
     try {
       const encodedEmail = encodeURIComponent(email);

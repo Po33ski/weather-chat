@@ -48,7 +48,7 @@ docker run -d \
     -e VISUAL_CROSSING_API_KEY="$VISUAL_CROSSING_API_KEY" \
     -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
     -e NEXT_PUBLIC_GOOGLE_CLIENT_ID="$NEXT_PUBLIC_GOOGLE_CLIENT_ID" \
-    -e MODEL="gemini-2.0-flash" \
+    -e MODEL="gemini-2.5-flash" \
     -e DISABLE_WEB_DRIVER="0" \
     -e ENVIRONMENT="production" \
     weather-center-chat:latest

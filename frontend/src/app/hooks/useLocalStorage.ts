@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 
 export function useLocalStorage(key: string, defaultValue: string | null) {
-  const isBrowser = typeof window !== "undefined";
+  const isBrowser = typeof window !== "undefined"; // return true if window is defined
 
   const readValue = (): string | null => {
-    if (!isBrowser) return defaultValue;
+    if (!isBrowser) return defaultValue; // return defaultValue if window is not defined
     try {
       const value: string | null = window.localStorage.getItem(key);
       return value ? JSON.parse(value) : defaultValue;
     } catch (error) {
-      console.log(error);
+      console.log(error); 
       return defaultValue;
     }
   };
