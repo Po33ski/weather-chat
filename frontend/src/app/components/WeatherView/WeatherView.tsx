@@ -50,15 +50,17 @@ export function WeatherView({
             whereFrom={whereFrom}
           />
         </div>
-        <div className="flex justify-self-center">
-          <Brick
-            data={data["conditions"]}
-            kindOfData={"conditions"}
-            title={lang?.t('brick.conditions') || 'Conditions'}
-            desc={data["description"]}
-            whereFrom={whereFrom}
-          />
-        </div>
+        {whereFrom !== 'chat' && (
+          <div className="flex justify-self-center">
+            <Brick
+              data={data["conditions"]}
+              kindOfData={"conditions"}
+              title={lang?.t('brick.conditions') || 'Conditions'}
+              desc={data["description"]}
+              whereFrom={whereFrom}
+            />
+          </div>
+        )}
         <div className="flex justify-self-center">
           <Brick
             data={data["windspeed"]}
