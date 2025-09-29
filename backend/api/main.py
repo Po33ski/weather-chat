@@ -155,10 +155,23 @@ async def chat_endpoint(request: ChatRequest):
         events = runner.run_async(user_id=effective_user_id, session_id=selected_session_id, new_message=content)
         async for event in events:
             if event.is_final_response():
-                text = event.content.parts[0].text if event.content and event.content.parts else "[Agent error] No response content"
+                # Concatenate all text parts to ensure fenced JSON (if present) is included
+                combined_text = ""
+                if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
+                    parts_text = []
+                    for part in event.content.parts:
+                        try:
+                            t = getattr(part, 'text', None)
+                            if t:
+                                parts_text.append(t)
+                        except Exception:
+                            continue
+                    combined_text = "\n".join(parts_text).strip()
+                if not combined_text:
+                    combined_text = "[Agent error] No response content"
                 return ChatResponse(
                     success=True,
-                    data={"message": text or "[Agent error] No response content", "sender": "ai"}
+                    data={"message": combined_text, "sender": "ai"}
                 )
         return ChatResponse(
             success=False,

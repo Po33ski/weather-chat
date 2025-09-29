@@ -6,10 +6,12 @@ import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
 import { UnitSystemContextType } from '../../types/types';
 import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
+import { parseAiMessage } from '@/app/utils/parseAiMessage';
+import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
-export const Chat: React.FC = () => {
+export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataChange?: (d: AiChatData | null) => void }> = ({ onMetaChange, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -88,9 +90,14 @@ export const Chat: React.FC = () => {
         userId
       );
       if (response.success && response.data) {
+        console.log(response.data);
+        const parsed = parseAiMessage(response.data.message);
+        onMetaChange && onMetaChange(parsed.metaData);
+        onDataChange && onDataChange(parsed.aiChatData);
+        const humanText = parsed.humanText;
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: response.data.message,
+          text: humanText || response.data.message,
           sender: 'ai',
           timestamp: new Date(),
           unitSystem: unitSystem,
@@ -130,7 +137,7 @@ export const Chat: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto bg-gray-50">
+    <div className="flex flex-col h-[40vh] max-w-4xl mx-auto bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">

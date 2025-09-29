@@ -1,38 +1,77 @@
 # Weather Center Chat
 
-AI‑powered weather portal with a modern Next.js frontend and a FastAPI backend. Get current, forecast, and historical weather, chat with an AI assistant (Google ADK), and sign in with Google OAuth or TOTP.
+AI‑powered weather portal with a modern Next.js frontend and a FastAPI backend. Get current, forecast, and historical weather, and chat with an AI assistant (Google ADK). Sign in with Google OAuth or TOTP.
 
-## Highlights
+## Features
 
-- 🌤️ Weather data: current, 15‑day forecast, and history
-- 🧠 AI chat: Google ADK (Agent Development Kit)
-- 🔑 Auth: Google OAuth + optional TOTP (QR‑code) login
-- 🌍 i18n: quick language switch (EN/PL)
-- 🧭 Unit systems: METRIC / UK / US switch
-- 🐳 Single Docker image: Nginx serves static Next export and proxies API to FastAPI
-- ⚡ Fast dev flow: uv for Python deps, TypeScript on the frontend
+- Weather: current, 15‑day forecast, and history
+- AI chat (Google ADK): answers in natural language + structured JSON payload
+- Auth: Google OAuth + optional TOTP (QR‑code)
+- i18n: EN/PL via `LanguageContext`
+- Unit systems: METRIC / UK / US via `UnitSystemContext`
+- Single Docker image: Nginx serves static Next export and proxies `/api` → FastAPI
 
-## Tech Stack
+## Architecture
 
-- Frontend: Next.js 14, TypeScript, Tailwind CSS
-- Backend: FastAPI (Python), uv (deps), Google ADK, Visual Crossing Weather API
+- Frontend: Next.js (App Router), TypeScript, Tailwind CSS
+  - Static export (`output: 'export'`) served by Nginx
+  - Chat UI (`Chat.tsx`) splits AI message into:
+    - humanText (short text for chat bubble)
+    - weather‑json (fenced block) → parsed on frontend
+  - AiWeatherPanel: renders parsed data
+    - kind=current → `WeatherView` (tiles)
+    - kind=forecast/history → `List` (table)
+- Backend: FastAPI
+  - Weather: Visual Crossing API client
+  - AI: Google ADK agent (get_weather) with strict output format
+  - Auth: Google OAuth, TOTP endpoints
 - Runtime: Nginx (static + reverse proxy)
-- Data: SQLite (local file) — simple and zero‑config
+
+## AI Chat Output Contract
+
+The agent must return a single string with:
+
+1) Short human text (1–3 sentences)
+2) One fenced JSON block labeled `weather-json`:
+
+```weather-json
+{
+  "meta": {
+    "city": "<city>",
+    "kind": "current|forecast|history",
+    "date": "YYYY-MM-DD|null",
+    "date_range": "YYYY-MM-DD..YYYY-MM-DD|null",
+    "language": "<lang>",
+    "unit_system": "US|METRIC|UK"
+  },
+  "current": {                 // for kind=current
+    "temp": 18, "tempmax": 19, "tempmin": 12,
+    "windspeed": 22, "winddir": 180,
+    "pressure": 1016, "humidity": 65,
+    "sunrise": "06:12", "sunset": "19:18",
+    "conditions": "Light rain"
+  },
+  "days": [ ... ]              // for kind=forecast/history
+}
+```
+
+Notes:
+- Numbers are raw (no units). The UI formats units using contexts.
+- Backend now concatenates all text parts from the AI final response to ensure the fenced JSON is included.
 
 ## Getting Started
 
 ### Prerequisites
 
 1) Google Cloud
-- Create a project in Google Cloud Console
-- Enable AI Studio / Generative APIs (for Google ADK)
-- Create an API key (GOOGLE_API_KEY)
-- Create OAuth 2.0 Client ID (Web) for Google sign‑in
+- Enable AI Studio / Generative APIs
+- Create API key → `GOOGLE_API_KEY`
+- Create OAuth 2.0 Client ID (Web) → `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 
 2) Visual Crossing
-- Create an account and obtain VISUAL_CROSSING_API_KEY
+- Get `VISUAL_CROSSING_API_KEY`
 
-### Local (dev)
+### Local Development
 
 Backend
 ```bash
@@ -47,12 +86,10 @@ Frontend
 cd frontend
 npm install
 source ../env-scratchpad.sh
+# optional in dev to avoid Nginx: point frontend at backend directly
+export NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
-
-Notes
-- In local dev you may set `NEXT_PUBLIC_API_URL=http://localhost:8000` so the frontend calls the backend directly.
-- In production use same‑origin (no NEXT_PUBLIC_API_URL), and let Nginx proxy `/api` to FastAPI.
 
 ### Docker (single container)
 
@@ -67,40 +104,41 @@ This builds a multi‑stage image:
 
 Health check: `GET /api/health`
 
+### Render Deployment
+
+- Use `render.yaml` (env: docker) — builds `Dockerfile` and runs Nginx + FastAPI in one container
+- Set env vars in Render dashboard
+- Use same‑origin in production (don’t set `NEXT_PUBLIC_API_URL`); Nginx proxies `/api` → FastAPI
+
 ## Environment Variables
 
 Required
 ```bash
 # Backend
-export VISUAL_CROSSING_API_KEY="your_visual_crossing_api_key"
-export GOOGLE_API_KEY="your_google_api_key"
+VISUAL_CROSSING_API_KEY=...
+GOOGLE_API_KEY=...
 
 # Frontend
-export NEXT_PUBLIC_GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
 
-# Optional (prod)
-export ENVIRONMENT="production"
-# Only if you do cross‑origin calls
-export PUBLIC_WEB_ORIGIN="https://your-domain"
+# Optional
+ENVIRONMENT=production
+# If doing cross‑origin
+PUBLIC_WEB_ORIGIN=https://your-domain
 ```
 
-For local dev only
-```bash
-export NEXT_PUBLIC_API_URL="http://localhost:8000"
-```
-
-## API Endpoints
+## API Endpoints (summary)
 
 Auth
-- `POST /api/auth/google` — Google OAuth (exchange ID token → session)
-- `POST /api/auth/logout` — Invalidate session
-- `GET /api/auth/session/{session_id}` — Session info
-- `POST /api/auth/totp/setup` — Returns QR code (image/png)
-- `POST /api/auth/totp/verify` — Verifies 6‑digit code and creates session
-- `GET /api/auth/totp/status/{email}` — Check if TOTP is enabled for a user
+- `POST /api/auth/google`
+- `POST /api/auth/logout`
+- `GET /api/auth/session/{session_id}`
+- `POST /api/auth/totp/setup` → png
+- `POST /api/auth/totp/verify`
+- `GET /api/auth/totp/status/{email}`
 
 Chat
-- `POST /api/chat` — AI chat with Google ADK
+- `POST /api/chat`
 
 Weather
 - `POST /api/weather/current`
@@ -110,39 +148,32 @@ Weather
 Health
 - `GET /api/health`
 
-## Render.com Deployment
-
-- Use `render.yaml` (env: docker) — it builds the Dockerfile and runs Nginx + FastAPI in one container
-- Set env vars in the Render dashboard
-- Use same‑origin in production (no `NEXT_PUBLIC_API_URL`); Nginx proxies `/api` → FastAPI
-
 ## Project Structure
 
 ```
 weather-center-chat/
 ├── backend/
-│   ├── api/                    # FastAPI app (endpoints + services)
-│   ├── agent_system/           # Google ADK agent + tools
-│   ├── pyproject.toml          # Python deps
-│   └── uv.lock                 # Locked deps
+│   ├── api/                    # FastAPI app (endpoints, services)
+│   ├── agent_system/           # Google ADK agent(s) + prompts/tools
+│   ├── pyproject.toml
+│   └── uv.lock
 ├── frontend/
 │   └── src/app/                # Next.js App Router
-├── Dockerfile                  # Multi‑stage; Nginx serves + proxies
-├── nginx.conf                  # Nginx (static + /api proxy)
-├── render.yaml                 # Render.com config
-├── env-scratchpad.sh           # Local env helper (do not commit secrets)
-└── deploy-production.sh        # Build & run container locally
+├── Dockerfile                  # Multi‑stage image
+├── nginx.conf                  # Nginx static + /api proxy
+├── render.yaml                 # Render config
+├── env-scratchpad.sh           # Local env helper
+└── deploy-production.sh        # One‑shot local Docker run
 ```
 
-## Contributing
+## Notes & Tips
 
-1) Fork → branch → PR
-2) Run locally or via Docker
-3) Keep changes typed (TypeScript) and formatted
+- Chat UI parses AI responses: human text → chat bubble; `weather-json` → `AiWeatherPanel`.
+- `AiWeatherPanel` shows meta (city/date/date_range) and renders:
+  - `WeatherView` for current
+  - `List` for forecast/history
+- Global Language and Unit contexts drive formatting; AI JSON stays unit‑agnostic.
 
-## License
-
-MIT
 
 
 
