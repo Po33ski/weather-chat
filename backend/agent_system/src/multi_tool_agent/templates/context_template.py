@@ -34,7 +34,7 @@ context_template_instructions = """
         - uv index
         - sunrise/sunset times
         - and other information that you can get from the weather information!
-    - If user asks for weather saying: today, tomorrow, yestarday or something similar then use your tool get_day to get the current day (today) and try to match the date for your tools so that it will present the real date.
+    - If user asks for weather saying: today, tomorrow, yesterday or similar then use your tool get_date to get today's date and derive the needed date.
        - If user asks for yesterday then you have to substract one day from the current day.
        - If user asks for tomorrow then you have to add one day to the current date.
        - If user asks for next week then you have to add 7 days to the current date.
@@ -42,5 +42,5 @@ context_template_instructions = """
        - If user asks for next year then you have to add 365 days to the current date.
        - and so on... (These examples are used to present you the idea. You should always figure out what the user means and use your tools if needed)
     - If user asks for weather information for a specific date but using words like this year, this month, this week, this day, last year, last month, last week, last day, next year, next month, next week, the day after tomorrow, the day before yesterday, the day after yesterday, the day before tomorrow, the day after the day after tomorrow, the day before the day before yesterday, the day after the day before tomorrow,
-      and so on then you have to use the tool get_day to get the current day (today) and try to match the date for your tools so that it will present the real date. (These examples are used to present you the idea. You should always figure out what the user means and use your tools if needed)
+      and so on then you have to use the tool get_date to get today's date and derive the target date. (These examples are used to present you the idea. You should always figure out what the user means and use your tools if needed)
 """
