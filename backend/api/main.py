@@ -155,8 +155,8 @@ async def chat_endpoint(request: ChatRequest):
         events = runner.run_async(user_id=effective_user_id, session_id=selected_session_id, new_message=content)
         async for event in events:
             if event.is_final_response():
-                # Concatenate all text parts to ensure fenced JSON (if present) is included
-                combined_text = ""
+                # Concatenate all text parts then normalize to a single short text + one fenced JSON block labeled weather-json
+                raw_text = ""
                 if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
                     parts_text = []
                     for part in event.content.parts:
@@ -166,12 +166,26 @@ async def chat_endpoint(request: ChatRequest):
                                 parts_text.append(t)
                         except Exception:
                             continue
-                    combined_text = "\n".join(parts_text).strip()
-                if not combined_text:
-                    combined_text = "[Agent error] No response content"
+                    raw_text = "\n".join(parts_text).strip()
+
+                if not raw_text:
+                    raw_text = "[Agent error] No response content"
+
+                # Normalize: keep only the first fenced JSON block; relabel to weather-json if needed
+                import re
+                fence_pattern = re.compile(r"```\s*(weather-json|json)\s*\n([\s\S]*?)\n```", re.IGNORECASE)
+                match = fence_pattern.search(raw_text)
+                if match:
+                    human_text = raw_text[:match.start()].strip()
+                    json_body = match.group(2).strip()
+                    normalized = (human_text + "\n\n" if human_text else "") + "```weather-json\n" + json_body + "\n```"
+                else:
+                    # No fenced block found; return as-is
+                    normalized = raw_text
+
                 return ChatResponse(
                     success=True,
-                    data={"message": combined_text, "sender": "ai"}
+                    data={"message": normalized, "sender": "ai"}
                 )
         return ChatResponse(
             success=False,
