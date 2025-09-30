@@ -22,7 +22,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
               <div className="flex items-center justify-center justify-self-center">
                 <Logo />
               </div>
-              <div className="flex items-center gap-2 justify-self-end">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-1 md:gap-2 justify-self-end">
                 <LanguageSelector />
                 <SystemSelector />
               </div>

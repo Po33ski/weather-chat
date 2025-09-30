@@ -45,16 +45,23 @@ export function MainMenu() {
           ))}
         </ul>
       </nav>
-      <Image
+      <button
+        aria-label="Open menu"
+        title="Menu"
         onClick={() => {
           setIsMobileNavShown((prevValue) => !prevValue);
         }}
-        className=" md:hidden lg:hidden z-30"
-        src={burger}
-        alt="burger-button"
-        width={32}
-        height={32}
-      />
+        className="md:hidden lg:hidden z-30 inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-300 bg-white shadow-sm hover:border-blue-400 hover:shadow-md active:scale-[0.98] transition"
+     >
+        <Image
+          src={burger}
+          alt="burger-icon"
+          width={18}
+          height={18}
+          className="opacity-80"
+        />
+        <span className="sr-only">Menu</span>
+      </button>
     </>
   );
 }
