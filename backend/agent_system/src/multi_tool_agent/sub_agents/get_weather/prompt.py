@@ -1,4 +1,4 @@
-from ...templates.json_format import json_format
+from ...templates.json_format import json_format_instructions, json_format
 from ...templates.context_template import context_template, context_template_instructions
 
 GET_WEATHER_AGENT_NAME = "get_weather_agent"
@@ -41,22 +41,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     
     **OUTPUT FORMAT (STRICT, THREE TEMPLATES)**
     INSTRUCTIONS FOR OUTPUT FORMAT (VERY IMPORTANT):
-    - You MUST return everything in ONE message/string in the following order:
-      a) Short human text (1–4 sentences) which includes weather conditions plus it may include other interesting information about the weather if you can not put it in the JSON. No lists/bullets. 
-        - If you send more info in JSON then you should finish human text with smth like "you find more info below:".
-        - If user ask for some particlaur information (like in your CONTEXT TEMPLATE specific_weather_information), then you should only send the short information to the user as a human text and not in the JSON.
-      b) A blank line.
-      c) Exactly ONE fenced JSON block labeled weather-json see your JSON FORMAT section.
-    - Do NOT put any other text below or above the fenced block besides the short text.
-    - Do NOT add extra fences or code blocks. Only one weather-json block.
-    - The UI will parse the human text as the part before the fenced block, and the JSON from inside the fenced block.
-    - Example output:
-    ```
-    Found the requested weather information.
-    ```
-    ```weather-json
-    {json_format}
-    ```
+    {json_format_instructions}
 
 
 

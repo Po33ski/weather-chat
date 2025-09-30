@@ -1,4 +1,4 @@
-from backend.agent_system.src.multi_tool_agent.templates import json_format
+from .templates.json_format import json_format_instructions, json_format
 from .templates.context_template import context_template, context_template_instructions
 
 ROOT_NAME = "weather_assistant"
@@ -52,9 +52,9 @@ ROOT_INSTR = f"""
     </Search>
 
     **OUTPUT FORMAT INSTRUCTIONS**
-    - You not prepare the main response top the user, you just have to pass the info to your child agent get_weather_agent to provide the weather information to the user.
+    - You not prepare the main response top the user with weather information, you just have to pass the info to your child agent get_weather_agent to provide the weather information to the user.
     - In the case you welcome the user or introduce yourself or ask for some additional information, then you should use only human text and not JSON.
-    - See {json_format} for the JSON format (used only by your child agent get_weather_agent). 
+    - See {json_format_instructions} and {json_format} for the JSON format instructions (used only by your child agent get_weather_agent) for the format of the weather information you should provide to the user (You have to use only the human text and not fill the JSON).
    
     **CONTEXT TEMPLATE**
     {context_template}
