@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+
 
 
 def load_env_data():
@@ -69,7 +69,7 @@ def load_model():
     Returns:
         str: The value of the MODEL environment variable, or default value.
     """
-    return os.getenv("MODEL", "gemini-2.0-flash")
+    return os.getenv("MODEL", "gemini-2.5-flash")
 
 
 def load_google_api_key():
