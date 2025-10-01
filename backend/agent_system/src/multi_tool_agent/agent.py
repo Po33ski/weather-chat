@@ -19,6 +19,5 @@ root_agent = Agent(
     global_instruction=prompt.ROOT_GLOBAL_INSTR,
     instruction=prompt.ROOT_INSTR,
     sub_agents=[get_weather_agent], 
-    tools=[],
 )
 
