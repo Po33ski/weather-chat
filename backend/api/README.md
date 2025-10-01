@@ -32,7 +32,7 @@ api/
 
 ### Health & Status Endpoints
 
-#### `GET /health`
+#### `GET /api/health`
 Enhanced health check endpoint with environment status.
 
 **Response:**
@@ -43,7 +43,7 @@ Enhanced health check endpoint with environment status.
   "environment": {
     "has_google_api_key": true,
     "has_visual_crossing_api_key": true,
-    "model": "gemini-2.0-flash",
+    "model": "gemini-2.5-flash",
     "disable_web_driver": 0,
     "environment": "development"
   },
@@ -56,7 +56,7 @@ Enhanced health check endpoint with environment status.
 ```
 
 #### `GET /`
-Root endpoint with API information.
+Root path is served by Nginx in production (Next.js static export). Use `/api/health` for JSON status.
 
 **Response:**
 ```json
@@ -180,7 +180,7 @@ Chat with AI assistant powered by Google ADK.
 ### Optional Variables
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `MODEL` | AI model to use | `gemini-2.0-flash` |
+| `MODEL` | AI model to use | `gemini-2.5-flash` |
 | `DISABLE_WEB_DRIVER` | Disable web driver | `0` |
 | `ENVIRONMENT` | Environment mode | `development` |
 
@@ -371,7 +371,3 @@ See [DEPLOYMENT.md](../../DEPLOYMENT.md) for detailed instructions.
 4. Update API documentation
 5. Test all endpoints
 6. Ensure Docker compatibility
-
-## 📄 License
-
-This project is licensed under the MIT License. 

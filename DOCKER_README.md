@@ -38,7 +38,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
 Optional
 ```bash
 ENVIRONMENT=production
-MODEL=gemini-2.0-flash
+MODEL=gemini-2.5-flash
 DISABLE_WEB_DRIVER=0
 PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
 ```

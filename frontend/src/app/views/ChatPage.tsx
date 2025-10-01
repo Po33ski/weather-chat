@@ -14,8 +14,6 @@ import { BrickModalContext } from "../contexts/BrickModalContext";
 import type { BrickModalContextType } from "../types/types";
 import { ModalBrick } from "../components/ModalBrick/ModalBrick";
 
-
-
 export const ChatPage = () => {
   const [aiMeta, setAiMeta] = useState<AiMeta | null>(null);
   const [aiData, setAiData] = useState<AiChatData | null>(null);

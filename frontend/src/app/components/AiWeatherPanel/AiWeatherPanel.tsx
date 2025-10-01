@@ -20,17 +20,35 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Meta only: city/date/date_range */}
-      <div className="text-sm text-gray-600">
-        {meta?.city && <span className="font-semibold">{meta.city}</span>}
-        {meta?.date && <div>{meta.date}</div>}
-        {meta?.date_range && <div>{meta.date_range}</div>}
-      </div>
+      {(meta?.city || meta?.date || meta?.date_range) && (
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200">
+          <div className="text-center">
+            {meta?.city && (
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {meta.city}
+              </h3>
+            )}
+            {meta?.date && (
+              <div className="text-sm text-gray-600 mb-1">
+                {meta.date}
+              </div>
+            )}
+            {meta?.date_range && (
+              <div className="text-sm text-gray-600">
+                {meta.date_range}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Preferred render using existing components */}
       {resolvedKind === 'current' && data?.current && (
-        <WeatherView data={data.current} address={meta?.city ?? null} whereFrom={'chat'} />
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+          <WeatherView data={data.current} address={meta?.city ?? null} whereFrom={'chat'} />
+        </div>
       )}
 
       {(resolvedKind === 'forecast' || resolvedKind === 'history' || (!resolvedKind && Array.isArray(data?.days))) && Array.isArray(data?.days) && (

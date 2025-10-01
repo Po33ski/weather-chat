@@ -25,7 +25,7 @@ export function MainMenu() {
           isMobileNavShown
             ? "fixed right-2  bg-white z-20 top-0 py-[100px] w-[50%] opacity-[0.9] min-h-screen text-center "
             : "hidden"
-        } md:block lg:block pl-8`}
+        } md:block lg:block`}
       >
         <ul
           className={`flex text-xl lg:text-base gap-10 ${
@@ -45,16 +45,23 @@ export function MainMenu() {
           ))}
         </ul>
       </nav>
-      <Image
+      <button
+        aria-label="Open menu"
+        title="Menu"
         onClick={() => {
           setIsMobileNavShown((prevValue) => !prevValue);
         }}
-        className=" md:hidden lg:hidden z-30 mx-2"
-        src={burger}
-        alt="burger-button"
-        width={32}
-        height={32}
-      />
+        className="md:hidden lg:hidden z-30 inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-300 bg-white shadow-sm hover:border-blue-400 hover:shadow-md active:scale-[0.98] transition"
+     >
+        <Image
+          src={burger}
+          alt="burger-icon"
+          width={18}
+          height={18}
+          className="opacity-80"
+        />
+        <span className="sr-only">Menu</span>
+      </button>
     </>
   );
 }

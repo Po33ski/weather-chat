@@ -168,7 +168,7 @@ Enhanced health check endpoint with environment status.
   "environment": {
     "has_google_api_key": true,
     "has_visual_crossing_api_key": true,
-    "model": "gemini-2.0-flash",
+    "model": "gemini-2.5-flash",
     "environment": "development"
   },
   "services": {
@@ -193,7 +193,7 @@ Root endpoint with API information.
 ### Optional Variables
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `MODEL` | AI model to use | `gemini-2.0-flash` |
+| `MODEL` | AI model to use | `gemini-2.5-flash` |
 | `DISABLE_WEB_DRIVER` | Disable web driver | `0` |
 | `ENVIRONMENT` | Environment mode | `development` |
 | `VERIFY_ENV` | Force environment verification | `false` |
@@ -404,7 +404,3 @@ See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed instructions.
 5. Test all endpoints
 6. Ensure Docker compatibility
 7. Use uv for dependency management
-
-## 📄 License
-
-This project is licensed under the MIT License.

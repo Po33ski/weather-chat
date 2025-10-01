@@ -1,8 +1,4 @@
 from google.adk.agents import Agent
-from google.adk.tools import google_search
-
-from google.adk.agents import SequentialAgent
-from google.adk.agents import LoopAgent
 
 from . import prompt
 
@@ -23,6 +19,5 @@ root_agent = Agent(
     global_instruction=prompt.ROOT_GLOBAL_INSTR,
     instruction=prompt.ROOT_INSTR,
     sub_agents=[get_weather_agent], 
-    tools=[],
 )
 

@@ -48,15 +48,27 @@ export function Brick({
   return (
     <>
       <button
-        className="inline-flex flex-col items-center justify-center cursor-pointer border-black border-2 rounded-lg bg-white w-40 h-40 text-lg gap-0.5 mx-8 hover:w-48 hover:h-48"
+        className="group relative bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 w-full max-w-48 h-48 flex flex-col items-center justify-center cursor-pointer transform hover:scale-105 hover:-translate-y-1"
         onClick={handleOnClick}
       >
-        <span className="block">{title}</span>
-        <strong className="inline-flex justify-center items-center rounded-full text-stone-400 bg-orange-950 w-10 h-10">
-          <Icon data={titleData} kindOfData={"title"} />
-        </strong>
-        <span className="inline-flex gap-0.5">
-          <div>
+        {/* Background pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
+        
+        {/* Icon container */}
+        <div className="relative z-10 mb-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+            <Icon data={titleData} kindOfData={"title"} />
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-sm font-medium text-gray-700 mb-2 text-center leading-tight">
+          {title}
+        </h3>
+
+        {/* Value */}
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-1">
             {typeof data === "number"
               ? kindOfData === "temp" ||
                 kindOfData === "tempmax" ||
@@ -72,16 +84,26 @@ export function Brick({
               : kindOfData === "conditions"
               ? translateConditions(String(data), (lang?.lang as any) || 'en')
               : data}
+            <span className="text-sm font-normal text-gray-600 ml-1">
+              {checkSign(kindOfData, unitSystem)}
+            </span>
           </div>
-          <div>{checkSign(kindOfData, unitSystem)}</div>
-          {kindOfData === "winddir" && findDirection(data)}
-        </span>
+          {kindOfData === "winddir" && (
+            <div className="text-xs text-gray-500">
+              {findDirection(data)}
+            </div>
+          )}
+        </div>
 
+        {/* Additional icon for wind/conditions */}
         {(kindOfData === "winddir" || kindOfData === "conditions") && (
-          <span className="inline-flex justify-center items-center rounded-full text-stone-400 bg-orange-950 w-10 h-10">
+          <div className="absolute top-4 right-4 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center shadow-sm">
             <Icon data={data} kindOfData={kindOfData} />
-          </span>
+          </div>
         )}
+
+        {/* Hover effect overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </button>
     </>
   );

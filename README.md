@@ -173,15 +173,6 @@ weather-center-chat/
   - `WeatherView` for current
   - `List` for forecast/history
 - Global Language and Unit contexts drive formatting; AI JSON stays unit‑agnostic.
-## Notes & Tips
-
-- Chat UI parses AI responses: human text → chat bubble; `weather-json` → `AiWeatherPanel`.
-- `AiWeatherPanel` shows meta (city/date/date_range) and renders:
-  - `WeatherView` for current
-  - `List` for forecast/history
-- Global Language and Unit contexts drive formatting; AI JSON stays unit‑agnostic.
-
-
 
 
 
