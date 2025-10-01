@@ -34,7 +34,7 @@ CURRENT (when user asks for current weather)
   }
 }
 
-FORECAST (if user asks for forecast; 15 days max unless specified)
+FORECAST (if user asks for forecast; output up to the next 15 days)
 {
   "meta": {
     "city": "<city name>",
