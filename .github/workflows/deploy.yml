@@ -16,9 +16,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build Docker image (Nginx + FastAPI)
       run: |
-        docker build \
-          --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
-          -t weather-center-chat:ci .
+        docker build -t weather-center-chat:ci .
     - name: Save Docker image as artifact
       run: |
         docker save weather-center-chat:ci -o image.tar
@@ -47,7 +45,6 @@ jobs:
         docker run -d --name app -p 8080:80 \
           -e VISUAL_CROSSING_API_KEY='${{ secrets.VISUAL_CROSSING_API_KEY }}' \
           -e GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}' \
-          -e NEXT_PUBLIC_GOOGLE_CLIENT_ID='${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}' \
           -e MODEL='gemini-2.0-flash' \
           -e DISABLE_WEB_DRIVER='0' \
           -e ENVIRONMENT='production' \
@@ -106,9 +103,6 @@ jobs:
         echo "Backend variables:"
         echo "- VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY != '' }}"
         echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
-        echo ""
-        echo "Frontend variables:"
-        echo "- NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID != '' }}"
     
     - name: Notify deployment status
       run: |
@@ -121,6 +115,4 @@ jobs:
         echo "   Backend:"
         echo "   - VISUAL_CROSSING_API_KEY"
         echo "   - GOOGLE_API_KEY"
-        echo "   Frontend:"
-        echo "   - NEXT_PUBLIC_GOOGLE_CLIENT_ID"
         echo "5. Deploy!" 
