@@ -42,7 +42,7 @@ uv run uvicorn api.main:app --reload --port 8000
 # 2. Frontend (new terminal)
 cd frontend
 npm install
-source ../env-scratchpad.sh   # exports NEXT_PUBLIC_GOOGLE_CLIENT_ID
+# Optional: point the frontend straight at FastAPI without Nginx
 export NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```

@@ -20,14 +20,6 @@ if [ -z "$GOOGLE_API_KEY" ]; then
     exit 1
 fi
 
-if [ -z "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" ]; then
-    echo "❌ Error: NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable is not set"
-    echo "   Please source env-scratchpad.sh or set the environment variable"
-    exit 1
-fi
-
- 
-
 echo "✅ Environment variables are set"
 
 # Build the Docker image
@@ -47,7 +39,6 @@ docker run -d \
     -p 80:80 \
     -e VISUAL_CROSSING_API_KEY="$VISUAL_CROSSING_API_KEY" \
     -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
-    -e NEXT_PUBLIC_GOOGLE_CLIENT_ID="$NEXT_PUBLIC_GOOGLE_CLIENT_ID" \
     -e MODEL="gemini-2.5-flash" \
     -e DISABLE_WEB_DRIVER="0" \
     -e ENVIRONMENT="production" \
