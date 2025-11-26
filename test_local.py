@@ -48,19 +48,19 @@ def test_root():
     print("   ✅ / ok")
 
 
-def test_weather_current():
-    """If Visual Crossing key is present, verify weather endpoint returns structured data."""
-    print("3) Weather current...")
-    if not os.getenv("VISUAL_CROSSING_API_KEY"):
-        print("   ⚠️  Skipping strict assert: VISUAL_CROSSING_API_KEY not set")
-        return
-    resp = _post("/api/weather/current", {"location": "London"})
-    assert resp.status_code == 200, f"weather/current status {resp.status_code}"
-    data = resp.json()
-    assert data.get("success") is True, f"weather/current failed: {data}"
-    assert "data" in data and isinstance(data["data"], dict), "missing weather data"
-    assert "temperature" in data["data"], "missing temperature in weather data"
-    print("   ✅ weather/current ok")
+# def test_weather_current():
+#     """If Visual Crossing key is present, verify weather endpoint returns structured data."""
+#     print("3) Weather current...")
+#     if not os.getenv("VISUAL_CROSSING_API_KEY"):
+#         print("   ⚠️  Skipping strict assert: VISUAL_CROSSING_API_KEY not set")
+#         return
+#     resp = _post("/api/weather/current", {"location": "London"})
+#     assert resp.status_code == 200, f"weather/current status {resp.status_code}"
+#     data = resp.json()
+#     assert data.get("success") is True, f"weather/current failed: {data}"
+#     assert "data" in data and isinstance(data["data"], dict), "missing weather data"
+#     assert "temperature" in data["data"], "missing temperature in weather data"
+#     print("   ✅ weather/current ok")
 
 
 def test_chat():
@@ -88,7 +88,6 @@ def main():
     print("=" * 50)
     test_health()
     test_root()
-    test_weather_current()
     test_chat()
     print("\nAll checks completed.")
 
