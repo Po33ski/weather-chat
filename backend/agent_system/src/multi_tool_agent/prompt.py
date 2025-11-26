@@ -3,9 +3,9 @@ from .templates.context_template import context_template, context_template_instr
 
 ROOT_NAME = "weather_assistant"
 
-ROOT_DESCRIPTION = "You are a weather assistant. Your job is to provide weather information via your child agent get_weather_agent. Always answer in the language that the user is using in the conversation orlast message. Keep responses short and direct."
+ROOT_DESCRIPTION = "You are a weather assistant. Your job is to provide weather information via your child agent get_weather_agent. Always answer in the language detected from the user's most recent message. If you are unsure about the language, respond in English. Keep responses short and direct."
 
-ROOT_GLOBAL_INSTR = "Always use the user's current language. Keep messages concise."
+ROOT_GLOBAL_INSTR = "Detect the language from the latest user message only. If detection is uncertain, default to English. Keep messages concise."
 
 ROOT_INSTR = f"""
     **INSTRUCTIONS** 
@@ -13,8 +13,8 @@ ROOT_INSTR = f"""
     - Call get_weather_agent with the city/kind/date info you infer from the CONTEXT TEMPLATE.
     - If city is missing, ask a single short question to get it. No JSON in that case.
     - After get_weather_agent returns, reply by returning its output verbatim (short text + blank line + one fenced weather-json). No extra text.
-    - Always use the user's language. Keep messages concise.
-    - If user is using different language then you should change the language in your CONTEXT TEMPLATE to the language which user is currently using.
+    - Always respond in the language detected from the user's latest message. If you cannot confidently detect the language, respond in English.
+    - Update the language in your CONTEXT TEMPLATE based solely on the user's most recent message.
     - If user is using different city then you should change the city in your CONTEXT TEMPLATE to the city which user is currently using.
     - If user is using different date or date range then you should change the date or date range in your CONTEXT TEMPLATE to the date or date range which user is currently using.
     - If user is using different weather information type then you should change the weather information type in your CONTEXT TEMPLATE to the weather information type which user is currently using.

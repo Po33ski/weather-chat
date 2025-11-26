@@ -20,7 +20,6 @@ export function parseAiMessage(text: string): ParsedAiMessage {
       date_range: parsed?.meta?.date_range ?? null,
       kind: (parsed?.meta?.kind ?? null) as AiMeta['kind'],
       language: parsed?.meta?.language ?? null,
-      unit_system: parsed?.meta?.unit_system ?? null,
     };
 
     let aiChatData: AiChatData | null = null;

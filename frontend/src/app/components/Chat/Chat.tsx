@@ -2,12 +2,10 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { Message } from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
-import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
-import { UnitSystemContextType } from '../../types/types';
-import { AuthContext } from '@/app/contexts/AuthContext';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
 import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
+import { useLocalStorage } from '@/app/hooks/useLocalStorage';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
 
@@ -18,9 +16,18 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   const [isConnected, setIsConnected] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
-  const auth = useContext(AuthContext);
+  const { data: storedSessionId, setToLocalStorage: setSessionId } = useLocalStorage('chatSessionId', null);
+  const sessionSetterRef = useRef(setSessionId);
   const lang = useContext(LanguageContext);
+
+  sessionSetterRef.current = setSessionId;
+
+  const createSessionId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -33,6 +40,12 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   useEffect(() => {
     checkBackendConnection();
   }, []);
+
+  useEffect(() => {
+    if (!storedSessionId) {
+      sessionSetterRef.current(createSessionId());
+    }
+  }, [storedSessionId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -51,23 +64,19 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
 
   // Send message to the backend
   const handleSendMessage = async () => {
-    const unitSystem = unitSystemContext?.unitSystem.data || 'METRIC';
-    // Pull identifiers from auth context so backend can link conversation
-    const sessionId = auth?.sessionId || '';
-    const userId = auth?.user?.user_id || '';
-    if (auth?.loading || !auth?.isAuthenticated || !sessionId) {
-      // Avoid sending until auth state is ready and session is available
-      return;
-    }
     if (!inputText.trim()) return;
+
+    let activeSessionId = storedSessionId;
+    if (!activeSessionId) {
+      activeSessionId = createSessionId();
+      sessionSetterRef.current(activeSessionId);
+    }
 
     const userMessage: Message = {
       id: (Date.now() + 1).toString(),
       text: inputText.trim(),
       sender: 'user',
       timestamp: new Date(),
-      unitSystem: unitSystem,
-      userId: userId,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -78,17 +87,13 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
       const conversationHistory = messages.map((msg) => ({
         text: msg.text,
         sender: msg.sender,
-        unitSystem: msg.unitSystem || unitSystem,
-        userId: msg.userId || userId,
       }));
 
-      const response = await weatherApi.getChatResponse(
-        userMessage.text,
-        conversationHistory,
-        sessionId,
-        unitSystem,
-        userId
-      );
+      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, activeSessionId);
+      if (response.session_id && response.session_id !== activeSessionId) {
+        sessionSetterRef.current(response.session_id);
+      }
+
       if (response.success && response.data) {
         console.log(response.data);
         const parsed = parseAiMessage(response.data.message);
@@ -100,8 +105,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
           text: humanText || response.data.message,
           sender: 'ai',
           timestamp: new Date(),
-          unitSystem: unitSystem,
-          userId: userId,
         };
         setMessages((prev) => [...prev, aiMessage]);
       } else {
@@ -113,8 +116,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         text: 'Sorry, I encountered an error. Please try again later.',
         sender: 'ai',
         timestamp: new Date(),
-        unitSystem: unitSystem,
-        userId: userId,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -154,12 +155,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
                 {isConnected ? lang?.t('chat.connected') : lang?.t('chat.disconnected')}
               </span>
             </div>
-            <button
-              onClick={auth?.isAuthenticated ? auth?.logout : undefined}
-              className="text-xs sm:text-sm text-gray-700 hover:text-gray-900 border border-blue-200 rounded-lg px-2 py-1 sm:px-3 shadow-sm"
-            >
-              {auth?.isAuthenticated ? (lang?.t('chat.signout') || 'Wyloguj') : 'Zaloguj'}
-            </button>
           </div>
         </div>
       </div>
@@ -219,7 +214,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
           />
           <button
             onClick={handleSendMessage}
-            disabled={!auth?.isAuthenticated || auth?.loading || !inputText.trim() || isLoading}
+            disabled={!inputText.trim() || isLoading}
             className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             Send

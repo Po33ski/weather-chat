@@ -7,6 +7,7 @@ json_format_instructions = """
     - No extra code blocks, no extra text below the fence.
     - The UI parses the short text (above) and the JSON (inside the fenced block).
     - The JSON must follow one of the schemas below.
+    - Set meta.language to the language you used in the short text. If you are unsure which language to use, respond in English and set meta.language to "en".
 """
 
 json_format = """
@@ -17,8 +18,7 @@ CURRENT (when user asks for current weather)
     "kind": "current",
     "date": "YYYY-MM-DD",
     "date_range": null,
-    "language": "<lang>",
-    "unit_system": "US|METRIC|UK"
+    "language": "<lang>"
   },
   "current": {
     "temp": 18,
@@ -41,8 +41,7 @@ FORECAST (if user asks for forecast; output up to the next 15 days)
     "kind": "forecast",
     "date": null,
     "date_range": "YYYY-MM-DD..YYYY-MM-DD",
-    "language": "<lang>",
-    "unit_system": "US|METRIC|UK"
+    "language": "<lang>"
   },
   "days": [
     {
@@ -68,8 +67,7 @@ HISTORY (if user asks for historical data; date_range required)
     "kind": "history",
     "date": null,
     "date_range": "YYYY-MM-DD..YYYY-MM-DD",
-    "language": "<lang>",
-    "unit_system": "US|METRIC|UK"
+    "language": "<lang>"
   },
   "days": [
     {

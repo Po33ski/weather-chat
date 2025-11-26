@@ -74,7 +74,7 @@ const en: Dictionary = {
   "brick.sunrise": "Sunrise",
   "brick.sunset": "Sunset",
   "info.title": "Information",
-  "info.p1": "In this app you can check the weather forecast for most locations in the world. In the top left corner you can choose whether you want to check the weather forecast, current weather or past weather. You can also ask the chatbot about the weather.",
+  "info.p1": "In this app you can check the weather forecast for any location in the world. You can ask the chatbot about the weather.",
   "info.p2": "In the upper right corner you can change the metric system in which weather data will be displayed.",
   "placeholder.city": "City",
 };
@@ -152,7 +152,7 @@ const pl: Dictionary = {
   "brick.sunrise": "Wschód słońca",
   "brick.sunset": "Zachód słońca",
   "info.title": "Informacje",
-  "info.p1": "W tej aplikacji możesz sprawdzić prognozę pogody dla większości lokalizacji na świecie. W lewym górnym rogu możesz wybrać, czy chcesz sprawdzić prognozę, pogodę aktualną czy historyczną. Możesz też zapytać chatbota o pogodę.",
+  "info.p1": "W tej aplikacji możesz sprawdzić prognozę pogody dla większości lokalizacji na świecie. Możesz też zapytać chatbota o pogodę.",
   "info.p2": "W prawym górnym rogu możesz zmienić system miar, w którym wyświetlane będą dane pogodowe.",
   "placeholder.city": "Miasto",
 };

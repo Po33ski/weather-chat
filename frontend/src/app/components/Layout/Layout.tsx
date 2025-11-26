@@ -3,7 +3,6 @@ import { ReactNode } from "react";
 import { Footer } from "../Footer/Footer";
 import { Logo } from "../Logo/Logo";
 import { MainContent } from "../MainContent/MainContent";
-import { MainMenu } from "../MainMenu/MainMenu";
 import { SystemSelector } from "../SystemSelector/SystemSelector";
 import { LanguageSelector } from "../LanguageSelector/LanguageSelector";
 import { TopBar } from "../TopBar/TopBar";
@@ -16,13 +15,13 @@ export const Layout = ({ children }: { children: ReactNode }) => {
         <div className="min-h-screen flex flex-col">
           <MainContent>
             <TopBar>
-              <div className="flex items-center justify-self-start">
-                <MainMenu />
+              <div className="flex justify-self-start invisible min-w-[48px]" aria-hidden="true">
+                {/* spacer to keep logo perfectly centered */}
               </div>
               <div className="flex items-center justify-center justify-self-center">
                 <Logo />
               </div>
-              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-1 md:gap-2 justify-self-end">
+              <div className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-2 justify-self-end">
                 <LanguageSelector />
                 <SystemSelector />
               </div>
