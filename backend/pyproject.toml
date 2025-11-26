@@ -2,7 +2,6 @@
 name = "weather-center-backend"
 version = "0.1.0"
 description = "FastAPI backend for Weather Center Chat with AI integration"
-readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.14",

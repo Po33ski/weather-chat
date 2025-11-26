@@ -4,7 +4,7 @@ context_template = """{
         "date_range": "date_range",
         "weather_information_type": "forecast | history | current weather information",
         "specific_weather_information": "specific_weather_information", 
-        "language": "language_name", (default: english)
+        "language": "language_code", (ISO 639-1, default: en)
     }
 """
 
@@ -15,13 +15,13 @@ context_template_instructions = """
     - Future forecast/Prediction: Use get_forecast
     - Historical data: Use get_history_weather with appropriate date range
     - You should always match the information to the CONTEXT TEMPLATE.
-    - You should always use the language which user is currently using.
+    - Derive the language from the user's most recent message only. If you cannot clearly determine the language, set it to English and respond in English.
     - You can ask the user about information like for which city or for which date range he wants to know the weather. 
-    - If you recognize that user use different language then you should change the language in your CONTEXT TEMPLATE to the language which user is currently using.
-    - If you recognize that user asked for a weather for a different city then you should change the city in your CONTEXT TEMPLATE to the city which user is currently using.
-    - If you recognize that user use different date or date range then you should change the date or date range in your CONTEXT TEMPLATE to the date or date range which user is currently using. 
-    - If you recognize that user use different weather information type then you should change the weather information type in your CONTEXT TEMPLATE to the weather information type which user is currently using.
-    - If you recognize that user use different specific weather information then you should change the specific weather information in your CONTEXT TEMPLATE to the specific weather information which user is currently using.
+    - When the latest user message changes the language, update the language in your CONTEXT TEMPLATE accordingly.
+    - If the user asks for weather for a different city then you should change the city in your CONTEXT TEMPLATE to the city which user is currently using.
+    - If the user uses a different date or date range then you should change the date or date range in your CONTEXT TEMPLATE to the date or date range which user is currently using. 
+    - If the user uses a different weather information type then you should change the weather information type in your CONTEXT TEMPLATE to the weather information type which user is currently using.
+    - If the user uses different specific weather information then you should change the specific weather information in your CONTEXT TEMPLATE to the specific weather information which user is currently using.
         Specific weather information can be:
         - temperature
         - humidity

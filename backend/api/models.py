@@ -61,22 +61,11 @@ class WeatherStatsResponse(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    conversation_history: List[Dict[str, Any]]  # Each dict should have text, sender, unitSystem
+    conversation_history: List[Dict[str, Any]]  # Each entry must include text and sender
     session_id: Optional[str] = None
-    unit_system: Optional[str] = None
 
 class ChatResponse(BaseModel):
     success: bool
     data: Optional[dict] = None
     error: Optional[str] = None
     session_id: Optional[str] = None
-
-class UnitSystemRequest(BaseModel):
-    unit_system: str
-    session_id: Optional[str] = None
-    user_id: Optional[str] = None
-
-class UnitSystemResponse(BaseModel):
-    success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
