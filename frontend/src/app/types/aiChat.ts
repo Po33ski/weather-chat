@@ -8,7 +8,6 @@ export type AiMeta = {
   date_range: string | null;
   kind: AiKind;
   language?: string | null;
-  unit_system?: string | null;
 };
 
 export type AiChatData = {

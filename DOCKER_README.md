@@ -44,8 +44,8 @@ PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross
 ```
 
 Note
-- Backend uses a local SQLite file `backend/database.db`. No external DB is required.
-- In production, use same‑origin calls from the frontend; do NOT set `NEXT_PUBLIC_API_URL`.
+- Backend keeps Google ADK sessions entirely in memory; no external database is required.
+- In production, use same-origin calls from the frontend; do NOT set `NEXT_PUBLIC_API_URL`.
 
 ## Development with Compose (optional)
 
