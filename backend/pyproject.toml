@@ -11,10 +11,6 @@ dependencies = [
     "requests>=2.31.0",
     "google-adk>=1.5.0",
     "google-genai>=0.3.0",
-    "psycopg2-binary>=2.9.0",
-    "pyotp>=2.9.0",
-    "qrcode[pil]>=7.4.2",
-    "peewee>=3.17.0",
     "tzdata>=2025.1",
 ]
 

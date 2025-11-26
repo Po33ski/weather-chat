@@ -61,26 +61,20 @@ During a chat request the backend reuses a single `InMemorySessionService` to ke
 
 The FastAPI service in `backend/api/` exposes REST endpoints plus the streaming chat bridge. Key modules:
 
-- `main.py` wires routes, CORS, health checks, the chat pipeline, and authentication flows.
+- `main.py` wires routes, CORS, health checks, the chat pipeline, and the lightweight session manager that keeps Google ADK conversations alive per browser session.
 - `weather_service.py` calls the Visual Crossing API, normalizes responses into `WeatherData` Pydantic models, and supports current, forecast, and historical queries.
-- `auth_service.py` mixes Google OAuth sign-in, optional TOTP verification, and Peewee models stored in the local SQLite file (`backend/database.db`). ADK sessions stay in memory but user metadata persists.
 - `models.py` defines typed request/response schemas for all endpoints so shared contracts stay explicit.
+- `session_manager.py` maintains anonymous in-memory sessions that map the frontend’s `session_id` to the underlying Google ADK session identifier.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/health`, `/api/health` | Runtime and environment status (also used by Docker health checks) |
-| POST | `/api/auth/google` | Google OAuth sign-in and ADK session bootstrap |
-| POST | `/api/auth/logout` | Invalidate app session and clean ADK bindings |
-| GET | `/api/auth/session/{session_id}` | Retrieve session metadata for hydration on the client |
-| POST | `/api/auth/totp/setup` | Generate a QR code (PNG) and secret for TOTP users |
-| POST | `/api/auth/totp/verify` | Verify a 6-digit code and mint an application session |
-| GET | `/api/auth/totp/status/{email}` | Check whether TOTP is already configured |
 | POST | `/api/weather/current` | Current conditions via Visual Crossing |
 | POST | `/api/weather/forecast` | Up-to-15-day forecast |
 | POST | `/api/weather/history` | Historical slice for a date range |
 | POST | `/api/chat` | Proxy between the frontend and the Google ADK agent graph |
 
-FastAPI is a great fit here because the project stays compact, we rely heavily on Pydantic models for validation, and the async-first design meshes with Google ADK’s streaming interface without extra ceremony. Staying in Python also means the agent scaffolding, Peewee ORM, and application code share one language, which keeps the integration with Google ADK’s Python SDK frictionless.
+FastAPI is a great fit here because the project stays compact, we rely heavily on Pydantic models for validation, and the async-first design meshes with Google ADK’s streaming interface without extra ceremony. Staying in Python also means the agent scaffolding and application code share one language, which keeps the integration with Google ADK’s Python SDK frictionless.
 
 The backend ships via a single Docker image (`Dockerfile`) that:
 - Builds Python dependencies with `uv`, then installs the frontend.

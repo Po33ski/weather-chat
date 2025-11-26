@@ -126,7 +126,6 @@ export interface Message {
   sender: 'user' | 'ai';
   timestamp: Date;
   unitSystem?: string;
-  userId?: string;
 }
 
 export interface ChatRequest {
@@ -134,18 +133,21 @@ export interface ChatRequest {
   conversation_history: Array<{
     text: string;
     sender: string;
+    unitSystem?: string;
   }>;
   session_id?: string;
+  unit_system?: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }
 
 
-export interface ChatApiResponse {
-  success: boolean;
-  data?: {
-    message: string;
-    sender: string;
-  };
-  error?: string;
+export interface ChatApiResponse extends ApiResponse<{ message: string; sender: string }> {
+  session_id?: string;
 }
 
 export interface UnitSystemRequest {
@@ -192,12 +194,6 @@ export interface HistoryWeatherRequest {
   location: string;
   start_date: string; // YYYY-MM-DD format
   end_date: string;   // YYYY-MM-DD format
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
 }
 
 export interface User {
