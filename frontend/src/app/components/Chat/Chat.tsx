@@ -2,8 +2,6 @@
 import { useState, useRef, useEffect, useContext } from 'react';
 import { Message } from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
-import { UnitSystemContext } from '@/app/contexts/UnitSystemContext';
-import { UnitSystemContextType } from '../../types/types';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
 import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
@@ -20,7 +18,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: storedSessionId, setToLocalStorage: setSessionId } = useLocalStorage('chatSessionId', null);
   const sessionSetterRef = useRef(setSessionId);
-  const unitSystemContext = useContext(UnitSystemContext) as UnitSystemContextType | null;
   const lang = useContext(LanguageContext);
 
   sessionSetterRef.current = setSessionId;
@@ -67,7 +64,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
 
   // Send message to the backend
   const handleSendMessage = async () => {
-    const unitSystem = unitSystemContext?.unitSystem.data || 'METRIC';
     if (!inputText.trim()) return;
 
     let activeSessionId = storedSessionId;
@@ -81,7 +77,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
       text: inputText.trim(),
       sender: 'user',
       timestamp: new Date(),
-      unitSystem: unitSystem,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -92,10 +87,9 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
       const conversationHistory = messages.map((msg) => ({
         text: msg.text,
         sender: msg.sender,
-        unitSystem: msg.unitSystem || unitSystem,
       }));
 
-      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, activeSessionId, unitSystem);
+      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, activeSessionId);
       if (response.session_id && response.session_id !== activeSessionId) {
         sessionSetterRef.current(response.session_id);
       }
@@ -111,7 +105,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
           text: humanText || response.data.message,
           sender: 'ai',
           timestamp: new Date(),
-          unitSystem: unitSystem,
         };
         setMessages((prev) => [...prev, aiMessage]);
       } else {
@@ -123,7 +116,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         text: 'Sorry, I encountered an error. Please try again later.',
         sender: 'ai',
         timestamp: new Date(),
-        unitSystem: unitSystem,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {

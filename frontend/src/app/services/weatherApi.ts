@@ -55,15 +55,13 @@ class WeatherApiService {
 
   async getChatResponse(
     message: string,
-    conversationHistory: Array<{ text: string; sender: string; unitSystem?: string }>,
-    sessionId?: string,
-    unitSystem?: string
+    conversationHistory: Array<{ text: string; sender: string }>,
+    sessionId?: string
   ): Promise<ChatApiResponse> {
     return this.makeRequest<{ message: string; sender: string }>('/api/chat', 'POST', {
       message,
       conversation_history: conversationHistory,
-      session_id: sessionId,
-      unit_system: unitSystem
+      session_id: sessionId
     });
   }
 }
