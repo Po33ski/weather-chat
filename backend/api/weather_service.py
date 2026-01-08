@@ -21,7 +21,7 @@ class WeatherService:
     def _make_api_request(self, location: str, start_date: str, end_date: str, include: str = "current,days,hours") -> Dict[str, Any]:
         if not self.api_key:
             raise ValueError("VISUAL_CROSSING_API_KEY not set. Please set this environment variable to use weather features.")
-        
+                   
         url = f"{self.base_url}/{location}/{start_date}/{end_date}"
         params = {
             'unitGroup': 'metric',

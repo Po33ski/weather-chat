@@ -39,7 +39,6 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
-
 # Build frontend with static export
 RUN npm run build
 

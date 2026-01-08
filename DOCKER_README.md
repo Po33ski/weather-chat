@@ -32,7 +32,6 @@ Required
 ```bash
 VISUAL_CROSSING_API_KEY=...
 GOOGLE_API_KEY=...
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=...
 ```
 
 Optional
@@ -41,6 +40,7 @@ ENVIRONMENT=production
 MODEL=gemini-2.5-flash
 DISABLE_WEB_DRIVER=0
 PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
+NEXT_PUBLIC_API_URL=http://localhost:8000      # dev overrides only
 ```
 
 Note
