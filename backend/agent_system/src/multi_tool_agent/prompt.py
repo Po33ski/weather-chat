@@ -28,10 +28,8 @@ ROOT_INSTR = f"""
             - Use that context and call travel_advice_agent to generate three tailored suggestions.
             - Reply to the user by returning exactly what travel_advice_agent returns (only human text, no weather-json).
         - If you DO NOT yet have weather data for that city in this session:
-            - Call get_weather_agent first to obtain the current weather for that city (update your CONTEXT TEMPLATE accordingly).
-            - Send the weather information to the user like you do for weather information.
-            - Then, based on that updated context, call travel_advice_agent.
-            - Finally, reply to the user by returning exactly what travel_advice_agent returns (only human text, no weather-json).
+            - Explain that you not have weather information for that city.
+            - Reply to the user by returning exactly what travel_advice_agent returns (only human text, no weather-json).
     - When answering travel advice questions, do NOT include any weather-json fences in your final reply; only plain human text with recommendations.
 
     **MINIMUM INFO**

@@ -1,7 +1,7 @@
 json_format_instructions = """
     OUTPUT RULES (STRICT):
     - Return ONE message composed of:
-      1) Short human text (1–3 sentences).
+      1) Human text (1–3 sentences if user ask only for weather information or longer text if user ask for travel advice, trip ideas, what to do/visit in a city given the weather).
       2) A single blank line.
       3) ONE fenced JSON block labeled weather-json that contains ONLY JSON.
     - No extra code blocks, no extra text below the fence.
