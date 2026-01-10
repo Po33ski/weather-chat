@@ -1,6 +1,3 @@
-import styles from "./MainPhoto.module.css";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { MAIN_DESCRIPTIONS, MAIN_HEADERS } from "@/app/constants/descriptions";
 import { useContext } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
@@ -10,7 +7,9 @@ export function MainPhoto() {
   const lang = useContext(LanguageContext);
   let pageName: "current" | "forecast" | "history" | "/";
   let path = "/";
-  path = usePathname().slice(1);
+  if (typeof window !== "undefined") {
+    path = window.location.pathname.slice(1);
+  }
   pageName =
     path === "current" || path === "forecast" || path === "history"
       ? path
@@ -29,7 +28,7 @@ export function MainPhoto() {
       );
   return (
     <div className="relative h-96 md:h-[250px] xl:h-[500px] overflow-hidden">
-      <Image src={photo} layout="fill" objectFit="cover" alt="photo" />
+      <img src={photo} alt="photo" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
         <div className="max-w-5xl mx-auto text-center text-white p-8">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">

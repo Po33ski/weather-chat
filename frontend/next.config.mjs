@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable static export for Docker with nginx
-  output: 'export',
+  // output: 'export',
   
   // Disable server-side image optimization in Docker
   images: {

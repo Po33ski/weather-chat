@@ -1,6 +1,6 @@
 const BACKEND_API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === 'development' ? 'http://localhost:8000' : '');
 import { ApiResponse, ChatApiResponse, WeatherData } from '../types/interfaces';
 
 class WeatherApiService {

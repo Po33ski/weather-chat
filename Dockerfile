@@ -23,7 +23,7 @@ RUN uv sync
 # Install uvicorn as a tool
 RUN uv tool install uvicorn
 
-# Stage 2: Build Frontend
+# Stage 2: Build Frontend (Vite + React)
 FROM node:18-alpine AS frontend-builder
 
 # Set working directory
@@ -39,7 +39,7 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
-# Build frontend with static export
+# Build frontend with Vite
 RUN npm run build
 
 # Stage 3: Production Runtime
@@ -57,8 +57,8 @@ WORKDIR /app
 # Copy backend from builder
 COPY --from=backend-builder /app /app/backend
 
-# Copy frontend static export from builder
-COPY --from=frontend-builder /app/frontend/out /app/frontend/out
+# Copy frontend static build from builder
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
 # Install backend dependencies in runtime stage
 WORKDIR /app/backend

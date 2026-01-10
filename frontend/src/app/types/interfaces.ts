@@ -1,5 +1,3 @@
-import { StaticImageData } from "next/image";
-
 export interface PagesInfo {
   current: string;
   forecast: string;
@@ -7,9 +5,9 @@ export interface PagesInfo {
 }
 
 export interface MainPhotos {
-  current: StaticImageData;
-  forecast: StaticImageData;
-  history: StaticImageData;
+  current: string;
+  forecast: string;
+  history: string;
 }
 
 export interface MenuOptions {

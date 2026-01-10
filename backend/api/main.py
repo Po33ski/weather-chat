@@ -16,11 +16,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow CORS for local frontend
+# Allow CORS for local frontend (Next.js/Vite dev and other ports)
 # Configure CORS
 allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 # In production behind nginx, frontend and backend share the same origin

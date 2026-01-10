@@ -1,6 +1,6 @@
 # Docker Guide (Single‑Container)
 
-Run Weather Center Chat as one Docker container: Nginx serves the static Next.js export and proxies `/api` to FastAPI.
+Run Weather Center Chat as one Docker container: Nginx serves the static Vite React build and proxies `/api` to FastAPI.
 
 ## Prerequisites
 
@@ -16,12 +16,12 @@ source env-scratchpad.sh
 
 Build stages in Dockerfile
 1) Backend builder (uv installs Python deps)
-2) Frontend builder (Next.js static export)
+2) Frontend builder (Vite React SPA build)
 3) Runtime (Nginx + FastAPI)
 
 ## How it works
 
-- Nginx serves static files from `/app/frontend/out`
+- Nginx serves static files from `/app/frontend/dist`
 - Nginx proxies `/api/` → `http://127.0.0.1:8000`
 - Health endpoint (through Nginx): `GET /api/health`
 - One public port: `80`
@@ -40,7 +40,7 @@ ENVIRONMENT=production
 MODEL=gemini-2.5-flash
 DISABLE_WEB_DRIVER=0
 PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
-NEXT_PUBLIC_API_URL=http://localhost:8000      # dev overrides only
+VITE_API_URL=http://localhost:8000           # dev overrides only
 ```
 
 Note

@@ -21,7 +21,6 @@ import high_pressure from "../../../public/high_pressure.jpg";
 import low_humidity from "../../../public/low_humidity.jpg";
 import medium_humidity from "../../../public/medium_humidity.jpg";
 import high_humidity from "../../../public/high_humidity.jpg";
-import { StaticImageData } from "next/image";
 
 export const systemsConvert = {
   toFahrenheit: (temp: number | null) => {
@@ -90,7 +89,7 @@ export function checkSign(
 export const whatImage = (
   data: string | number | null | undefined,
   kindOfData: string | null | undefined
-): StaticImageData => {
+): string => {
   const checkTempImage = (temp: number) => {
     switch (true) {
       case temp > 30:
@@ -164,10 +163,7 @@ export const whatImage = (
         return high_humidity;
     }
   };
-  const checkImage = (
-    data: string | number | null | undefined,
-    kindOfData: string
-  ) => {
+  const checkImage = (data: string | number | null | undefined, kindOfData: string) => {
     const dataN: number = typeof data === "number" ? data : 0;
     const dataS: string = typeof data === "string" ? data : "";
     switch (kindOfData) {
@@ -197,9 +193,8 @@ export const whatImage = (
   };
 
   const kindOfDataS: string = typeof kindOfData === "string" ? kindOfData : "";
-  const test: StaticImageData | undefined = checkImage(data, kindOfDataS);
-  const image: StaticImageData =
-    typeof test === "undefined" ? sunset_image : test;
+  const test: string | undefined = checkImage(data, kindOfDataS);
+  const image: string = typeof test === "undefined" ? sunset_image : test;
   return image;
 };
 

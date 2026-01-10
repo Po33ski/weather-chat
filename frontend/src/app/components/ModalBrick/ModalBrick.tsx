@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import Image from "next/image";
 import { BrickModalContext } from "@/app/contexts/BrickModalContext";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { Icon } from "../Icon/Icon";
@@ -54,7 +53,7 @@ export function ModalBrick() {
       <div className="bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-4 shadow-2xl transform transition-all duration-300">
         {/* Header with image */}
         <div className="relative h-48">
-          <Image src={photo} layout="fill" objectFit="cover" alt="Weather condition" />
+          <img src={photo} alt="Weather condition" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
           <div className="absolute bottom-4 left-4 right-4">
             <h2 className="text-2xl font-bold text-white mb-1">

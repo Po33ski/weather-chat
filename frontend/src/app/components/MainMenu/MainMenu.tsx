@@ -2,15 +2,13 @@
 import { useState } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import { OPTIONS } from "@/app/constants/menuOptions";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import burger from "../../../../public/burger.png";
 import { useContext } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
+import burger from "../../../../public/burger.png";
 
 export function MainMenu() {
-  const pathname: string = usePathname();
+  const pathname: string =
+    typeof window !== "undefined" ? window.location.pathname : "/";
   const [isMobileNavShown, setIsMobileNavShown] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const langCtx = useContext(LanguageContext);
@@ -38,9 +36,9 @@ export function MainMenu() {
               className={`${pathname === path ? "underline " : ""} 
               transition-all font-semibold uppercase hover:font-extrabold"`}
             >
-              <Link href={path} onClick={() => setIsMobileNavShown(false)}>
+              <a href={path} onClick={() => setIsMobileNavShown(false)}>
                 {langCtx?.t(`menu.${optionName.toLowerCase()}`) ?? optionName}
-              </Link>
+              </a>
             </li>
           ))}
         </ul>
@@ -53,13 +51,7 @@ export function MainMenu() {
         }}
         className="md:hidden lg:hidden z-30 inline-flex items-center justify-center w-9 h-9 rounded-lg border border-blue-300 bg-white shadow-sm hover:border-blue-400 hover:shadow-md active:scale-[0.98] transition"
      >
-        <Image
-          src={burger}
-          alt="burger-icon"
-          width={18}
-          height={18}
-          className="opacity-80"
-        />
+        <img src={burger} alt="burger-icon" className="w-[18px] h-[18px] opacity-80" />
         <span className="sr-only">Menu</span>
       </button>
     </>

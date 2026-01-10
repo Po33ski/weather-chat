@@ -7,7 +7,9 @@ import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 import { useLocalStorage } from '@/app/hooks/useLocalStorage';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '');
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === 'development' ? 'http://localhost:8000' : '');
 
 export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataChange?: (d: AiChatData | null) => void }> = ({ onMetaChange, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
