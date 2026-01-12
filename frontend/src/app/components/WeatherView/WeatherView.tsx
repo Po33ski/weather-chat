@@ -1,5 +1,4 @@
 import { Brick } from "../Brick/Brick";
-import { MyText } from "../MyText/MyText";
 import { useContext } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
 import { capitalizeFirstLetter } from "@/app/functions/functions";

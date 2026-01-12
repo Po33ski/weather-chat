@@ -1,4 +1,3 @@
-"use client";
 import { useContext, useEffect, useState } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
 import type { AiMeta, AiChatData, AiKind } from "@/app/types/aiChat";

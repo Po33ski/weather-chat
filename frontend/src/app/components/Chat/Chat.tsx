@@ -1,39 +1,21 @@
-"use client";
 import { useState, useRef, useEffect, useContext } from 'react';
 import { Message } from '../../types/interfaces';
 import { weatherApi } from '../../services/weatherApi';
 import { LanguageContext } from '@/app/contexts/LanguageContext';
 import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
-import { useLocalStorage } from '@/app/hooks/useLocalStorage';
+import { BACKEND_API_URL } from '@/app/constants/apiConstants';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'development' ? 'http://localhost:8000' : '');
+
 
 export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataChange?: (d: AiChatData | null) => void }> = ({ onMetaChange, onDataChange }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { data: storedSessionId, setToLocalStorage: setSessionId } = useLocalStorage('chatSessionId', null);
-  const sessionSetterRef = useRef(setSessionId);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const lang = useContext(LanguageContext);
-
-  sessionSetterRef.current = setSessionId;
-
-  const createSessionId = () => {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  };
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -43,19 +25,13 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
     checkBackendConnection();
   }, []);
 
-  useEffect(() => {
-    if (!storedSessionId) {
-      sessionSetterRef.current(createSessionId());
-    }
-  }, [storedSessionId]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const checkBackendConnection = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/health`);
+      const response = await fetch(`${BACKEND_API_URL}/api/health`);
       if (response.ok) {
         setIsConnected(true);
       }
@@ -68,11 +44,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
-    let activeSessionId = storedSessionId;
-    if (!activeSessionId) {
-      activeSessionId = createSessionId();
-      sessionSetterRef.current(activeSessionId);
-    }
+    const activeSessionId = sessionId || undefined;
 
     const userMessage: Message = {
       id: (Date.now() + 1).toString(),
@@ -91,9 +63,13 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         sender: msg.sender,
       }));
 
-      const response = await weatherApi.getChatResponse(userMessage.text, conversationHistory, activeSessionId);
-      if (response.session_id && response.session_id !== activeSessionId) {
-        sessionSetterRef.current(response.session_id);
+      const response = await weatherApi.getChatResponse(
+        userMessage.text,
+        conversationHistory,
+        activeSessionId,
+      );
+      if (response.session_id && response.session_id !== sessionId) {
+        setSessionId(response.session_id);
       }
 
       if (response.success && response.data) {
@@ -133,7 +109,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   };
 
   const formatTime = (date: Date) => {
-    if (!isClient) return '';
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;

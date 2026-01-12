@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
 import type { Lang, LanguageValue } from "@/app/types/types";
@@ -22,16 +21,6 @@ const en: Dictionary = {
   "auth.signinTitle": "Sign in to use AI Chat",
   "auth.chooseMethod": "Choose your authentication method",
   "auth.or": "or",
-
-  "totp.email": "Email",
-  "totp.setupTitle": "Setup TOTP Authentication",
-  "totp.verifyTitle": "Verify TOTP Code",
-  "totp.setupCta": "Setup TOTP",
-  "totp.verifyCta": "Verify Code",
-  "totp.checkStatus": "Check TOTP Status",
-  "totp.already": "Already have TOTP? Verify here",
-  "totp.needSetup": "Need to setup TOTP? Click here",
-  "totp.qrHint": "Scan this QR code with Google Authenticator:",
 
   "current.hoursCta": "Weather for every hour",
   "list.date": "Date",
@@ -74,8 +63,8 @@ const en: Dictionary = {
   "brick.sunrise": "Sunrise",
   "brick.sunset": "Sunset",
   "info.title": "Information",
-  "info.p1": "In this app you can check the weather forecast for any location in the world. You can ask the chatbot about the weather.",
-  "info.p2": "In the upper right corner you can change the metric system in which weather data will be displayed.",
+  "info.p1": "In this app you can check the weather forecast for any location in the world. You can ask the chatbot about the weather and also ask for useful information about the city you are visiting.",
+  "info.p2": "In the upper right corner you can change the metric system in which weather data will be displayed and the language of the application.",
   "placeholder.city": "City",
 };
 
@@ -96,16 +85,6 @@ const pl: Dictionary = {
   "auth.signinTitle": "Zaloguj się aby korzystać z AI Czat",
   "auth.chooseMethod": "Wybierz metodę uwierzytelnienia",
   "auth.or": "lub",
-
-  "totp.email": "Email",
-  "totp.setupTitle": "Konfiguracja TOTP",
-  "totp.verifyTitle": "Weryfikacja kodu TOTP",
-  "totp.setupCta": "Skonfiguruj TOTP",
-  "totp.verifyCta": "Zweryfikuj kod",
-  "totp.checkStatus": "Sprawdź status TOTP",
-  "totp.already": "Masz już TOTP? Zweryfikuj tutaj",
-  "totp.needSetup": "Musisz skonfigurować TOTP? Kliknij tutaj",
-  "totp.qrHint": "Zeskanuj ten kod QR w Google Authenticator:",
 
   "current.hoursCta": "Pogoda dla każdej godziny",
   "list.date": "Data",
@@ -152,8 +131,8 @@ const pl: Dictionary = {
   "brick.sunrise": "Wschód słońca",
   "brick.sunset": "Zachód słońca",
   "info.title": "Informacje",
-  "info.p1": "W tej aplikacji możesz sprawdzić prognozę pogody dla większości lokalizacji na świecie. Możesz też zapytać chatbota o pogodę.",
-  "info.p2": "W prawym górnym rogu możesz zmienić system miar, w którym wyświetlane będą dane pogodowe.",
+  "info.p1": "W tej aplikacji możesz sprawdzić prognozę pogody dla większości lokalizacji na świecie. Możesz zapytać chatbota AI o pogodę ale też poprosić o przydatne informacje na temat zwiedzania danego miasta.",
+  "info.p2": "W prawym górnym rogu możesz zmienić system miar, w którym wyświetlane będą dane pogodowe oraz język aplikacji.",
   "placeholder.city": "Miasto",
 };
 

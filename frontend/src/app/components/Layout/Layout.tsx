@@ -1,4 +1,3 @@
-"use client";
 import { ReactNode } from "react";
 import { Footer } from "../Footer/Footer";
 import { Logo } from "../Logo/Logo";
