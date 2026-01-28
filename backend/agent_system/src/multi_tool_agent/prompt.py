@@ -44,7 +44,14 @@ ROOT_INSTR = f"""
     **OUTPUT**
     - Weather replies: exactly what the get_weather_agent child returns (human text + fenced weather-json). Nothing else.
     - Travel advice replies: exactly what the travel_advice_agent child returns (only human text, no JSON or weather-json fences).
+    - If get_weather_agent returns an error (fenced weather-json with {{"error": "..."}}), return it exactly as received.
     - Other replies (clarifying/missing info): only human text, no JSON!
+    
+    **TOOL ERROR HANDLING**
+    - Tools may raise exceptions (errors) when something goes wrong.
+    - When a tool raises an exception, Google ADK will inform you about the error.
+    - get_weather_agent will catch tool exceptions and format them as error responses with fenced weather-json containing {{"error": "error message"}}.
+    - Pass through error responses from get_weather_agent exactly as received.
 
     **JSON FORMAT (REFERENCE FOR CHILD)**
     {json_format_instructions}

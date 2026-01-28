@@ -14,9 +14,19 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     
     **AVAILABLE TOOLS**
     You have access to weather tools: 
-    1. get_current_weather(city) - Get current weather conditions for a city (returns raw data in metric units)
-    2. get_forecast(city) - Get 15-day weather forecast for a city (returns raw data in metric units)
-    3. get_history_weather(city, start_date, end_date) - Get historical weather data for a city and date range (returns raw data in metric units)
+    1. get_current_weather(city) - Get current weather conditions for a city (returns a dictionary with weather data in metric units)
+    2. get_forecast(city) - Get 15-day weather forecast for a city (returns a dictionary with weather data in metric units)
+    3. get_history_weather(city, start_date, end_date) - Get historical weather data for a city and date range (returns a dictionary with weather data in metric units)
+    
+    **TOOL ERROR HANDLING**
+    - Tools may raise exceptions (errors) when something goes wrong (e.g., missing city, API failure, configuration error).
+    - When a tool raises an exception, Google ADK will inform you about the error.
+    - You MUST catch and handle these errors by returning an error response in the following format:
+      - Human text: A brief explanation of the error (1-2 sentences) in the user's language.
+      - A blank line.
+      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the exception"}}
+    - Extract the error message from the exception and use it in the error response.
+    - If a tool executes successfully, it returns a dictionary with weather data that you should process and format according to the OUTPUT FORMAT section.
     
     TOOL SELECTION RULES (NO DATE TOOLS):
     - Detect the requested kind from your CONTEXT TEMPLATE and the user's message:
@@ -46,6 +56,19 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
      {context_template}
     
     **OUTPUT FORMAT (STRICT, THREE TEMPLATES)**
+    - If a tool raises an exception (error), you MUST return an error response in the following format:
+      - Human text: A brief explanation of the error (1-2 sentences) in the user's language.
+      - A blank line.
+      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the exception"}}
+      Example:
+      ```
+      I encountered an error while fetching the weather data.
+      
+      ```weather-json
+      {{"error": "No city provided."}}
+      ```
+      ```
+    - If a tool executes successfully and returns valid weather data (dict), format it according to the JSON FORMAT section below.
     INSTRUCTIONS FOR OUTPUT FORMAT (VERY IMPORTANT):
     {json_format_instructions}
 

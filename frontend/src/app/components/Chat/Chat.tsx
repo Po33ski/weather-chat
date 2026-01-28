@@ -174,7 +174,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
             className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[85%] sm:max-w-xs md:max-w-md px-3 sm:px-4 py-2 rounded-2xl sm:rounded-xl shadow-sm ${
+              className={`max-w-[85%] sm:max-w-md md:max-w-lg lg:max-w-xl px-3 sm:px-4 py-2 rounded-2xl sm:rounded-xl shadow-sm break-words ${
                 message.sender === 'user'
                   ? 'bg-blue-600 text-white'
                   : message.text.startsWith('Error:')
@@ -182,7 +182,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
                   : 'bg-white text-gray-800 border border-blue-200'
               }`}
             >
-              <p className="text-sm sm:text-base leading-relaxed">{message.text}</p>
+              <p className="text-sm sm:text-base leading-relaxed break-words overflow-wrap-anywhere whitespace-pre-wrap">{message.text}</p>
               <p className={`text-[10px] sm:text-xs mt-1 ${
                 message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
               }`}>

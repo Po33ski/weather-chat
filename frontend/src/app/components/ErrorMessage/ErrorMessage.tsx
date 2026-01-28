@@ -8,12 +8,12 @@ export function ErrorMessage({
   onClose?: () => void;
 }) {
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-3 rounded-lg border border-red-600 shadow-lg flex items-center gap-3 max-w-md">
-      <span className="flex-1">{children}</span>
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-3 rounded-lg border border-red-600 shadow-lg flex items-start gap-3 max-w-[90vw] sm:max-w-2xl md:max-w-3xl break-words">
+      <span className="flex-1 break-words overflow-wrap-anywhere">{children}</span>
       {onClose && (
         <button
           onClick={onClose}
-          className="text-white hover:text-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 rounded p-1"
+          className="text-white hover:text-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 rounded p-1 flex-shrink-0"
           aria-label="Close error message"
         >
           <svg

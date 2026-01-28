@@ -1,8 +1,9 @@
 import os
-import json
 import smtplib
 from email.message import EmailMessage
+from typing import Dict, Any
 
+from .exceptions import ToolValidationError, ToolConfigurationError, ToolAPIError
 
 # SMTP configuration loaded from environment variables
 SMTP_HOST = os.getenv("SMTP_HOST")
@@ -12,7 +13,7 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 
 
-def send_email(email: str, title: str, text: str) -> str:
+def send_email(email: str, title: str, text: str) -> Dict[str, Any]:
     """
     Send an email using SMTP.
 
@@ -22,30 +23,26 @@ def send_email(email: str, title: str, text: str) -> str:
         text: Email body (plain text).
 
     Returns:
-        JSON string with the result, e.g.:
-        {
-            "success": true,
-            "message": "Email sent successfully."
-        }
-        or
-        {
-            "success": false,
-            "error": "Error message..."
-        }
+        Dict with success message: {"success": True, "message": "Email sent successfully."}
+    
+    Raises:
+        ToolValidationError: If email, title, or text is not provided
+        ToolConfigurationError: If SMTP configuration is missing
+        ToolAPIError: If email sending fails
     """
     # Basic input validation
     if not email:
-        return json.dumps({"success": False, "error": "No recipient email provided."})
+        raise ToolValidationError("No recipient email provided.")
     if not title:
-        return json.dumps({"success": False, "error": "No email title provided."})
+        raise ToolValidationError("No email title provided.")
     if not text:
-        return json.dumps({"success": False, "error": "No email text provided."})
+        raise ToolValidationError("No email text provided.")
 
     # Validate SMTP configuration
     if not SMTP_HOST:
-        return json.dumps({"success": False, "error": "SMTP_HOST not configured."})
+        raise ToolConfigurationError("SMTP_HOST not configured.")
     if not SMTP_FROM_EMAIL:
-        return json.dumps({"success": False, "error": "SMTP_FROM_EMAIL or SMTP_USER not configured."})
+        raise ToolConfigurationError("SMTP_FROM_EMAIL or SMTP_USER not configured.")
 
     msg = EmailMessage()
     msg["From"] = SMTP_FROM_EMAIL
@@ -67,7 +64,9 @@ def send_email(email: str, title: str, text: str) -> str:
 
             server.send_message(msg)
 
-        return json.dumps({"success": True, "message": "Email sent successfully."})
+        return {"success": True, "message": "Email sent successfully."}
+    except smtplib.SMTPException as e:
+        raise ToolAPIError(f"Failed to send email: {str(e)}") from e
     except Exception as e:
-        return json.dumps({"success": False, "error": str(e)})
+        raise ToolAPIError(f"Unexpected error while sending email: {str(e)}") from e
 
