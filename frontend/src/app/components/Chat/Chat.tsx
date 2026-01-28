@@ -5,6 +5,7 @@ import { LanguageContext } from '@/app/contexts/LanguageContext';
 import { parseAiMessage } from '@/app/utils/parseAiMessage';
 import type { AiMeta, AiChatData } from '@/app/types/aiChat';
 import { BACKEND_API_URL } from '@/app/constants/apiConstants';
+import { ErrorMessage } from '../ErrorMessage/ErrorMessage';
 
 
 
@@ -15,6 +16,7 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const lang = useContext(LanguageContext);
 
   useEffect(() => {
@@ -74,6 +76,8 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
 
       if (response.success && response.data) {
         console.log(response.data);
+        // Clear any previous error messages
+        setErrorMessage(null);
         const parsed = parseAiMessage(response.data.message);
         onMetaChange && onMetaChange(parsed.metaData);
         onDataChange && onDataChange(parsed.aiChatData);
@@ -86,16 +90,31 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         };
         setMessages((prev) => [...prev, aiMessage]);
       } else {
-        throw new Error(response.error || 'Failed to fetch chat response');
+        // Extract error message from response
+        const errorText = response.error || 'Failed to fetch chat response';
+        setErrorMessage(errorText);
+        // Also show error in chat message
+        const errorChatMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `Error: ${errorText}`,
+          sender: 'ai',
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorChatMessage]);
+        console.error('Chat API error:', errorText);
       }
     } catch (error) {
-      const errorMessage: Message = {
+      // Handle network errors or other exceptions
+      const errorText = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again later.';
+      setErrorMessage(errorText);
+      const errorChatMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again later.',
+        text: `Error: ${errorText}`,
         sender: 'ai',
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorChatMessage]);
+      console.error('Chat request failed:', error);
     } finally {
       setIsLoading(false);
     }
@@ -115,8 +134,14 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
   };
 
   return (
-    <div className="flex flex-col h-[55vh] md:h-[50vh] lg:h-[45vh] w-full md:max-w-4xl mx-auto bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-sm">
-      {/* Header */}
+    <>
+      {errorMessage && (
+        <ErrorMessage onClose={() => setErrorMessage(null)}>
+          {errorMessage}
+        </ErrorMessage>
+      )}
+      <div className="flex flex-col h-[55vh] md:h-[50vh] lg:h-[45vh] w-full md:max-w-4xl mx-auto bg-gradient-to-b from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-sm">
+        {/* Header */}
       <div className="bg-white/80 backdrop-blur border-b border-blue-200 px-6 py-4 rounded-t-2xl">
         <div className="grid grid-cols-[1fr_auto] items-center">
           <div className="flex items-center space-x-4">
@@ -152,6 +177,8 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
               className={`max-w-[85%] sm:max-w-xs md:max-w-md px-3 sm:px-4 py-2 rounded-2xl sm:rounded-xl shadow-sm ${
                 message.sender === 'user'
                   ? 'bg-blue-600 text-white'
+                  : message.text.startsWith('Error:')
+                  ? 'bg-red-50 text-red-800 border border-red-300'
                   : 'bg-white text-gray-800 border border-blue-200'
               }`}
             >
@@ -199,5 +226,6 @@ export const Chat: React.FC<{ onMetaChange?: (m: AiMeta | null) => void; onDataC
         </div>
       </div>
     </div>
+    </>
   );
 };
