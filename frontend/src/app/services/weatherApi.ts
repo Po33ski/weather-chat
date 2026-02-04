@@ -16,11 +16,28 @@ class WeatherApiService {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let payload: any = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
       }
 
-      return await response.json();
+      if (!response.ok) {
+        const detail = payload?.detail;
+        const errorMessage =
+          (typeof detail === 'string' ? detail : detail?.error) ||
+          payload?.error ||
+          `HTTP error! status: ${response.status}`;
+        const sessionId = detail?.session_id ?? payload?.session_id;
+        return {
+          success: false,
+          error: errorMessage,
+          ...(sessionId ? { session_id: sessionId } : {}),
+        };
+      }
+
+      return payload ?? { success: false, error: 'Invalid JSON response from server' };
     } catch (error) {
       console.error('API request failed:', error);
       return {
