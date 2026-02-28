@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any, Union
-from datetime import datetime, date
+from __future__ import annotations
+
+from typing import Any
+
+from pydantic import BaseModel, Field
 
 
 # Pydantic Models for API
@@ -8,11 +10,12 @@ from datetime import datetime, date
 
 class ChatRequest(BaseModel):
     message: str
-    conversation_history: List[Dict[str, Any]]  # Each entry must include text and sender
-    session_id: Optional[str] = None
+    conversation_history: list[dict[str, Any]] = Field(default_factory=list)
+    session_id: str | None = None
 
 class ChatResponse(BaseModel):
     success: bool
-    data: Optional[dict] = None
-    error: Optional[str] = None
-    session_id: Optional[str] = None
+    data: dict[str, Any] | None = None
+    error: str | None = None
+    session_id: str | None = None
+

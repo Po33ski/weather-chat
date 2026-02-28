@@ -4,6 +4,7 @@ import json
 from typing import Dict, Any
 
 from .exceptions import ToolValidationError, ToolConfigurationError, ToolAPIError
+from .utils import normalize_sunrise_sunset
 
 # Load Visual Crossing API key from environment variables
 API_KEY = os.getenv("VISUAL_CROSSING_API_KEY")
@@ -35,7 +36,7 @@ def get_current_weather(city: str) -> Dict[str, Any]:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         weather_data = response.json()  # Parse JSON to dict
-        return weather_data
+        return normalize_sunrise_sunset(weather_data)
     except requests.exceptions.RequestException as e:
         raise ToolAPIError(f"API request failed: {str(e)}") from e
     except json.JSONDecodeError as e:

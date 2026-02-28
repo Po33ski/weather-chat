@@ -85,4 +85,20 @@ HISTORY (if user asks for historical data; date_range required)
     }
   ]
 }
+
+TRAVEL_ADVICE (if user asks for travel advice)
+{
+  "meta": {
+    "city": "<city name>",
+    "kind": "travel_advice",
+    "date": null,
+    "date_range": null,
+    "language": "<lang>",
+  },
+  "travel_advice": [
+    {
+      "text": "<travel advice text>"
+    }
+  ]
+}
 """
