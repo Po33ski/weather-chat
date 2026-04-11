@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import json
@@ -5,7 +6,6 @@ import logging
 from typing import Optional, Tuple
 
 import agent_system.src.multi_tool_agent.agent as agent_module
-from fastapi import HTTPException, status
 from google.adk.runners import Runner
 from google.genai import types
 
@@ -16,21 +16,14 @@ from .weather_payload import validate_weather_payload
 
 logger = logging.getLogger(__name__)
 
+# Timeout for the ADK runner. Covers the full round-trip: LLM call(s) + tool
+# calls + final response generation. Increase if tools become slower.
+_ADK_TIMEOUT_SECONDS = 60
+
 FENCE_PATTERN = re.compile(
     r"```\s*(weather-json|json)\s*\n([\s\S]*?)\n```",
     re.IGNORECASE,
 )
-
-
-def _raise_http_error(
-    message: str,
-    status_code: int,
-    session_id: Optional[str] = None,
-) -> None:
-    detail = {"error": message}
-    if session_id:
-        detail["session_id"] = session_id
-    raise HTTPException(status_code=status_code, detail=detail)
 
 
 def _extract_fenced_json(raw_text: str) -> Optional[dict]:
@@ -63,31 +56,37 @@ def _detect_error_in_response(raw_text: str) -> Tuple[bool, Optional[str], Optio
         (is_error, error_message, json_payload)
     """
     if not raw_text:
-        return True, "[Agent error] No response content", None
+        return True, "No response content from agent.", None
 
     try:
         parsed_json = _extract_fenced_json(raw_text)
     except (json.JSONDecodeError, TypeError) as exc:
-        return True, f"[Agent error] Invalid JSON in weather-json block: {exc}", None
+        return True, f"Agent returned malformed JSON: {exc}", None
 
     if parsed_json is not None:
         if isinstance(parsed_json, dict) and "error" in parsed_json:
             error_msg = parsed_json["error"]
             if error_msg:
                 return True, str(error_msg), parsed_json
-            return True, "[Agent error] Error detected in response", parsed_json
+            return True, "Agent encountered an error.", parsed_json
         return False, None, parsed_json
 
     return False, None, None
 
 
 async def process_chat_request(request: ChatRequest) -> ChatResponse:
+    """
+    Process a chat request through the ADK agent and return a ChatResponse.
+
+    Always returns ChatResponse (success=True or success=False) — never raises.
+    HTTP status is always 200; callers check response.success for error state.
+    """
     session_data: Optional[dict] = None
     try:
         if not os.getenv("GOOGLE_API_KEY"):
-            _raise_http_error(
-                "AI chat is not available. Please set the GOOGLE_API_KEY environment variable.",
-                status.HTTP_503_SERVICE_UNAVAILABLE,
+            return ChatResponse(
+                success=False,
+                error="AI chat is not available. GOOGLE_API_KEY is not configured.",
             )
 
         session_manager.cleanup_expired_sessions()
@@ -100,63 +99,68 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
         )
         content = types.Content(role="user", parts=[types.Part(text=request.message)])
 
-        events = runner.run_async(
-            user_id=session_data["user_id"],
-            session_id=session_data["adk_session_id"],
-            new_message=content,
-        )
-        async for event in events:
-            if event.is_final_response():
-                raw_text = ""
-                if getattr(event, "content", None) and getattr(event.content, "parts", None):
-                    parts_text = []
-                    for part in event.content.parts:
-                        text = getattr(part, "text", None)
-                        if text:
-                            parts_text.append(text)
-                    raw_text = "\n".join(parts_text).strip()
+        try:
+            async with asyncio.timeout(_ADK_TIMEOUT_SECONDS):
+                events = runner.run_async(
+                    user_id=session_data["user_id"],
+                    session_id=session_data["adk_session_id"],
+                    new_message=content,
+                )
+                async for event in events:
+                    if event.is_final_response():
+                        raw_text = ""
+                        if getattr(event, "content", None) and getattr(event.content, "parts", None):
+                            parts_text = [
+                                text
+                                for part in event.content.parts
+                                if (text := getattr(part, "text", None))
+                            ]
+                            raw_text = "\n".join(parts_text).strip()
 
-                # Detect if response contains an error
-                is_error, error_message, json_payload = _detect_error_in_response(raw_text)
-                
-                if is_error:
-                    _raise_http_error(
-                        error_message or "[Agent error] Error detected in response",
-                        status.HTTP_502_BAD_GATEWAY,
-                        session_id=session_data["session_id"],
-                    )
+                        is_error, error_message, json_payload = _detect_error_in_response(raw_text)
+                        if is_error:
+                            return ChatResponse(
+                                success=False,
+                                error=error_message,
+                                session_id=session_data["session_id"],
+                            )
 
-                if json_payload is not None:
-                    try:
-                        validate_weather_payload(json_payload)
-                    except ValueError as exc:
-                        _raise_http_error(
-                            f"Invalid weather-json payload: {exc}",
-                            status.HTTP_502_BAD_GATEWAY,
+                        if json_payload is not None:
+                            try:
+                                validate_weather_payload(json_payload)
+                            except ValueError as exc:
+                                return ChatResponse(
+                                    success=False,
+                                    error=f"Invalid weather data: {exc}",
+                                    session_id=session_data["session_id"],
+                                )
+
+                        normalized = _normalize_agent_response(raw_text)
+                        return ChatResponse(
+                            success=True,
+                            data={"message": normalized, "sender": "ai"},
                             session_id=session_data["session_id"],
                         )
-                
-                # Normal response - normalize and return
-                normalized = _normalize_agent_response(raw_text)
 
-                return ChatResponse(
-                    success=True,
-                    data={"message": normalized, "sender": "ai"},
-                    session_id=session_data["session_id"],
-                )
+        except TimeoutError:
+            logger.warning("ADK runner timed out after %s seconds", _ADK_TIMEOUT_SECONDS)
+            return ChatResponse(
+                success=False,
+                error="The request timed out. Please try again.",
+                session_id=session_data["session_id"] if session_data else None,
+            )
 
-        _raise_http_error(
-            "[Agent error] No response from agent.",
-            status.HTTP_502_BAD_GATEWAY,
-            session_id=session_data["session_id"] if session_data else request.session_id,
-        )
-    except HTTPException:
-        raise
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("Chat endpoint error")
-        _raise_http_error(
-            f"Error: {exc}",
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            session_id=session_data["session_id"] if session_data else request.session_id,
+        logger.warning("ADK runner finished without a final response event")
+        return ChatResponse(
+            success=False,
+            error="No response from agent. Please try again.",
+            session_id=session_data["session_id"] if session_data else None,
         )
 
+    except Exception:
+        logger.exception("Unexpected error in chat endpoint")
+        return ChatResponse(
+            success=False,
+            error="An unexpected error occurred. Please try again.",
+            session_id=session_data["session_id"] if session_data else None,
+        )

@@ -70,15 +70,13 @@ def test_chat():
         print("   ⚠️  Skipping: GOOGLE_API_KEY not set")
         return
     resp = _post("/api/chat", {"message": "Hello", "conversation_history": []})
-    if resp.status_code != 200:
-        # Live AI endpoint can fail due to model errors, quota limits or transient issues.
-        # Treat non-200 as a warning so CI does not become flaky on external API problems.
-        print(f"   ⚠️  Skipping strict assert: /api/chat returned {resp.status_code} (external AI issue)")
-        return
+    assert resp.status_code == 200, f"/api/chat status {resp.status_code}"
     data = resp.json()
-    # Backend schema: { success: bool, data?: { message, sender }, error?: string }
+    # Backend always returns HTTP 200; check the success flag for semantic result.
     if not data.get("success"):
-        print(f"   ⚠️  Chat returned error: {data.get('error')}")
+        # Live AI can fail due to model errors, quota limits or transient issues.
+        # Treat as warning so CI does not become flaky on external API problems.
+        print(f"   ⚠️  Skipping strict assert: /api/chat returned success=false ({data.get('error')})")
         return
     assert isinstance(data.get("data"), dict), "missing data in chat response"
     msg = data["data"].get("message")
