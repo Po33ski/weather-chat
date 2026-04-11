@@ -14,6 +14,11 @@ def _time_to_hhmm(value: str | None) -> str | None:
 def normalize_sunrise_sunset(data: dict) -> dict:
     """Convert sunrise/sunset from HH:MM:SS to HH:MM in API response."""
     result = dict(data)
+    if "currentConditions" in result and isinstance(result["currentConditions"], dict):
+        current = dict(result["currentConditions"])
+        current["sunrise"] = _time_to_hhmm(current.get("sunrise"))
+        current["sunset"] = _time_to_hhmm(current.get("sunset"))
+        result["currentConditions"] = current
     if "days" in result:
         result["days"] = [
             {
