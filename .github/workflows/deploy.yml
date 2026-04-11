@@ -19,6 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set lowercase image name
+      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Log in to GHCR
       uses: docker/login-action@v3
       with:
@@ -28,11 +31,11 @@ jobs:
 
     - name: Build Docker image (Nginx + FastAPI)
       run: |
-        docker build -t weather-center-chat:ci -t ghcr.io/${{ github.repository }}:latest .
+        docker build -t weather-center-chat:ci -t ${{ env.IMAGE_NAME }}:latest .
 
     - name: Push to GHCR
       run: |
-        docker push ghcr.io/${{ github.repository }}:latest
+        docker push ${{ env.IMAGE_NAME }}:latest
 
     - name: Save Docker image as artifact
       run: |
