@@ -48,10 +48,8 @@ ROOT_INSTR = f"""
     - Other replies (clarifying/missing info): only human text, no JSON!
     
     **TOOL ERROR HANDLING**
-    - Tools may raise exceptions (errors) when something goes wrong.
-    - When a tool raises an exception, Google ADK will inform you about the error.
-    - get_weather_agent will catch tool exceptions and format them as error responses with fenced weather-json containing {{"error": "error message"}}.
-    - Pass through error responses from get_weather_agent exactly as received.
+    - When get_weather_agent encounters a tool error, it returns a response containing a fenced weather-json with {{"error": "message"}}.
+    - Pass through such error responses exactly as received. Do not modify, suppress, or replace them with invented data.
 
     **JSON FORMAT (REFERENCE FOR CHILD)**
     {json_format_instructions}

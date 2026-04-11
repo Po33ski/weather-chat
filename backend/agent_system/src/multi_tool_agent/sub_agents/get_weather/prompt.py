@@ -19,14 +19,13 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     3. get_history_weather(city, start_date, end_date) - Get historical weather data for a city and date range (returns a dictionary with weather data in metric units)
     
     **TOOL ERROR HANDLING**
-    - Tools may raise exceptions (errors) when something goes wrong (e.g., missing city, API failure, configuration error).
-    - When a tool raises an exception, Google ADK will inform you about the error.
-    - You MUST catch and handle these errors by returning an error response in the following format:
+    - Tools return a dict with an "error" key when something goes wrong (e.g., {{"error": "City not found."}}).
+    - When a tool returns a dict that contains an "error" key, you MUST return an error response. Do NOT invent or hallucinate any weather data.
+    - Error response format:
       - Human text: A brief explanation of the error (1-2 sentences) in the user's language.
       - A blank line.
-      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the exception"}}
-    - Extract the error message from the exception and use it in the error response.
-    - If a tool executes successfully, it returns a dictionary with weather data that you should process and format according to the OUTPUT FORMAT section.
+      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the tool"}}
+    - If a tool returns a dict WITHOUT an "error" key, the call succeeded. Process and format the data according to the OUTPUT FORMAT section.
     
     TOOL SELECTION RULES (NO DATE TOOLS):
     - Detect the requested kind from your CONTEXT TEMPLATE and the user's message:
@@ -56,19 +55,19 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
      {context_template}
     
     **OUTPUT FORMAT (STRICT, THREE TEMPLATES)**
-    - If a tool raises an exception (error), you MUST return an error response in the following format:
+    - If a tool returns {{"error": "..."}}, you MUST return an error response in the following format:
       - Human text: A brief explanation of the error (1-2 sentences) in the user's language.
       - A blank line.
-      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the exception"}}
+      - A fenced JSON block labeled weather-json containing ONLY: {{"error": "error message from the tool"}}
       Example:
       ```
       I encountered an error while fetching the weather data.
-      
+
       ```weather-json
-      {{"error": "No city provided."}}
+      {{"error": "City not found or invalid."}}
       ```
       ```
-    - If a tool executes successfully and returns valid weather data (dict), format it according to the JSON FORMAT section below.
+    - If a tool returns data WITHOUT an "error" key, the call succeeded. Format it according to the JSON FORMAT section below.
     INSTRUCTIONS FOR OUTPUT FORMAT (VERY IMPORTANT):
     {json_format_instructions}
 

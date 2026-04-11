@@ -3,15 +3,6 @@ import smtplib
 from email.message import EmailMessage
 from typing import Dict, Any
 
-from .exceptions import ToolValidationError, ToolConfigurationError, ToolAPIError
-
-# SMTP configuration loaded from environment variables
-SMTP_HOST = os.getenv("SMTP_HOST")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
-
 
 def send_email(email: str, title: str, text: str) -> Dict[str, Any]:
     """
@@ -23,50 +14,54 @@ def send_email(email: str, title: str, text: str) -> Dict[str, Any]:
         text: Email body (plain text).
 
     Returns:
-        Dict with success message: {"success": True, "message": "Email sent successfully."}
-    
-    Raises:
-        ToolValidationError: If email, title, or text is not provided
-        ToolConfigurationError: If SMTP configuration is missing
-        ToolAPIError: If email sending fails
+        {"success": True, "message": "Email sent successfully."} on success,
+        or {"error": "message"} on failure.
     """
-    # Basic input validation
     if not email:
-        raise ToolValidationError("No recipient email provided.")
+        return {"error": "No recipient email provided."}
     if not title:
-        raise ToolValidationError("No email title provided.")
+        return {"error": "No email title provided."}
     if not text:
-        raise ToolValidationError("No email text provided.")
+        return {"error": "No email text provided."}
 
-    # Validate SMTP configuration
-    if not SMTP_HOST:
-        raise ToolConfigurationError("SMTP_HOST not configured.")
-    if not SMTP_FROM_EMAIL:
-        raise ToolConfigurationError("SMTP_FROM_EMAIL or SMTP_USER not configured.")
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port_str = os.getenv("SMTP_PORT", "587")
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    smtp_from_email = os.getenv("SMTP_FROM_EMAIL") or smtp_user
+
+    if not smtp_host:
+        return {"error": "Email service is not configured (SMTP_HOST missing)."}
+    if not smtp_from_email:
+        return {"error": "Email sender address is not configured (SMTP_FROM_EMAIL or SMTP_USER missing)."}
+
+    try:
+        smtp_port = int(smtp_port_str)
+    except ValueError:
+        return {"error": f"Email service has invalid port configuration: '{smtp_port_str}'."}
 
     msg = EmailMessage()
-    msg["From"] = SMTP_FROM_EMAIL
+    msg["From"] = smtp_from_email
     msg["To"] = email
     msg["Subject"] = title
     msg.set_content(text)
 
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
-            # Use STARTTLS by default (common for port 587)
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
             try:
                 server.starttls()
-            except Exception:
-                # If STARTTLS is not supported, continue without it
-                pass
+            except smtplib.SMTPException:
+                pass  # Server does not support STARTTLS; continue without encryption
 
-            if SMTP_USER and SMTP_PASSWORD:
-                server.login(SMTP_USER, SMTP_PASSWORD)
+            if smtp_user and smtp_password:
+                server.login(smtp_user, smtp_password)
 
             server.send_message(msg)
 
         return {"success": True, "message": "Email sent successfully."}
+    except smtplib.SMTPAuthenticationError:
+        return {"error": "Email authentication failed. Check SMTP credentials."}
     except smtplib.SMTPException as e:
-        raise ToolAPIError(f"Failed to send email: {str(e)}") from e
+        return {"error": f"Failed to send email: {str(e)}"}
     except Exception as e:
-        raise ToolAPIError(f"Unexpected error while sending email: {str(e)}") from e
-
+        return {"error": f"Unexpected error while sending email: {str(e)}"}
