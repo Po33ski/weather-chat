@@ -7,31 +7,24 @@ import { InfoModalContextType } from "@/app/types/types";
 
 export function Footer() {
   const [infoModal, setInfoModal] = useState<ReactPortal | null>(null);
-  const infoModalContext = useContext<InfoModalContextType | null>(
-    InfoModalContext
-  );
+  const infoModalContext = useContext<InfoModalContextType | null>(InfoModalContext);
+
   useEffect(() => {
     const createInfoModal = createPortal(<ModalInfo />, document.body);
     setInfoModal(createInfoModal);
   }, []);
+
   return (
-    <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white mt-auto">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-          <div className="justify-self-start text-left">
-            <p className="text-sm text-gray-300">
-              Created by <span className="font-semibold text-white">Jarek Popardowski</span>
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Weather Center Chat Application
-            </p>
-          </div>
-
-          <div className="justify-self-center text-center text-sm text-gray-300">© 2025 Weather Center</div>
-
-          <div className="justify-self-end"><InfoButton /></div>
+    <footer className="bg-black/20 backdrop-blur-md border-t border-white/[0.07] mt-auto">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-sky-500/50">
+            © 2025 <span className="text-sky-400/70">Weather Center</span>
+          </p>
+          <p className="text-xs text-sky-600/40">by Jarek Popardowski</p>
         </div>
       </div>
+      <InfoButton />
       {infoModalContext?.isInfoModalShown && infoModal}
     </footer>
   );
