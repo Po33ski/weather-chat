@@ -19,6 +19,7 @@ export function SystemSelector() {
     unitSystemContext?.unitSystem.data === "UK"
       ? unitSystemContext?.unitSystem.data
       : "METRIC";
+
   return (
     <>
       {isClient && (
@@ -29,11 +30,11 @@ export function SystemSelector() {
             const newUnitSystem = e.currentTarget.value;
             unitSystemContext?.unitSystem.setToLocalStorage(newUnitSystem);
           }}
-          className="bg-white border border-blue-300 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 shadow-sm hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-white hover:bg-white/15 focus:outline-none focus:ring-1 focus:ring-sky-400/50 focus:border-sky-400/50 transition-all duration-200 cursor-pointer"
         >
-          <option value={SYSTEMS.METRIC}>MS</option>
-          <option value={SYSTEMS.UK}>{SYSTEMS.UK}</option>
-          <option value={SYSTEMS.US}>{SYSTEMS.US}</option>
+          <option value={SYSTEMS.METRIC} className="bg-slate-900 text-white">MS</option>
+          <option value={SYSTEMS.UK} className="bg-slate-900 text-white">{SYSTEMS.UK}</option>
+          <option value={SYSTEMS.US} className="bg-slate-900 text-white">{SYSTEMS.US}</option>
         </select>
       )}
     </>

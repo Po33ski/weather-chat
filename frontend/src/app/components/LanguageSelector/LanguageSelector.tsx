@@ -15,12 +15,10 @@ export function LanguageSelector() {
       aria-label="Language"
       value={current}
       onChange={handleChange}
-      className="bg-white border border-blue-300 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-gray-700 shadow-sm hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+      className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-medium text-white hover:bg-white/15 focus:outline-none focus:ring-1 focus:ring-sky-400/50 focus:border-sky-400/50 transition-all duration-200 cursor-pointer"
     >
-      <option value="en">EN</option>
-      <option value="pl">PL</option>
+      <option value="en" className="bg-slate-900 text-white">EN</option>
+      <option value="pl" className="bg-slate-900 text-white">PL</option>
     </select>
   );
 }
-
-

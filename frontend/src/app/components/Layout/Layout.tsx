@@ -11,7 +11,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <ContextProviderComponent>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900">
           <MainContent>
             <TopBar>
               <div className="flex justify-self-start invisible min-w-[48px]" aria-hidden="true">
