@@ -12,6 +12,7 @@ from google.genai import types
 from .models import ChatRequest, ChatResponse
 from .session_manager import session_manager
 from .weather_payload import validate_weather_payload
+from .hotel_payload import validate_hotel_payload
 
 
 logger = logging.getLogger(__name__)
@@ -20,18 +21,21 @@ logger = logging.getLogger(__name__)
 # calls + final response generation. Increase if tools become slower.
 _ADK_TIMEOUT_SECONDS = 60
 
+# Matches weather-json, hotel-json, and plain json fenced blocks.
 FENCE_PATTERN = re.compile(
-    r"```\s*(weather-json|json)\s*\n([\s\S]*?)\n```",
+    r"```\s*(weather-json|hotel-json|json)\s*\n([\s\S]*?)\n```",
     re.IGNORECASE,
 )
 
 
-def _extract_fenced_json(raw_text: str) -> Optional[dict]:
+def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
+    """Return (fence_type, parsed_dict) for the first fenced JSON block, or None."""
     match = FENCE_PATTERN.search(raw_text)
     if not match:
         return None
+    fence_type = match.group(1).lower()
     json_body = match.group(2).strip()
-    return json.loads(json_body)
+    return fence_type, json.loads(json_body)
 
 
 def _normalize_agent_response(raw_text: str) -> str:
@@ -41,37 +45,49 @@ def _normalize_agent_response(raw_text: str) -> str:
     match = FENCE_PATTERN.search(raw_text)
     if match:
         human_text = raw_text[:match.start()].strip()
+        fence_type = match.group(1).lower()
         json_body = match.group(2).strip()
-        return (human_text + "\n\n" if human_text else "") + f"```weather-json\n{json_body}\n```"
+        return (human_text + "\n\n" if human_text else "") + f"```{fence_type}\n{json_body}\n```"
 
     return raw_text
 
 
-def _detect_error_in_response(raw_text: str) -> Tuple[bool, Optional[str], Optional[dict]]:
+def _detect_error_in_response(raw_text: str) -> Tuple[bool, Optional[str], Optional[str], Optional[dict]]:
     """
     Detect if the agent response contains an error.
     Agent returns errors in fenced blocks as {"error": "message"}.
 
     Returns:
-        (is_error, error_message, json_payload)
+        (is_error, error_message, fence_type, json_payload)
     """
     if not raw_text:
-        return True, "No response content from agent.", None
+        return True, "No response content from agent.", None, None
 
     try:
-        parsed_json = _extract_fenced_json(raw_text)
+        result = _extract_fenced_json(raw_text)
     except (json.JSONDecodeError, TypeError) as exc:
-        return True, f"Agent returned malformed JSON: {exc}", None
+        return True, f"Agent returned malformed JSON: {exc}", None, None
 
-    if parsed_json is not None:
+    if result is not None:
+        fence_type, parsed_json = result
         if isinstance(parsed_json, dict) and "error" in parsed_json:
             error_msg = parsed_json["error"]
             if error_msg:
-                return True, str(error_msg), parsed_json
-            return True, "Agent encountered an error.", parsed_json
-        return False, None, parsed_json
+                return True, str(error_msg), fence_type, parsed_json
+            return True, "Agent encountered an error.", fence_type, parsed_json
+        return False, None, fence_type, parsed_json
 
-    return False, None, None
+    return False, None, None, None
+
+
+def _validate_payload(fence_type: str, payload: dict) -> None:
+    """Route payload validation to the correct validator based on fence type and kind."""
+    kind = payload.get("meta", {}).get("kind") if isinstance(payload, dict) else None
+
+    if fence_type == "hotel-json" or kind == "hotels":
+        validate_hotel_payload(payload)
+    else:
+        validate_weather_payload(payload)
 
 
 async def process_chat_request(request: ChatRequest) -> ChatResponse:
@@ -117,7 +133,7 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                             ]
                             raw_text = "\n".join(parts_text).strip()
 
-                        is_error, error_message, json_payload = _detect_error_in_response(raw_text)
+                        is_error, error_message, fence_type, json_payload = _detect_error_in_response(raw_text)
                         if is_error:
                             return ChatResponse(
                                 success=False,
@@ -127,11 +143,11 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
 
                         if json_payload is not None:
                             try:
-                                validate_weather_payload(json_payload)
+                                _validate_payload(fence_type or "", json_payload)
                             except ValueError as exc:
                                 return ChatResponse(
                                     success=False,
-                                    error=f"Invalid weather data: {exc}",
+                                    error=f"Invalid response data: {exc}",
                                     session_id=session_data["session_id"],
                                 )
 

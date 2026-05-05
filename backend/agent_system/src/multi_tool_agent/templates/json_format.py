@@ -101,4 +101,7 @@ TRAVEL_ADVICE (if user asks for travel advice)
     }
   ]
 }
+
+NOTE: Hotel search results use a SEPARATE hotel-json fence (not weather-json).
+The hotel-json schema is defined in the search_hotels_agent prompt.
 """

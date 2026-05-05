@@ -90,6 +90,15 @@ def load_visual_crossing_api_key():
     return os.getenv("VISUAL_CROSSING_API_KEY")
 
 
+def load_tavily_api_key():
+    """
+    Retrieves the TAVILY_API_KEY from environment variables.
+    Returns:
+        str: The value of the TAVILY_API_KEY variable, or None if not set.
+    """
+    return os.getenv("TAVILY_API_KEY")
+
+
 def load_disable_web_driver() -> int:
     """
     Retrieves the DISABLE_WEB_DRIVER variable from environment variables.

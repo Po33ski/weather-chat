@@ -1,17 +1,28 @@
 import type { AiMeta, AiChatData, ParsedAiMessage } from "@/app/types/aiChat";
 import type { CurrentDataDay, HistoryAndForecastDay } from "@/app/types/interfaces";
+import type { Hotel } from "@/app/types/hotelTypes";
 
-function extractBlock(text: string): { jsonText: string | null; humanText: string } {
-  const fence = /```\s*weather-json[\r\n]+([\s\S]*?)```/i;
-  const m = text.match(fence);
-  if (!m) return { jsonText: null, humanText: text.trim() };
-  const human = text.replace(fence, '').trim();
-  return { jsonText: m[1], humanText: human };
+const WEATHER_FENCE = /```\s*weather-json[\r\n]+([\s\S]*?)```/i;
+const HOTEL_FENCE = /```\s*hotel-json[\r\n]+([\s\S]*?)```/i;
+
+function extractBlock(text: string): { jsonText: string | null; fenceType: 'weather-json' | 'hotel-json' | null; humanText: string } {
+  const wm = text.match(WEATHER_FENCE);
+  if (wm) {
+    const human = text.replace(WEATHER_FENCE, '').trim();
+    return { jsonText: wm[1], fenceType: 'weather-json', humanText: human };
+  }
+  const hm = text.match(HOTEL_FENCE);
+  if (hm) {
+    const human = text.replace(HOTEL_FENCE, '').trim();
+    return { jsonText: hm[1], fenceType: 'hotel-json', humanText: human };
+  }
+  return { jsonText: null, fenceType: null, humanText: text.trim() };
 }
 
 export function parseAiMessage(text: string): ParsedAiMessage {
-  const { jsonText, humanText } = extractBlock(text || '');
+  const { jsonText, fenceType, humanText } = extractBlock(text || '');
   if (!jsonText) return { humanText, metaData: null, aiChatData: null };
+
   try {
     const parsed = JSON.parse(jsonText);
     const meta: AiMeta = {
@@ -23,7 +34,22 @@ export function parseAiMessage(text: string): ParsedAiMessage {
     };
 
     let aiChatData: AiChatData | null = null;
-    if (meta.kind === 'current' && parsed.current) {
+
+    if (fenceType === 'hotel-json' || meta.kind === 'hotels') {
+      if (Array.isArray(parsed.hotels)) {
+        const hotels: Hotel[] = parsed.hotels.map((h: any) => ({
+          name: h?.name ?? '',
+          price_per_night: h?.price_per_night ?? '',
+          currency: h?.currency ?? '',
+          availability: h?.availability ?? 'unknown',
+          rating: typeof h?.rating === 'number' ? h.rating : null,
+          reviews_count: typeof h?.reviews_count === 'number' ? h.reviews_count : null,
+          highlights: Array.isArray(h?.highlights) ? h.highlights : [],
+          url: h?.url ?? '',
+        }));
+        aiChatData = { hotels };
+      }
+    } else if (meta.kind === 'current' && parsed.current) {
       const c = parsed.current;
       const current: CurrentDataDay = {
         description: c?.conditions ?? null,
@@ -56,10 +82,9 @@ export function parseAiMessage(text: string): ParsedAiMessage {
       }));
       aiChatData = { days };
     }
+
     return { humanText, metaData: meta, aiChatData };
   } catch {
     return { humanText, metaData: null, aiChatData: null };
   }
 }
-
-
