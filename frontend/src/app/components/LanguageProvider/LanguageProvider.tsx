@@ -66,6 +66,15 @@ const en: Dictionary = {
   "info.p1": "In this app you can check the weather forecast for any location in the world. You can ask the chatbot about the weather and also ask for useful information about the city you are visiting.",
   "info.p2": "In the upper right corner you can change the metric system in which weather data will be displayed and the language of the application.",
   "placeholder.city": "City",
+
+  "hotel.perNight": "/ night",
+  "hotel.available": "Available",
+  "hotel.unavailable": "Unknown availability",
+  "hotel.reviews": "reviews",
+  "hotel.book": "View offer",
+  "hotel.noPrice": "Price not available",
+  "hotel.highlights": "Highlights",
+  "hotel.resultsFor": "Hotels in",
 };
 
 const pl: Dictionary = {
@@ -134,6 +143,15 @@ const pl: Dictionary = {
   "info.p1": "W tej aplikacji możesz sprawdzić prognozę pogody dla większości lokalizacji na świecie. Możesz zapytać chatbota AI o pogodę ale też poprosić o przydatne informacje na temat zwiedzania danego miasta.",
   "info.p2": "W prawym górnym rogu możesz zmienić system miar, w którym wyświetlane będą dane pogodowe oraz język aplikacji.",
   "placeholder.city": "Miasto",
+
+  "hotel.perNight": "/ noc",
+  "hotel.available": "Dostępny",
+  "hotel.unavailable": "Dostępność nieznana",
+  "hotel.reviews": "opinii",
+  "hotel.book": "Zobacz ofertę",
+  "hotel.noPrice": "Cena niedostępna",
+  "hotel.highlights": "Wyróżniki",
+  "hotel.resultsFor": "Hotele w",
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
