@@ -3,7 +3,7 @@ json_format_instructions = """
     - Return ONE message composed of:
       1) Human text (1–3 sentences if user ask only for weather information or longer text if user ask for travel advice, trip ideas, what to do/visit in a city given the weather).
       2) A single blank line.
-      3) ONE fenced JSON block labeled weather-json that contains ONLY JSON.
+      3) ONE fenced JSON block labeled weather-json (for weather/travel data) or hotel-json (for hotel search results) that contains ONLY JSON.
     - No extra code blocks, no extra text below the fence.
     - The UI parses the short text (above) and the JSON (inside the fenced block).
     - The JSON must follow one of the schemas below.
@@ -101,4 +101,32 @@ TRAVEL_ADVICE (if user asks for travel advice)
     }
   ]
 }
+
+HOTELS (when user asks to search or find hotels in a city) — uses hotel-json fence, NOT weather-json
+```hotel-json
+{
+  "meta": {
+    "city": "<city name>",
+    "kind": "hotels",
+    "date": null,
+    "date_range": "<check_in YYYY-MM-DD>..<check_out YYYY-MM-DD> or null if no dates given",
+    "language": "<lang>"
+  },
+  "hotels": [
+    {
+      "name": "<hotel name>",
+      "price_per_night": "<numeric value as string, e.g. '120', or empty string if unknown>",
+      "currency": "<currency code e.g. EUR, USD, PLN, or empty string>",
+      "availability": "available | unknown",
+      "rating": <float 0-10 or null>,
+      "reviews_count": <integer or null>,
+      "highlights": ["<highlight 1>", "<highlight 2>", "<highlight 3>"],
+      "url": "<booking page url or empty string>"
+    }
+  ]
+}
+```
+- The hotels array must contain between 1 and 3 hotel objects.
+- Use the hotel-json fence label (not weather-json) for hotel responses.
+- The frontend detects the hotel-json fence and renders a dedicated hotel card view.
 """

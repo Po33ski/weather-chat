@@ -3,6 +3,7 @@ import { LanguageContext } from "@/app/contexts/LanguageContext";
 import type { AiMeta, AiChatData, AiKind } from "@/app/types/aiChat";
 import { WeatherView } from "@/app/components/WeatherView/WeatherView";
 import { List } from "@/app/components/List/List";
+import { HotelView } from "@/app/components/HotelView/HotelView";
 
 export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiChatData | null }) {
   const lang = useContext(LanguageContext);
@@ -11,7 +12,9 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
   useEffect(() => {
     const k: AiKind =
       (meta?.kind as AiKind) ??
-      (data?.current ? 'current' : Array.isArray(data?.days) ? 'forecast' : null);
+      (data?.hotels ? 'hotels' :
+       data?.current ? 'current' :
+       Array.isArray(data?.days) ? 'forecast' : null);
     setResolvedKind(k);
   }, [meta, data]);
 
@@ -24,10 +27,12 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
     );
   }
 
+  const isHotel = resolvedKind === 'hotels';
+
   return (
     <div className="space-y-4">
-      {/* City / date header card */}
-      {(meta?.city || meta?.date || meta?.date_range) && (
+      {/* City / date header — only for non-hotel (hotels have their own header) */}
+      {!isHotel && (meta?.city || meta?.date || meta?.date_range) && (
         <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-3xl px-6 py-5 flex items-center justify-between gap-4">
           <div>
             {meta?.city && (
@@ -41,6 +46,15 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
           </div>
           <span className="text-2xl opacity-40 select-none flex-shrink-0">📍</span>
         </div>
+      )}
+
+      {/* Hotels */}
+      {isHotel && Array.isArray(data?.hotels) && data.hotels.length > 0 && (
+        <HotelView
+          hotels={data.hotels}
+          city={meta?.city ?? null}
+          dateRange={meta?.date_range ?? null}
+        />
       )}
 
       {/* Current weather */}
