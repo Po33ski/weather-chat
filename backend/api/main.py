@@ -19,7 +19,7 @@ except ValueError as e:
     logger.warning("Some features may be unavailable until environment variables are configured.")
 
 app = FastAPI(
-    title="Weather Center Chat API",
+    title="Travel and Weather Center Chat API",
     description="A comprehensive weather and AI chat application API",
     version="1.0.0"
 )

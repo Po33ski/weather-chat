@@ -86,7 +86,7 @@ def test_chat():
 
 def main():
     """Convenience runner to execute the checks without pytest."""
-    print("🌤️  Testing Weather Center Chat Backend")
+    print("🌤️  Testing Travel and Weather Center Chat Backend")
     print("=" * 50)
     test_health()
     test_root()

@@ -1,6 +1,6 @@
 # Docker Guide (Single‑Container)
 
-Run Weather Center Chat as one Docker container: Nginx serves the static Vite React build and proxies `/api` to FastAPI.
+Run Travel and Weather Center Chat as one Docker container: Nginx serves the static Vite React build and proxies `/api` to FastAPI.
 
 ## Prerequisites
 

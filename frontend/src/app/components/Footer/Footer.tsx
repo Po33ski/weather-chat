@@ -19,7 +19,7 @@ export function Footer() {
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-sky-500/50">
-            © 2025 <span className="text-sky-400/70">Weather Center</span>
+            © 2025 <span className="text-sky-400/70">Travel and Weather Center</span>
           </p>
           <p className="text-xs text-sky-600/40">by Jarek Popardowski</p>
         </div>

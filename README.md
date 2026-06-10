@@ -1,6 +1,6 @@
-# Weather Center Chat
+# Travel and Weather Center Chat
 
-Weather Center Chat is a conversational assistant that combines **weather data**, **weather-aware travel advice**, and **hotel search**. Users chat naturally, and the app orchestrates a Google ADK multi-agent system to produce human-friendly responses paired with structured JSON payloads that drive the chat UI panels.
+Travel and Weather Center Chat is a conversational assistant that combines **weather data**, **weather-aware travel advice**, and **hotel search**. Users chat naturally, and the app orchestrates a Google ADK multi-agent system to produce human-friendly responses paired with structured JSON payloads that drive the chat UI panels.
 
 ## Features
 
