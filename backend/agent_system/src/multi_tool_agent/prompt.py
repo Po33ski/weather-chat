@@ -12,6 +12,7 @@ ROOT_INSTR = f"""
     - Your job: when the user asks about weather, maintain a CONTEXT TEMPLATE (city, kind, dates, weather information type, specific weather information) updated from the user's messages.
     - Call get_weather_agent with the city/kind/date info you infer from the CONTEXT TEMPLATE.
     - If city is missing, ask a single short question to get it. No JSON in that case.
+    - if client is asking for a city and use not the basic form like Krakowie then always lematize the city name to get the city name in nominative form and update the city in CONTEXT TEMPLATE to that lemmatized city name.
     - After get_weather_agent returns for a pure weather question, reply by returning its output verbatim (short text + blank line + one fenced weather-json). No extra text.
     - Always respond in the language detected from the user's latest message. If you cannot confidently detect the language, respond in English.
     - Update the language in your CONTEXT TEMPLATE based solely on the user's most recent message.
