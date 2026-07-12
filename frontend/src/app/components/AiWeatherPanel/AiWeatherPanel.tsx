@@ -4,6 +4,7 @@ import type { AiMeta, AiChatData, AiKind } from "@/app/types/aiChat";
 import { WeatherView } from "@/app/components/WeatherView/WeatherView";
 import { List } from "@/app/components/List/List";
 import { HotelView } from "@/app/components/HotelView/HotelView";
+import { CombinedView } from "@/app/components/CombinedView/CombinedView";
 
 export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiChatData | null }) {
   const lang = useContext(LanguageContext);
@@ -12,7 +13,8 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
   useEffect(() => {
     const k: AiKind =
       (meta?.kind as AiKind) ??
-      (data?.hotels ? 'hotels' :
+      (data?.weatherKind !== undefined ? 'combined' :
+       data?.hotels ? 'hotels' :
        data?.current ? 'current' :
        Array.isArray(data?.days) ? 'forecast' : null);
     setResolvedKind(k);
@@ -28,11 +30,12 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
   }
 
   const isHotel = resolvedKind === 'hotels';
+  const isCombined = resolvedKind === 'combined';
 
   return (
     <div className="space-y-4">
-      {/* City / date header — only for non-hotel (hotels have their own header) */}
-      {!isHotel && (meta?.city || meta?.date || meta?.date_range) && (
+      {/* City / date header — only for non-hotel, non-combined (both render their own header) */}
+      {!isHotel && !isCombined && (meta?.city || meta?.date || meta?.date_range) && (
         <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-3xl px-6 py-5 flex items-center justify-between gap-4">
           <div>
             {meta?.city && (
@@ -46,6 +49,19 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
           </div>
           <span className="text-2xl opacity-40 select-none flex-shrink-0">📍</span>
         </div>
+      )}
+
+      {/* Combined weather + hotels, with a tab toggle */}
+      {isCombined && (
+        <CombinedView
+          weatherKind={data?.weatherKind ?? null}
+          current={data?.current}
+          days={data?.days}
+          hotels={data?.hotels ?? []}
+          city={meta?.city ?? null}
+          date={meta?.date ?? null}
+          dateRange={meta?.date_range ?? null}
+        />
       )}
 
       {/* Hotels */}

@@ -1,4 +1,5 @@
 from google.adk.agents import Agent
+from google.adk.tools.agent_tool import AgentTool
 
 from . import prompt
 
@@ -19,5 +20,11 @@ root_agent = Agent(
     description=prompt.ROOT_DESCRIPTION,
     global_instruction=prompt.ROOT_GLOBAL_INSTR,
     instruction=prompt.ROOT_INSTR,
+    # Transfer-based delegation for single-intent turns (root never regains
+    # control once transferred).
     sub_agents=[get_weather_agent, travel_advice_agent, search_hotels_agent],
+    # Call-and-return versions of the same two agents, used only for the
+    # COMBINED QUERY LOGIC path (see prompt.py) where root needs both
+    # results back to synthesize one reply.
+    tools=[AgentTool(get_weather_agent), AgentTool(search_hotels_agent)],
 )

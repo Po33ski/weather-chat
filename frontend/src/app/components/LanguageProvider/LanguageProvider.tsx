@@ -75,6 +75,11 @@ const en: Dictionary = {
   "hotel.noPrice": "Price not available",
   "hotel.highlights": "Highlights",
   "hotel.resultsFor": "Hotels in",
+
+  "combined.weatherTab": "Weather",
+  "combined.hotelsTab": "Hotels",
+  "combined.noWeather": "No weather data available",
+  "combined.noHotels": "No hotels found",
 };
 
 const pl: Dictionary = {
@@ -152,6 +157,11 @@ const pl: Dictionary = {
   "hotel.noPrice": "Cena niedostępna",
   "hotel.highlights": "Wyróżniki",
   "hotel.resultsFor": "Hotele w",
+
+  "combined.weatherTab": "Pogoda",
+  "combined.hotelsTab": "Hotele",
+  "combined.noWeather": "Brak danych pogodowych",
+  "combined.noHotels": "Nie znaleziono hoteli",
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {

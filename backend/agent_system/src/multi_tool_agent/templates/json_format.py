@@ -3,7 +3,7 @@ json_format_instructions = """
     - Return ONE message composed of:
       1) Human text (1–3 sentences if user ask only for weather information or longer text if user ask for travel advice, trip ideas, what to do/visit in a city given the weather).
       2) A single blank line.
-      3) ONE fenced JSON block labeled weather-json (for weather/travel data) or hotel-json (for hotel search results) that contains ONLY JSON.
+      3) ONE fenced JSON block labeled weather-json (for weather/travel data), hotel-json (for hotel search results), or combined-json (ONLY for combined weather+hotels requests, see COMBINED schema) that contains ONLY JSON.
     - No extra code blocks, no extra text below the fence.
     - The UI parses the short text (above) and the JSON (inside the fenced block).
     - The JSON must follow one of the schemas below.
@@ -129,4 +129,29 @@ HOTELS (when user asks to search or find hotels in a city) — uses hotel-json f
 - The hotels array must contain between 1 and 3 hotel objects.
 - Use the hotel-json fence label (not weather-json) for hotel responses.
 - The frontend detects the hotel-json fence and renders a dedicated hotel card view.
+
+COMBINED (ONLY when a single user turn asks for both weather/what-to-do AND hotels for the same city — see COMBINED QUERY LOGIC) — uses combined-json fence, NOT weather-json or hotel-json
+```combined-json
+{
+  "meta": {
+    "city": "<city name>",
+    "kind": "combined",
+    "date": "YYYY-MM-DD or null",
+    "date_range": "<YYYY-MM-DD..YYYY-MM-DD> or null",
+    "language": "<lang>"
+  },
+  "weather": {
+    "kind": "current" | "forecast" | "history",
+    "current": { ...same shape as CURRENT.current, present only if weather.kind is "current"... },
+    "days": [ ...same shape as FORECAST/HISTORY.days, present only if weather.kind is "forecast" or "history"... ]
+  },
+  "hotels": [
+    { ...same shape as one HOTELS.hotels entry... }
+  ]
+}
+```
+- weather.kind determines whether "current" or "days" is present — never include both.
+- The hotels array must contain between 1 and 3 hotel objects.
+- There is no "travel_advice" key here — the "what to do" suggestions are written as plain prose in the human text above the fence, exactly like a normal travel-advice reply, not as JSON.
+- Use the combined-json fence label only for combined requests; use weather-json or hotel-json for single-intent requests as usual.
 """

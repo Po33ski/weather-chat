@@ -13,17 +13,20 @@ from .models import ChatRequest, ChatResponse
 from .session_manager import session_manager
 from .weather_payload import validate_weather_payload
 from .hotel_payload import validate_hotel_payload
+from .combined_payload import validate_combined_payload
 
 
 logger = logging.getLogger(__name__)
 
 # Timeout for the ADK runner. Covers the full round-trip: LLM call(s) + tool
-# calls + final response generation. Increase if tools become slower.
-_ADK_TIMEOUT_SECONDS = 60
+# calls + final response generation. Combined weather+hotel replies chain up
+# to 3 root-level LLM turns plus 2 nested AgentTool sub-runs, so this needs
+# more headroom than a single-intent reply.
+_ADK_TIMEOUT_SECONDS = 100
 
-# Matches weather-json, hotel-json, and plain json fenced blocks.
+# Matches weather-json, hotel-json, combined-json, and plain json fenced blocks.
 FENCE_PATTERN = re.compile(
-    r"```\s*(weather-json|hotel-json|json)\s*\n([\s\S]*?)\n```",
+    r"```\s*(weather-json|hotel-json|combined-json|json)\s*\n([\s\S]*?)\n```",
     re.IGNORECASE,
 )
 
@@ -84,7 +87,9 @@ def _validate_payload(fence_type: str, payload: dict) -> None:
     """Route payload validation to the correct validator based on fence type and kind."""
     kind = payload.get("meta", {}).get("kind") if isinstance(payload, dict) else None
 
-    if fence_type == "hotel-json" or kind == "hotels":
+    if fence_type == "combined-json" or kind == "combined":
+        validate_combined_payload(payload)
+    elif fence_type == "hotel-json" or kind == "hotels":
         validate_hotel_payload(payload)
     else:
         validate_weather_payload(payload)
