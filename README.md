@@ -32,15 +32,20 @@ Google ADK Runner  ──► root_agent (weather_assistant)
 ```
 
 - The **root agent** maintains a per-session context template (city, date range, language) and routes to the correct child agent.
-- Every response returns a human-readable text block **plus** one fenced JSON block (`weather-json` or `hotel-json`) that the frontend parses to render the side panel.
+- It also recognizes whether a message is asking for a single piece of information (just weather, or just hotels) versus a combined request that needs the full sequence — in that case it calls the weather and hotel sub-agents one after another itself and merges their results into one reply.
+- Every response returns a human-readable text block **plus** one fenced JSON block (`weather-json`, `hotel-json`, or `combined-json` for merged requests) that the frontend parses to render the side panel.
 - The FastAPI layer validates the structured payload with Pydantic before sending it to the client.
+
+**Visual overview:**
+
+![AI Chat Flow](docs/diagrams/ai-chat-flow.svg)
 
 ## Google ADK Agent Graph
 
 ```text
 backend/agent_system/src/multi_tool_agent/
-├── agent.py                          # root agent wired into FastAPI
-├── prompt.py                         # routing logic + shared context template
+├── agent.py                          # root agent: sub_agents=[...] (transfer) + tools=[AgentTool(...)] (combined path)
+├── prompt.py                         # routing logic, COMBINED QUERY LOGIC, shared context template
 ├── sub_agents/
 │   ├── get_weather/
 │   │   ├── agent.py                  # enforces weather-json output contract
@@ -55,11 +60,17 @@ backend/agent_system/src/multi_tool_agent/
 │   ├── get_current_weather.py        # Visual Crossing API — current conditions
 │   ├── get_forecast.py               # Visual Crossing API — 15-day forecast
 │   ├── get_history_weather.py        # Visual Crossing API — historical date range
-│   └── search_hotels.py             # Tavily web search — hotels in a city
+│   ├── search_hotels.py              # Tavily web search — hotels in a city, currency-biased by language
+│   ├── build_hotel_booking_link.py   # fallback booking.com link when Tavily has no direct hotel page
+│   └── hotel_locale.py               # shared PLN/USD currency + locale helper
 └── templates/
-    ├── json_format.py                # all JSON output schemas (current/forecast/history/hotels)
+    ├── json_format.py                # all JSON output schemas (current/forecast/history/hotels/combined)
     └── context_template.py          # shared session context passed to all agents
 ```
+
+**Visual overview:**
+
+![Google ADK Agent Graph](docs/diagrams/adk-agent-graph.svg)
 
 ## JSON Output Schemas
 
@@ -122,22 +133,28 @@ frontend/src/app/
 │   ├── Chat/Chat.tsx                 # message input, session management, API calls
 │   ├── AiWeatherPanel/               # right panel — switches view based on meta.kind
 │   ├── WeatherView/                  # renders current weather data
-│   ├── DayList/                      # renders forecast / history day list
-│   └── HotelView/HotelView.tsx       # renders hotel cards (price, rating, highlights, booking link)
+│   ├── List/List.tsx                 # renders forecast / history day list
+│   ├── HotelView/HotelView.tsx       # renders hotel cards (price, rating, highlights, booking link)
+│   └── CombinedView/CombinedView.tsx # weather/hotels tab toggle for combined responses
 ├── utils/
-│   └── parseAiMessage.ts             # splits human text from weather-json / hotel-json fence
+│   └── parseAiMessage.ts             # splits human text from weather-json / hotel-json / combined-json fence
 └── types/
-    ├── aiChat.ts                     # AiMeta, AiChatData (current | days | hotels)
+    ├── aiChat.ts                     # AiMeta, AiChatData (current | days | hotels | weatherKind)
     └── hotelTypes.ts                 # Hotel, HotelMeta, HotelPayload
 ```
+
+**Visual overview:**
+
+![Frontend Components](docs/diagrams/frontend-components.svg)
 
 The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
 
 | `meta.kind`          | Rendered component |
 |----------------------|--------------------|
 | `current`            | `WeatherView`      |
-| `forecast`/`history` | `DayList`          |
-| `hotels`             | `HotelView`        |
+| `forecast`/`history` | `List`              |
+| `hotels`             | `HotelView`         |
+| `combined`            | `CombinedView` (tab toggle over the views above) |
 | `travel_advice`      | *(text only)*      |
 
 ## Backend API

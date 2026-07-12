@@ -1,0 +1,101 @@
+<svg viewBox="0 0 1040 700" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrowSolid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1040" height="700" fill="#f8fafc"/>
+
+  <!-- User message -->
+  <rect x="420" y="16" width="200" height="46" rx="8" fill="#1e293b"/>
+  <text x="520" y="44" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600">User message</text>
+  <path d="M520,62 L520,92" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+
+  <!-- FastAPI -->
+  <rect x="390" y="92" width="260" height="46" rx="8" fill="#1e293b"/>
+  <text x="520" y="120" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600">FastAPI  POST /api/chat</text>
+  <path d="M520,138 L520,168" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+
+  <!-- ADK Runner -->
+  <rect x="370" y="168" width="300" height="46" rx="8" fill="#1e293b"/>
+  <text x="520" y="196" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600">Google ADK Runner</text>
+  <path d="M520,214 L520,244" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+
+  <!-- root_agent -->
+  <rect x="330" y="244" width="380" height="62" rx="10" fill="#2563eb"/>
+  <text x="520" y="270" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">root_agent (weather_assistant)</text>
+  <text x="520" y="290" text-anchor="middle" fill="#dbeafe" font-size="11">context template: city · dates · language</text>
+
+  <!-- Elbow down from root -->
+  <path d="M520,306 L520,330" stroke="#334155" stroke-width="2"/>
+
+  <!-- Solid transfer connectors to 3 sub-agents -->
+  <path d="M520,330 L150,330 L150,394" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrowSolid)"/>
+  <path d="M520,330 L520,394" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrowSolid)"/>
+  <path d="M520,330 L890,330 L890,394" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrowSolid)"/>
+  <text x="205" y="322" font-size="10.5" fill="#334155">transfer_to_agent</text>
+
+  <!-- Dashed AgentTool loop: root -> get_weather_agent -->
+  <path d="M390,306 C290,330 200,360 130,394" stroke="#d97706" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowAmber)"/>
+  <path d="M175,394 C250,365 335,335 408,306" stroke="#d97706" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowAmber)"/>
+
+  <!-- Dashed AgentTool loop: root -> search_hotels_agent -->
+  <path d="M650,306 C750,330 840,360 910,394" stroke="#d97706" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowAmber)"/>
+  <path d="M865,394 C790,365 705,335 632,306" stroke="#d97706" stroke-width="2" fill="none" stroke-dasharray="5,4" marker-end="url(#arrowAmber)"/>
+
+  <text x="520" y="360" text-anchor="middle" font-size="10.5" fill="#b45309">AgentTool call ↓ / result ↑ — combined queries only</text>
+
+  <!-- Sub-agent boxes -->
+  <rect x="40" y="394" width="220" height="56" rx="9" fill="#2563eb"/>
+  <text x="150" y="418" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">get_weather_agent</text>
+  <text x="150" y="436" text-anchor="middle" fill="#dbeafe" font-size="10.5">weather-json output</text>
+
+  <rect x="410" y="394" width="220" height="56" rx="9" fill="#2563eb"/>
+  <text x="520" y="418" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">travel_advice_agent</text>
+  <text x="520" y="436" text-anchor="middle" fill="#dbeafe" font-size="10.5">plain-text suggestions only</text>
+
+  <rect x="780" y="394" width="220" height="56" rx="9" fill="#2563eb"/>
+  <text x="890" y="418" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">search_hotels_agent</text>
+  <text x="890" y="436" text-anchor="middle" fill="#dbeafe" font-size="10.5">hotel-json output</text>
+
+  <!-- Down arrows to tool row -->
+  <path d="M150,450 L150,478" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+  <path d="M890,450 L890,478" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+
+  <!-- Tool boxes -->
+  <rect x="20" y="478" width="260" height="52" rx="8" fill="#0891b2"/>
+  <text x="150" y="500" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">get_current_weather</text>
+  <text x="150" y="516" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">get_forecast · get_history_weather</text>
+
+  <rect x="400" y="478" width="240" height="52" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-dasharray="3,3"/>
+  <text x="520" y="500" text-anchor="middle" fill="#334155" font-size="11" font-weight="600">no tools —</text>
+  <text x="520" y="516" text-anchor="middle" fill="#334155" font-size="11" font-weight="600">reasons over cached weather context</text>
+
+  <rect x="760" y="478" width="260" height="52" rx="8" fill="#0891b2"/>
+  <text x="890" y="500" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">search_hotels</text>
+  <text x="890" y="516" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">build_hotel_booking_link</text>
+
+  <!-- Down arrows to external API row -->
+  <path d="M150,530 L150,558" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+  <path d="M890,530 L890,558" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+
+  <!-- External API boxes -->
+  <rect x="30" y="558" width="240" height="46" rx="8" fill="#64748b"/>
+  <text x="150" y="586" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">Visual Crossing Weather API</text>
+
+  <rect x="740" y="558" width="300" height="46" rx="8" fill="#64748b"/>
+  <text x="890" y="580" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">Tavily search →</text>
+  <text x="890" y="596" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="600">booking.com · hotels.com · tripadvisor.com</text>
+
+  <!-- Legend -->
+  <rect x="330" y="612" width="380" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <line x1="345" y1="632" x2="385" y2="632" stroke="#334155" stroke-width="2" marker-end="url(#arrowSolid)"/>
+  <text x="395" y="636" font-size="11.5" fill="#1e293b">transfer_to_agent — one-way handoff, single-intent replies</text>
+  <line x1="345" y1="658" x2="385" y2="658" stroke="#d97706" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrowAmber)"/>
+  <text x="395" y="662" font-size="11.5" fill="#1e293b">AgentTool — call &amp; return, used to build combined-json</text>
+  <text x="345" y="678" font-size="10.5" fill="#64748b">root_agent synthesizes weather + hotels + its own "what to do" text</text>
+</svg>

@@ -1,0 +1,97 @@
+<svg viewBox="0 0 1100 900" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1100" height="900" fill="#f8fafc"/>
+
+  <!-- Root -->
+  <rect x="20" y="150" width="210" height="60" rx="10" fill="#1e293b"/>
+  <text x="125" y="176" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">frontend/src/app/</text>
+  <text x="125" y="193" text-anchor="middle" fill="#cbd5e1" font-size="10">React + Vite</text>
+
+  <!-- Connectors root -> top-level -->
+  <path d="M230,180 L260,180 L260,45 L290,45" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M230,180 L260,180 L260,120 L290,120" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M230,180 L260,180 L260,490 L290,490" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M230,180 L260,180 L260,565 L290,565" stroke="#94a3b8" stroke-width="2" fill="none"/>
+
+  <!-- views/ -->
+  <rect x="290" y="20" width="250" height="50" rx="8" fill="#2563eb"/>
+  <text x="415" y="40" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">views/ChatPage.tsx</text>
+  <text x="415" y="56" text-anchor="middle" fill="#dbeafe" font-size="9.5">two-column layout: Chat (left) + panel (right)</text>
+
+  <!-- components/ header -->
+  <rect x="290" y="95" width="250" height="50" rx="8" fill="#2563eb"/>
+  <text x="415" y="115" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">components/</text>
+  <text x="415" y="131" text-anchor="middle" fill="#dbeafe" font-size="9.5">chat message + side-panel views</text>
+
+  <!-- Connectors components -> children -->
+  <path d="M540,120 L570,120 L570,41 L650,41" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M540,120 L570,120 L570,93 L650,93" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M540,120 L570,120 L570,142 L650,142" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M540,120 L570,120 L570,188 L650,188" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M540,120 L570,120 L570,234 L650,234" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <path d="M540,120 L570,120 L570,283 L650,283" stroke="#94a3b8" stroke-width="2" fill="none"/>
+
+  <rect x="650" y="18" width="320" height="46" rx="8" fill="#0891b2"/>
+  <text x="810" y="37" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">Chat/Chat.tsx</text>
+  <text x="810" y="52" text-anchor="middle" fill="#ecfeff" font-size="9.5">message input, session mgmt, calls parseAiMessage()</text>
+
+  <rect x="650" y="70" width="320" height="46" rx="8" fill="#0891b2"/>
+  <text x="810" y="89" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">AiWeatherPanel/</text>
+  <text x="810" y="104" text-anchor="middle" fill="#ecfeff" font-size="9.5">picks a view based on meta.kind (see below)</text>
+
+  <rect x="650" y="122" width="320" height="40" rx="8" fill="#0891b2"/>
+  <text x="810" y="139" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">WeatherView/</text>
+  <text x="810" y="154" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders current weather</text>
+
+  <rect x="650" y="168" width="320" height="40" rx="8" fill="#0891b2"/>
+  <text x="810" y="185" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">List/List.tsx</text>
+  <text x="810" y="200" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders forecast / history day list</text>
+
+  <rect x="650" y="214" width="320" height="40" rx="8" fill="#0891b2"/>
+  <text x="810" y="231" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">HotelView/HotelView.tsx</text>
+  <text x="810" y="246" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders hotel cards + booking link</text>
+
+  <rect x="650" y="260" width="320" height="46" rx="8" fill="#d97706"/>
+  <text x="810" y="279" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">CombinedView/  ★ new</text>
+  <text x="810" y="294" text-anchor="middle" fill="#fef3c7" font-size="9.5">weather/hotels tab toggle over the views above</text>
+
+  <!-- utils/ -->
+  <rect x="290" y="465" width="280" height="50" rx="8" fill="#2563eb"/>
+  <text x="430" y="485" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">utils/parseAiMessage.ts</text>
+  <text x="430" y="501" text-anchor="middle" fill="#dbeafe" font-size="9">splits text + detects json fence type</text>
+
+  <!-- types/ -->
+  <rect x="290" y="540" width="280" height="64" rx="8" fill="#2563eb"/>
+  <text x="430" y="560" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">types/</text>
+  <text x="430" y="576" text-anchor="middle" fill="#dbeafe" font-size="9">aiChat.ts — AiMeta, AiChatData, weatherKind</text>
+  <text x="430" y="590" text-anchor="middle" fill="#dbeafe" font-size="9">hotelTypes.ts — Hotel, HotelMeta, HotelPayload</text>
+
+  <!-- Divider -->
+  <line x1="20" y1="650" x2="1080" y2="650" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="675" font-size="12.5" font-weight="700" fill="#1e293b">meta.kind routing (inside AiWeatherPanel)</text>
+
+  <!-- routing diagram -->
+  <rect x="420" y="695" width="260" height="46" rx="8" fill="#1e293b"/>
+  <text x="550" y="723" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">resolvedKind (from meta.kind)</text>
+
+  <path d="M550,741 L550,762 L140,762 L140,784" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,741 L550,762 L370,762 L370,784" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,741 L550,762 L600,762 L600,784" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,741 L550,762 L830,762 L830,784" stroke="#334155" stroke-width="2" fill="none"/>
+
+  <rect x="30" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
+  <text x="140" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"current" → WeatherView</text>
+  <text x="140" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own city/date header</text>
+
+  <rect x="260" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
+  <text x="370" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"forecast"/"history" → List</text>
+  <text x="370" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own city/date header</text>
+
+  <rect x="490" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
+  <text x="600" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"hotels" → HotelView</text>
+  <text x="600" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own 🏨 header</text>
+
+  <rect x="720" y="784" width="240" height="56" rx="8" fill="#d97706"/>
+  <text x="840" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"combined" → CombinedView</text>
+  <text x="840" y="816" text-anchor="middle" fill="#fef3c7" font-size="9">tab: Weather → WeatherView/List</text>
+  <text x="840" y="829" text-anchor="middle" fill="#fef3c7" font-size="9">tab: Hotels → HotelView</text>
+</svg>
