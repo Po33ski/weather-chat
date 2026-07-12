@@ -1,42 +1,44 @@
 import requests
-import os
 import json
+import os
 from typing import Dict, Any
 
-from .exceptions import ToolValidationError, ToolConfigurationError, ToolAPIError
+from .utils import normalize_sunrise_sunset
 
-# Load Visual Crossing API key from environment variables
-API_KEY = os.getenv("VISUAL_CROSSING_API_KEY")
 API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
+
 
 def get_current_weather(city: str) -> Dict[str, Any]:
     """
     Fetch current weather data for a given city using the Visual Crossing API.
-    Returns a dictionary with weather data.
-    
+    Returns a dictionary with weather data, or {"error": "message"} on failure.
+
     Args:
         city: The city name
-    
+
     Returns:
-        Dict containing weather data from API
-    
-    Raises:
-        ToolValidationError: If city is not provided
-        ToolConfigurationError: If API key is not configured
-        ToolAPIError: If API request fails or response cannot be parsed
+        Dict containing weather data from API, or {"error": "..."} if the call failed.
     """
     if not city:
-        raise ToolValidationError("No city provided.")
-    if not API_KEY:
-        raise ToolConfigurationError("API key not found.")
-    
-    url = f"{API_HTTP}{city}?unitGroup=metric&key={API_KEY}&contentType=json"
+        return {"error": "No city provided."}
+
+    api_key = os.getenv("VISUAL_CROSSING_API_KEY")
+    if not api_key:
+        return {"error": "Weather service API key is not configured."}
+
+    url = f"{API_HTTP}{city}?unitGroup=metric&key={api_key}&contentType=json"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        weather_data = response.json()  # Parse JSON to dict
-        return weather_data
-    except requests.exceptions.RequestException as e:
-        raise ToolAPIError(f"API request failed: {str(e)}") from e
-    except json.JSONDecodeError as e:
-        raise ToolAPIError(f"Failed to parse API response: {str(e)}") from e 
+        weather_data = response.json()
+        return normalize_sunrise_sunset(weather_data)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 400:
+            return {"error": f"City '{city}' not found or invalid."}
+        return {"error": f"Weather service error ({e.response.status_code})."}
+    except requests.exceptions.Timeout:
+        return {"error": "Weather service request timed out."}
+    except requests.exceptions.RequestException:
+        return {"error": "Weather service is temporarily unavailable."}
+    except json.JSONDecodeError:
+        return {"error": "Weather service returned invalid data."}

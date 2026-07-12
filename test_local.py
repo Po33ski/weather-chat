@@ -64,17 +64,19 @@ def test_root():
 
 
 def test_chat():
-    """If Google API key is present, verify chat endpoint returns a non-empty message."""
+    """If Google API key is present, verify chat endpoint is reachable and returns valid JSON."""
     print("4) Chat...")
     if not os.getenv("GOOGLE_API_KEY"):
-        print("   ⚠️  Skipping strict assert: GOOGLE_API_KEY not set")
+        print("   ⚠️  Skipping: GOOGLE_API_KEY not set")
         return
     resp = _post("/api/chat", {"message": "Hello", "conversation_history": []})
     assert resp.status_code == 200, f"/api/chat status {resp.status_code}"
     data = resp.json()
-    # Backend schema: { success: bool, data?: { message, sender }, error?: string }
+    # Backend always returns HTTP 200; check the success flag for semantic result.
     if not data.get("success"):
-        print(f"   ⚠️  Chat returned error: {data.get('error')}")
+        # Live AI can fail due to model errors, quota limits or transient issues.
+        # Treat as warning so CI does not become flaky on external API problems.
+        print(f"   ⚠️  Skipping strict assert: /api/chat returned success=false ({data.get('error')})")
         return
     assert isinstance(data.get("data"), dict), "missing data in chat response"
     msg = data["data"].get("message")
@@ -84,7 +86,7 @@ def test_chat():
 
 def main():
     """Convenience runner to execute the checks without pytest."""
-    print("🌤️  Testing Weather Center Chat Backend")
+    print("🌤️  Testing Travel and Weather Center Chat Backend")
     print("=" * 50)
     test_health()
     test_root()

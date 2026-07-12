@@ -1,17 +1,25 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
+import logging
 import os
 from datetime import datetime
-from .models import ChatRequest, ChatResponse
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from agent_system.src.utils.load_env_data import load_env_data, get_environment_info
+from .models import ChatRequest, ChatResponse
 from .chat_service import process_chat_request
 
-# Load environment variables (if needed)
-load_env_data()
+logger = logging.getLogger(__name__)
+
+# Load environment variables (warn about missing keys, never crash on startup)
+try:
+    load_env_data()
+except ValueError as e:
+    logger.warning("Environment startup warning: %s", e)
+    logger.warning("Some features may be unavailable until environment variables are configured.")
 
 app = FastAPI(
-    title="Weather Center Chat API",
+    title="Travel and Weather Center Chat API",
     description="A comprehensive weather and AI chat application API",
     version="1.0.0"
 )
@@ -63,7 +71,12 @@ def health():
         return {
             "status": "unhealthy",
             "timestamp": datetime.now().isoformat(),
-            "error": str(e)
+            "error": str(e),
+            "services": {
+                "api": "running",
+                "weather_service": "unknown",
+                "ai_chat": "unknown",
+            },
         }
 
 # Mirror health under /api for frontend behind nginx

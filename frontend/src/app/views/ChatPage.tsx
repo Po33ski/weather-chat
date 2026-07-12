@@ -21,18 +21,20 @@ export const ChatPage = () => {
   }, []);
 
   return (
-    <>
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        {/* Chat (shorter) */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-[45vh] overflow-y-auto">
+    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
+        {/* Chat — left column, sticky on desktop */}
+        <div className="w-full lg:w-[42%] lg:sticky lg:top-20">
           <Chat onMetaChange={setAiMeta} onDataChange={setAiData} />
         </div>
-        {/* AI Weather Panel below chat */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+
+        {/* Weather Panel — right column */}
+        <div className="w-full lg:w-[58%]">
           <AiWeatherPanel meta={aiMeta} data={aiData} />
         </div>
-        {brickModalContext?.isModalShownInChatWeatherPage && brickModal}
       </div>
-    </>
+
+      {brickModalContext?.isModalShownInChatWeatherPage && brickModal}
+    </div>
   );
 };

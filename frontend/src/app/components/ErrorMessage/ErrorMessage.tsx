@@ -1,14 +1,19 @@
 import { ReactNode } from "react";
+import { createPortal } from "react-dom";
 
-export function ErrorMessage({ 
-  children, 
-  onClose 
-}: { 
+export function ErrorMessage({
+  children,
+  onClose
+}: {
   children: ReactNode;
   onClose?: () => void;
 }) {
-  return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-3 rounded-lg border border-red-600 shadow-lg flex items-start gap-3 max-w-[90vw] sm:max-w-2xl md:max-w-3xl break-words">
+  // Portalled to document.body: a sticky-positioned ancestor (e.g. the Chat
+  // panel wrapper) always creates its own stacking context, which traps a
+  // fixed-position child's z-index locally and lets the TopBar render on
+  // top of it regardless of that z-index value.
+  return createPortal(
+    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-3 rounded-lg border border-red-600 shadow-lg flex items-start gap-3 max-w-[90vw] sm:max-w-2xl md:max-w-3xl break-words">
       <span className="flex-1 break-words overflow-wrap-anywhere">{children}</span>
       {onClose && (
         <button
@@ -31,6 +36,7 @@ export function ErrorMessage({
           </svg>
         </button>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

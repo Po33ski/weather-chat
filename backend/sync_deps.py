@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dependency sync script for Weather Center Chat Backend
+Dependency sync script for Travel and Weather Center Chat Backend
 This script helps sync dependencies using uv and verifies the setup.
 """
 
@@ -51,7 +51,7 @@ def test_health_endpoint():
         return False
 
 def main():
-    print("🌤️  Weather Center Chat - Dependency Sync")
+    print("🌤️  Travel and Weather Center Chat - Dependency Sync")
     print("=" * 50)
     
     # Check if we're in the backend directory

@@ -4,22 +4,43 @@ on:
   push:
     branches: [ deploy ]
 
+permissions:
+  contents: read
+  packages: write
 
 env:
   PYTHON_VERSION: '3.12'
   NODE_VERSION: '18'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set lowercase image name
+      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Build Docker image (Nginx + FastAPI)
       run: |
-        docker build -t weather-center-chat:ci .
+        docker build -t weather-center-chat:ci -t ${{ env.IMAGE_NAME }}:latest .
+
+    - name: Push to GHCR
+      run: |
+        docker push ${{ env.IMAGE_NAME }}:latest
+
     - name: Save Docker image as artifact
       run: |
         docker save weather-center-chat:ci -o image.tar
+
     - name: Upload image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -58,24 +79,12 @@ jobs:
         done
         echo "service not ready"; docker logs app || true; exit 1
 
-    - name: Set up Python (for client tests)
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+    - name: Install test dependencies
+      run: pip install requests
 
-    - name: Install uv (official installer)
+    - name: Run integration tests
       run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Sync backend deps for requests
-      run: |
-        cd backend
-        uv sync
-
-    - name: Run test_local.py against Nginx
-      run: |
-        BACKEND_BASE_URL=http://localhost:8080 uv run --directory backend python ../test_local.py
+        BACKEND_BASE_URL=http://localhost:8080 python test_local.py
       env:
         VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
@@ -90,29 +99,30 @@ jobs:
   render_deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/deploy' 
-    
+    if: github.ref == 'refs/heads/deploy'
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Deploy to Render (Manual)
-      run: |
-        echo "Deployment to Render should be configured in Render dashboard"
-        echo "Environment variables are available in GitHub Secrets:"
-        echo ""
-        echo "Backend variables:"
-        echo "- VISUAL_CROSSING_API_KEY: ${{ secrets.VISUAL_CROSSING_API_KEY != '' }}"
-        echo "- GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' }}"
-    
     - name: Notify deployment status
-      run: |
-        echo "✅ Tests passed and deployment is ready"
-        echo "📋 Next steps:"
-        echo "1. Go to Render.com dashboard"
-        echo "2. Create new Web Service from this repository"
-        echo "3. Use Docker deployment with render.yaml"
-        echo "4. Set environment variables:"
-        echo "   Backend:"
-        echo "   - VISUAL_CROSSING_API_KEY"
-        echo "   - GOOGLE_API_KEY"
-        echo "5. Deploy!" 
+      run: echo "✅ Tests passed — Render deploys automatically via dashboard webhook"
+
+  azure_deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/deploy'
+    steps:
+    - name: Set lowercase image name
+      run: echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to Azure Container Apps
+      uses: azure/container-apps-deploy-action@v1
+      with:
+        containerAppName: weather-chat-env
+        resourceGroup: weather-chat-env
+        imageToDeploy: ${{ env.IMAGE_NAME }}:latest
+        registryUrl: ghcr.io
+        registryUsername: po33ski
+        registryPassword: ${{ secrets.GHCR_PAT }}
