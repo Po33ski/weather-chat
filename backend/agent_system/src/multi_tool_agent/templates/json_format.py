@@ -116,7 +116,7 @@ HOTELS (when user asks to search or find hotels in a city) — uses hotel-json f
     {
       "name": "<hotel name>",
       "price_per_night": "<numeric value as string, e.g. '120', or empty string if unknown>",
-      "currency": "<currency code e.g. EUR, USD, PLN, or empty string>",
+      "currency": "<'PLN' if language is Polish, otherwise 'USD' — or empty string if no price in that currency was found>",
       "availability": "available | unknown",
       "rating": <float 0-10 or null>,
       "reviews_count": <integer or null>,

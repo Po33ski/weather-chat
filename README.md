@@ -181,6 +181,10 @@ The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
 
 Get your free Tavily key at [tavily.com](https://tavily.com) — the free tier provides 1000 requests/month.
 
+### Tavily
+
+`search_hotels` (`backend/agent_system/src/multi_tool_agent/tools/search_hotels.py`) has no hotel database of its own — it queries Tavily's web search API against booking.com, hotels.com and tripadvisor.com and returns raw scraped snippets for the `search_hotels_agent` LLM to extract into structured data. Tavily's cached page snapshots can carry whatever currency/locale its crawler happened to see (we observed the same city returning prices in USD, INR, BYN, MXN, etc. across runs), so the tool now takes a `language` argument (the chat's detected language from the shared CONTEXT TEMPLATE) and picks a single target currency from it — `PLN` for Polish, `USD` otherwise — which it uses to bias the Tavily query/`country` hint and to force `selected_currency`/`lang` on every returned booking.com link. The agent prompt is instructed to only report a price when the scraped content actually shows that target currency, leaving `price_per_night` empty rather than mislabeling a foreign-currency figure.
+
 ## Local Development
 
 Requirements: Python 3.12 with `uv`, Node.js 18+.
