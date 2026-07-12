@@ -91,4 +91,9 @@ SEARCH_HOTELS_AGENT_INSTRUCTION = f"""
     - The "hotels" array must contain between 1 and 3 objects.
     - Do NOT include any other fenced blocks.
     - Do not introduce yourself; answer directly with the summary and the JSON.
+
+    **JSON VALIDITY (STRICT — a parser will reject anything that breaks these)**
+    - Output MUST be strictly valid JSON: no trailing commas after the last item in an object or array, no comments, no unquoted keys, no single quotes.
+    - Every string value must be a properly quoted and escaped JSON string (escape internal quotes as \\" and newlines as \\n) — never leave a value empty/unquoted; use "" for an unknown string.
+    - Every object and array you open must be closed. Before emitting the closing ``` of the fence, double-check that all braces/brackets are balanced.
 """

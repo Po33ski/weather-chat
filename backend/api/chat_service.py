@@ -30,6 +30,10 @@ FENCE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# LLMs occasionally leave a trailing comma right before a closing bracket —
+# harmless to strip, and recovers an otherwise well-formed payload.
+_TRAILING_COMMA_PATTERN = re.compile(r",(\s*[}\]])")
+
 
 def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
     """Return (fence_type, parsed_dict) for the first fenced JSON block, or None."""
@@ -38,7 +42,25 @@ def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
         return None
     fence_type = match.group(1).lower()
     json_body = match.group(2).strip()
-    return fence_type, json.loads(json_body)
+
+    try:
+        return fence_type, json.loads(json_body)
+    except json.JSONDecodeError:
+        repaired = _TRAILING_COMMA_PATTERN.sub(r"\1", json_body)
+        if repaired != json_body:
+            try:
+                return fence_type, json.loads(repaired)
+            except json.JSONDecodeError:
+                pass
+        # Log the raw offending body so failures can actually be diagnosed —
+        # the client only ever sees the parser's error message, never the text.
+        logger.warning(
+            "Failed to parse %s fenced block from agent response (%d chars):\n%s",
+            fence_type,
+            len(json_body),
+            json_body[:4000],
+        )
+        raise
 
 
 def _normalize_agent_response(raw_text: str) -> str:
