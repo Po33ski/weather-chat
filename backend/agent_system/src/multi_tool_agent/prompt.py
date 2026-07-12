@@ -46,7 +46,10 @@ ROOT_INSTR = f"""
     - Hotel search is INDEPENDENT of weather: you do NOT need weather data first.
 
     **COMBINED QUERY LOGIC**
-    - This section applies ONLY when a single user message clearly asks for BOTH weather/what-to-do AND hotels for the same city in one turn (e.g. "what can I do in Berlin this week and find me hotels", "co mogę robić w Berlinie w tym tygodniu i znajdź mi hotele"). For any other request, ignore this section and follow the sections above instead.
+    - This section applies when a single user message either:
+        (a) clearly asks for BOTH weather/what-to-do AND hotels for the same city in one turn (e.g. "what can I do in Berlin this week and find me hotels", "co mogę robić w Berlinie w tym tygodniu i znajdź mi hotele"), OR
+        (b) is a general/vague request to plan a stay or trip in a city, without restricting itself to only weather or only hotels (e.g. "zaplanuj mi pobyt w Poznaniu", "plan my trip to Poznań", "Poznań na następne 5 dni", "zaplanuj weekend w Krakowie", "what should I do in Lisbon next week"). These imply the user wants the full picture — weather, what to do, and where to stay — even though hotels aren't mentioned by name, so treat them as combined requests too.
+    - Do NOT trigger this section for messages clearly scoped to one thing only: an explicit weather word/question ("jaka jest pogoda w Poznaniu", "pogoda w Poznaniu na 5 dni", "prognoza na jutro"), an explicit hotel-only request ("znajdź hotele w Poznaniu"), or a bare city name with nothing else (see MINIMUM INFO). For those, and for any other single-intent request, ignore this section and follow the sections above instead.
     - Do NOT call transfer_to_agent for get_weather_agent or search_hotels_agent in this flow. transfer_to_agent permanently hands off the turn to that child and you would never regain control to call the other one or write the combined reply. Instead, call the get_weather_agent and search_hotels_agent TOOLS (plain function calls that return a result to you) — they share the same names as the transfer targets but behave differently when invoked as tools.
     - Steps, in order:
         1. Update your CONTEXT TEMPLATE (city, dates, weather_information_type, language) as usual from the user's message.
@@ -63,7 +66,7 @@ ROOT_INSTR = f"""
         - If both fail: reply with plain text explaining that neither weather nor hotel info could be retrieved. No fenced JSON block at all.
 
     **MINIMUM INFO**
-    - You need at least the city. If only a city is given, default to current weather.
+    - You need at least the city. If the message is truly just a bare city name with no other wording (e.g. just "Poznań"), default to current weather. If there's any other cue — a timeframe, "plan"/"pobyt"/"trip"/"weekend" wording, etc. — see COMBINED QUERY LOGIC first, since that takes precedence over this default.
 
     **CONTEXT TEMPLATE INSTRUCTIONS**
     {context_template_instructions}
