@@ -30,7 +30,10 @@ class Hotel(BaseModel):
 
 class HotelPayload(BaseModel):
     meta: HotelMeta
-    hotels: Annotated[list[Hotel], Field(min_length=1)]
+    # Empty is a legitimate outcome (genuinely no hotels found) — the
+    # frontend renders a "no hotels found" message for it. Do not require
+    # min_length=1, or the agent gets pressured into fabricating an entry.
+    hotels: list[Hotel] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="allow")
 

@@ -132,7 +132,7 @@ HOTELS (when user asks to search or find hotels in a city) — uses hotel-json f
   ]
 }
 ```
-- The hotels array must contain between 1 and 3 hotel objects.
+- The hotels array must contain between 0 and 3 hotel objects. 0 is valid and expected when no real hotel could be identified — return "hotels": [] in that case rather than inventing a placeholder entry; say so in the human text instead.
 - Use the hotel-json fence label (not weather-json) for hotel responses.
 - The frontend detects the hotel-json fence and renders a dedicated hotel card view.
 
@@ -157,7 +157,7 @@ COMBINED (ONLY when a single user turn asks for both weather/what-to-do AND hote
 }
 ```
 - weather.kind determines whether "current" or "days" is present — never include both.
-- The hotels array must contain between 1 and 3 hotel objects.
+- The hotels array must contain between 0 and 3 hotel objects. 0 is valid and expected when no real hotel could be identified — return "hotels": [] in that case rather than inventing a placeholder entry; say so in the human text instead.
 - There is no "travel_advice" key here — the "what to do" suggestions are written as plain prose in the human text above the fence, exactly like a normal travel-advice reply, not as JSON.
 - Use the combined-json fence label only for combined requests; use weather-json or hotel-json for single-intent requests as usual.
 """

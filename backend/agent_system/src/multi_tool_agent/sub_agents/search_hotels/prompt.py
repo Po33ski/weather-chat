@@ -39,7 +39,8 @@ SEARCH_HOTELS_AGENT_INSTRUCTION = f"""
       - reviews_count: integer number of reviews, null if not found
       - highlights: list of 2-3 short strings about the hotel (location, amenities, guest praise)
       - url: the source URL
-    - Extract exactly 3 hotels. If fewer than 3 are clearly identifiable, extract as many as possible (minimum 1).
+    - Extract up to 3 hotels — one per distinct, clearly identifiable property in the tool results. If you find fewer than 3, extract as many as are genuinely identifiable (1 or 2 is fine).
+    - If NO real hotel can be identified from the tool results (empty/irrelevant results, or the content doesn't name any actual property), return "hotels": [] (an empty array) and say so plainly in the human text (e.g. "No hotels could be found for <city>."). Do NOT invent, guess, or pad with placeholder hotel data just to have something in the array — an empty array is a normal, valid outcome.
     - Do NOT duplicate hotels. Each entry must be a distinct property.
     - LINK PRIORITY:
       - Prefer hotels whose name comes from a result with `is_direct: true` — for those, set url to that result's own url, which is the hotel's real booking page.
@@ -88,7 +89,7 @@ SEARCH_HOTELS_AGENT_INSTRUCTION = f"""
     - Do NOT include any extra text after the closing ``` of the hotel-json block.
     - Do NOT use weather-json; always use hotel-json.
     - Set meta.language to the language you used in the human text.
-    - The "hotels" array must contain between 1 and 3 objects.
+    - The "hotels" array must contain between 0 and 3 objects (0 only when genuinely no hotel was found — see EXTRACTION RULES).
     - Do NOT include any other fenced blocks.
     - Do not introduce yourself; answer directly with the summary and the JSON.
 
