@@ -10,7 +10,7 @@ from google.adk.runners import Runner
 from google.genai import types
 
 from .models import ChatRequest, ChatResponse
-from .session_manager import session_manager
+from .session_manager import session_manager, APP_NAME
 from .weather_payload import validate_weather_payload
 from .hotel_payload import validate_hotel_payload
 from .combined_payload import validate_combined_payload
@@ -149,12 +149,12 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                 error="AI chat is not available. GOOGLE_API_KEY is not configured.",
             )
 
-        session_manager.cleanup_expired_sessions()
+        await session_manager.cleanup_expired_sessions()
         session_data = await session_manager.ensure_session(request.session_id)
 
         runner = Runner(
             agent=agent_module.root_agent,
-            app_name="weather_center",
+            app_name=APP_NAME,
             session_service=session_manager.session_service,
         )
         content = types.Content(role="user", parts=[types.Part(text=request.message)])
