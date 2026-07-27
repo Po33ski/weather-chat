@@ -92,21 +92,9 @@ HISTORY (if user asks for historical data; date_range required)
   ]
 }
 
-TRAVEL_ADVICE (if user asks for travel advice)
-{
-  "meta": {
-    "city": "<city name>",
-    "kind": "travel_advice",
-    "date": null,
-    "date_range": null,
-    "language": "<lang>",
-  },
-  "travel_advice": [
-    {
-      "text": "<travel advice text>"
-    }
-  ]
-}
+TRAVEL ADVICE replies contain NO fenced JSON at all — only plain human text
+with the three recommendations. There is no "travel_advice" JSON kind; the
+backend parser rejects it.
 
 HOTELS (when user asks to search or find hotels in a city) — uses hotel-json fence, NOT weather-json
 ```hotel-json

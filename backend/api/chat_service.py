@@ -63,16 +63,33 @@ def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
         raise
 
 
-def _normalize_agent_response(raw_text: str) -> str:
+def _normalize_agent_response(
+    raw_text: str,
+    fence_type: Optional[str] = None,
+    json_payload: Optional[dict] = None,
+) -> str:
+    """
+    Re-emit the human text + fenced JSON block from the agent's raw response.
+
+    When json_payload is provided (the already-parsed, trailing-comma-repaired
+    dict from _extract_fenced_json), it is re-serialized here instead of
+    re-slicing raw_text — otherwise a payload that only validated because of
+    the repair would still ship the original malformed JSON text to the
+    client, which fails JSON.parse there silently.
+    """
     if not raw_text:
         return "[Agent error] No response content"
 
     match = FENCE_PATTERN.search(raw_text)
     if match:
         human_text = raw_text[:match.start()].strip()
-        fence_type = match.group(1).lower()
-        json_body = match.group(2).strip()
-        return (human_text + "\n\n" if human_text else "") + f"```{fence_type}\n{json_body}\n```"
+        resolved_fence_type = fence_type or match.group(1).lower()
+        json_body = (
+            json.dumps(json_payload, ensure_ascii=False, indent=2)
+            if json_payload is not None
+            else match.group(2).strip()
+        )
+        return (human_text + "\n\n" if human_text else "") + f"```{resolved_fence_type}\n{json_body}\n```"
 
     return raw_text
 
@@ -178,7 +195,7 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                                     session_id=session_data["session_id"],
                                 )
 
-                        normalized = _normalize_agent_response(raw_text)
+                        normalized = _normalize_agent_response(raw_text, fence_type, json_payload)
                         return ChatResponse(
                             success=True,
                             data={"message": normalized, "sender": "ai"},

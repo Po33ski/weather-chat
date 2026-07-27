@@ -88,7 +88,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
       - current: set meta.date to the API's first day's date (e.g., response.days[0].datetime).
       - forecast: set meta.date_range from the first and last included days (YYYY-MM-DD..YYYY-MM-DD), max 15 days.
       - history: set meta.date_range from the user-provided start_date and end_date.
-    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
+    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), answer that fact in the short human text, but the fenced JSON must still be the COMPLETE schema for the detected kind with ALL its fields filled from the tool response — never a reduced/minimal JSON; the backend parser rejects payloads with missing fields.
     {json_format}
 
     RULES:
@@ -96,7 +96,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - Short human text can be minimal and should avoid numeric details; rely on JSON for data.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range appropriately.
-    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
+    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), answer that fact in the short human text, but the fenced JSON must still be the COMPLETE schema for the detected kind with ALL its fields filled from the tool response — never a reduced/minimal JSON; the backend parser rejects payloads with missing fields.
 """ 
 
 
