@@ -25,15 +25,32 @@ export const Chat: React.FC<{
   }, [messages]);
 
   useEffect(() => {
-    checkBackendConnection();
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      const connected = await checkBackendConnection();
+      if (cancelled) return;
+      setIsConnected(connected);
+      // Keep retrying on failure (e.g. backend still cold-starting),
+      // and keep polling on success too, so a later disconnect is reflected.
+      timeoutId = setTimeout(poll, connected ? 15000 : 2000);
+    };
+
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
-  const checkBackendConnection = async () => {
+  const checkBackendConnection = async (): Promise<boolean> => {
     try {
       const response = await fetch(`${BACKEND_API_URL}/api/health`);
-      if (response.ok) setIsConnected(true);
+      return response.ok;
     } catch {
-      setIsConnected(false);
+      return false;
     }
   };
 

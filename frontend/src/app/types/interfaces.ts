@@ -1,20 +1,3 @@
-export interface PagesInfo {
-  current: string;
-  forecast: string;
-  history: string;
-}
-
-export interface MainPhotos {
-  current: string;
-  forecast: string;
-  history: string;
-}
-
-export interface MenuOptions {
-  optionName: string;
-  path: string;
-}
-
 export interface MetricSystems {
   US: string;
   METRIC: string;
@@ -33,6 +16,7 @@ export interface BrickModalData {
   title: string | null;
   desc: string | null;
 }
+
 export interface HoursData {
   temp: number | null;
   conditions: string | null;
@@ -41,6 +25,7 @@ export interface HoursData {
   pressure: string | null;
   humidity: string | null;
 }
+
 export interface CurrentDataDay {
   description: string | null;
   temp: number | null;
@@ -56,21 +41,6 @@ export interface CurrentDataDay {
   hours: [HoursData];
 }
 
-export interface CurrentData {
-  address: string | null;
-  currentConditions: {
-    temp: number | null;
-    humidity: number | null;
-    windspeed: number | null;
-    winddir: number | null;
-    pressure: number | null;
-    conditions: string | null;
-    sunrise: string | null;
-    sunset: string | null;
-  };
-  days: [CurrentDataDay];
-}
-
 export interface HistoryAndForecastDay {
   datetime: string | null;
   temp: number | null;
@@ -84,39 +54,6 @@ export interface HistoryAndForecastDay {
   pressure: string | null;
   humidity: string | null;
 }
-export interface FrontendWeatherData {
-  address: string | null;
-  days: [HistoryAndForecastDay];
-}
-
-export interface PostData {
-  title: string;
-  description: string;
-  id: string;
-  userId: string;
-  username: string;
-  uniqueId: string;
-}
-
-export interface CreateFormData {
-  title: string;
-  description: string;
-}
-export interface dataToSend {
-  title: string;
-  description: string;
-  uniqueId: string;
-}
-
-export interface PropsData {
-  post: PostData;
-  setPostsList: React.Dispatch<React.SetStateAction<PostData[] | null>>;
-}
-
-export interface LikeData {
-  likeId: string;
-  userId: string;
-}
 
 export interface Message {
   id: string;
@@ -125,94 +62,12 @@ export interface Message {
   timestamp: Date;
 }
 
-export interface ChatRequest {
-  message: string;
-  conversation_history: Array<{
-    text: string;
-    sender: string;
-  }>;
-  session_id?: string;
-}
-
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-
 export interface ChatApiResponse extends ApiResponse<{ message: string; sender: string }> {
   session_id?: string;
-}
-
-export interface WeatherData {
-  location: string;
-  temperature: number;
-  humidity?: number;  // Keep as number (float) to match backend
-  wind_speed?: number;
-  wind_direction?: string | number;  // Can be string or number
-  pressure?: number;
-  visibility?: number;
-  uv_index?: number;
-  conditions?: string;
-  icon?: string;
-  sunrise?: string;  // Added sunrise field
-  sunset?: string;   // Added sunset field
-  timestamp: string;
-  weather_type: string;
-}
-
-export interface CurrentWeatherRequest {
-  location: string;
-}
-
-export interface ForecastWeatherRequest {
-  location: string;
-  days: number;
-}
-
-export interface HistoryWeatherRequest {
-  location: string;
-  start_date: string; // YYYY-MM-DD format
-  end_date: string;   // YYYY-MM-DD format
-}
-
-export interface User {
-  user_id: string;
-  email: string;
-  name: string;
-  picture?: string;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  sessionId: string | null;
-  loading: boolean;
-}
-
-export interface GoogleAuthRes {
-  success: boolean;
-  session_id?: string;
-  user_id?: string;
-  user_info?: {
-    email: string;
-    name: string;
-    picture?: string;
-  };
-  message?: string;
-  error?: string;
-}
-
-export interface TotpAuthRes {
-  success: boolean;
-  session_id?: string;
-  user_id?: string;
-  user_info?: {
-    email: string;
-    name: string;
-    picture?: string;
-  };
-  message?: string;
-  error?: string;
 }

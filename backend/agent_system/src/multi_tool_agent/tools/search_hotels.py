@@ -2,7 +2,6 @@ import os
 from typing import Any, Dict
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
-from .exceptions import ToolConfigurationError
 from .hotel_locale import LOCALE_BY_CURRENCY, target_currency as _target_currency
 
 

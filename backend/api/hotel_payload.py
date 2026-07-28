@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 
 class HotelMeta(BaseModel):
@@ -19,7 +19,7 @@ class Hotel(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     price_per_night: str = ""
     currency: str = ""
-    availability: str = "unknown"
+    availability: Literal["available", "unknown"] = "unknown"
     rating: float | None = None
     reviews_count: int | None = None
     highlights: list[str] = Field(default_factory=list)
@@ -27,10 +27,43 @@ class Hotel(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
+    # These fields are assembled by the LLM from untrusted web-search content,
+    # and there is no retry loop back to the agent — a hard rejection here
+    # would surface as an error for an otherwise fine reply. So out-of-contract
+    # values are sanitized to their "unknown" form instead of rejected; the
+    # frontend already renders "" / null / "unknown" as missing data.
+
+    @field_validator("url")
+    @classmethod
+    def _url_must_be_http(cls, value: str) -> str:
+        # The frontend renders this as a live <a href> link; anything but
+        # http(s) (e.g. a javascript: URI) must not become clickable.
+        value = (value or "").strip()
+        if value and not value.startswith(("http://", "https://")):
+            return ""
+        return value
+
+    @field_validator("availability", mode="before")
+    @classmethod
+    def _normalize_availability(cls, value: object) -> str:
+        if isinstance(value, str) and value.strip().lower() == "available":
+            return "available"
+        return "unknown"
+
+    @field_validator("rating")
+    @classmethod
+    def _rating_on_ten_scale(cls, value: float | None) -> float | None:
+        if value is None or not (0 <= value <= 10):
+            return None
+        return value
+
 
 class HotelPayload(BaseModel):
     meta: HotelMeta
-    hotels: Annotated[list[Hotel], Field(min_length=1)]
+    # Empty is a legitimate outcome (genuinely no hotels found) — the
+    # frontend renders a "no hotels found" message for it. Do not require
+    # min_length=1, or the agent gets pressured into fabricating an entry.
+    hotels: list[Hotel] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="allow")
 

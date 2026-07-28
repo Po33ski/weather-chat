@@ -90,31 +90,3 @@ def api_health():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     return await process_chat_request(request)
-
-
-
-
-#For eventualy future use:
-# @app.post("/api/weather/current", response_model=CurrentWeatherResponse)
-# def get_current_weather(request: CurrentWeatherRequest):
-#     try:
-#         data = weather_service.get_current_weather(request.location)
-#         return CurrentWeatherResponse(success=True, data=data)
-#     except Exception as e:
-#         return CurrentWeatherResponse(success=False, error=str(e))
-
-# @app.post("/api/weather/forecast", response_model=ForecastWeatherResponse)
-# def get_forecast_weather(request: ForecastWeatherRequest):
-#     try:
-#         data = weather_service.get_forecast_weather(request.location, request.days)
-#         return ForecastWeatherResponse(success=True, data=data)
-#     except Exception as e:
-#         return ForecastWeatherResponse(success=False, error=str(e))
-
-# @app.post("/api/weather/history", response_model=HistoryWeatherResponse)
-# def get_history_weather(request: HistoryWeatherRequest):
-#     try:
-#         data = weather_service.get_history_weather(request.location, request.start_date, request.end_date)
-#         return HistoryWeatherResponse(success=True, data=data)
-#     except Exception as e:
-#         return HistoryWeatherResponse(success=False, error=str(e))
