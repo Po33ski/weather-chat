@@ -4,8 +4,8 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from .weather_payload import CurrentWeather, DateRangeStr, DateStr, DayWeather
 from .hotel_payload import Hotel
+from .weather_payload import CurrentWeather, DateRangeStr, DateStr, DayWeather
 
 
 class CombinedMeta(BaseModel):
@@ -78,7 +78,9 @@ def validate_combined_payload(payload: Any) -> None:
         elif weather_kind in ("forecast", "history"):
             CombinedWeatherDays.model_validate(weather)
         else:
-            raise ValueError('weather.kind must be one of: "current", "forecast", "history"')
+            raise ValueError(
+                'weather.kind must be one of: "current", "forecast", "history"'
+            )
 
         CombinedPayload.model_validate(payload)
     except ValidationError as exc:

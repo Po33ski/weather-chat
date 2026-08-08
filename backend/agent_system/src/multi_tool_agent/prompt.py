@@ -1,5 +1,5 @@
-from .templates.json_format import json_format_instructions, json_format
 from .templates.context_template import context_template, context_template_instructions
+from .templates.json_format import json_format, json_format_instructions
 
 ROOT_NAME = "weather_assistant"
 

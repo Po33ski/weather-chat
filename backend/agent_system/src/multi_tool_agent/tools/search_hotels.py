@@ -1,8 +1,9 @@
 import os
 from typing import Any, Dict
-from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from .hotel_locale import LOCALE_BY_CURRENCY, target_currency as _target_currency
+from .hotel_locale import LOCALE_BY_CURRENCY
+from .hotel_locale import target_currency as _target_currency
 
 
 def _force_currency(url: str, currency: str) -> str:
@@ -27,7 +28,9 @@ def _is_direct_hotel_url(url: str) -> bool:
     return "/hotel/" in path and "/reviews/" not in path
 
 
-def search_hotels(city: str, check_in: str = "", check_out: str = "", language: str = "en") -> Dict[str, Any]:
+def search_hotels(
+    city: str, check_in: str = "", check_out: str = "", language: str = "en"
+) -> Dict[str, Any]:
     """
     Search for hotels in a given city using Tavily web search.
     Returns raw search results from booking sites so the agent can extract
@@ -58,7 +61,10 @@ def search_hotels(city: str, check_in: str = "", check_out: str = "", language: 
     try:
         from tavily import TavilyClient
     except ImportError:
-        return {"error": "Hotel search library is not installed. Run: pip install tavily-python"}
+        return {
+            "error": "Hotel search library is not installed. "
+            "Run: pip install tavily-python"
+        }
 
     currency = _target_currency(language)
     locale = LOCALE_BY_CURRENCY[currency]
@@ -72,7 +78,9 @@ def search_hotels(city: str, check_in: str = "", check_out: str = "", language: 
     if currency == "PLN":
         query = f"hotele {city}{date_hint} cena za noc w złotówkach opinie rezerwacja"
     else:
-        query = f"hotels in {city}{date_hint} price per night USD rating reviews booking"
+        query = (
+            f"hotels in {city}{date_hint} price per night USD rating reviews booking"
+        )
 
     try:
         client = TavilyClient(api_key=api_key)

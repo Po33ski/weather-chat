@@ -1,20 +1,20 @@
 import asyncio
-import os
-import re
 import json
 import logging
+import os
+import re
 from typing import Optional, Tuple
 
-import agent_system.src.multi_tool_agent.agent as agent_module
 from google.adk.runners import Runner
 from google.genai import types
 
-from .models import ChatRequest, ChatResponse
-from .session_manager import session_manager, APP_NAME
-from .weather_payload import validate_weather_payload
-from .hotel_payload import validate_hotel_payload
-from .combined_payload import validate_combined_payload
+import agent_system.src.multi_tool_agent.agent as agent_module
 
+from .combined_payload import validate_combined_payload
+from .hotel_payload import validate_hotel_payload
+from .models import ChatRequest, ChatResponse
+from .session_manager import APP_NAME, session_manager
+from .weather_payload import validate_weather_payload
 
 logger = logging.getLogger(__name__)
 
@@ -82,19 +82,23 @@ def _normalize_agent_response(
 
     match = FENCE_PATTERN.search(raw_text)
     if match:
-        human_text = raw_text[:match.start()].strip()
+        human_text = raw_text[: match.start()].strip()
         resolved_fence_type = fence_type or match.group(1).lower()
         json_body = (
             json.dumps(json_payload, ensure_ascii=False, indent=2)
             if json_payload is not None
             else match.group(2).strip()
         )
-        return (human_text + "\n\n" if human_text else "") + f"```{resolved_fence_type}\n{json_body}\n```"
+        return (
+            human_text + "\n\n" if human_text else ""
+        ) + f"```{resolved_fence_type}\n{json_body}\n```"
 
     return raw_text
 
 
-def _detect_error_in_response(raw_text: str) -> Tuple[bool, Optional[str], Optional[str], Optional[dict]]:
+def _detect_error_in_response(
+    raw_text: str,
+) -> Tuple[bool, Optional[str], Optional[str], Optional[dict]]:
     """
     Detect if the agent response contains an error.
     Agent returns errors in fenced blocks as {"error": "message"}.
@@ -123,7 +127,7 @@ def _detect_error_in_response(raw_text: str) -> Tuple[bool, Optional[str], Optio
 
 
 def _validate_payload(fence_type: str, payload: dict) -> None:
-    """Route payload validation to the correct validator based on fence type and kind."""
+    """Route payload validation to the right validator by fence type and kind."""
     kind = payload.get("meta", {}).get("kind") if isinstance(payload, dict) else None
 
     if fence_type == "combined-json" or kind == "combined":
@@ -169,7 +173,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                 async for event in events:
                     if event.is_final_response():
                         raw_text = ""
-                        if getattr(event, "content", None) and getattr(event.content, "parts", None):
+                        if getattr(event, "content", None) and getattr(
+                            event.content, "parts", None
+                        ):
                             parts_text = [
                                 text
                                 for part in event.content.parts
@@ -177,7 +183,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                             ]
                             raw_text = "\n".join(parts_text).strip()
 
-                        is_error, error_message, fence_type, json_payload = _detect_error_in_response(raw_text)
+                        is_error, error_message, fence_type, json_payload = (
+                            _detect_error_in_response(raw_text)
+                        )
                         if is_error:
                             return ChatResponse(
                                 success=False,
@@ -195,7 +203,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                                     session_id=session_data["session_id"],
                                 )
 
-                        normalized = _normalize_agent_response(raw_text, fence_type, json_payload)
+                        normalized = _normalize_agent_response(
+                            raw_text, fence_type, json_payload
+                        )
                         return ChatResponse(
                             success=True,
                             data={"message": normalized, "sender": "ai"},
@@ -203,7 +213,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                         )
 
         except TimeoutError:
-            logger.warning("ADK runner timed out after %s seconds", _ADK_TIMEOUT_SECONDS)
+            logger.warning(
+                "ADK runner timed out after %s seconds", _ADK_TIMEOUT_SECONDS
+            )
             return ChatResponse(
                 success=False,
                 error="The request timed out. Please try again.",

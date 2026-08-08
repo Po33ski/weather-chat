@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -115,4 +115,3 @@ def validate_weather_payload(payload: Any) -> None:
         raise ValueError(_format_validation_error(exc)) from exc
 
     raise ValueError('meta.kind must be one of: "current", "forecast", "history"')
-

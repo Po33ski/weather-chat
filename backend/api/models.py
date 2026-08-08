@@ -4,7 +4,6 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, Field, StringConstraints
 
-
 # Pydantic Models for API
 
 
@@ -17,9 +16,9 @@ class ChatRequest(BaseModel):
     conversation_history: list[dict[str, Any]] = Field(default_factory=list)
     session_id: Annotated[str, StringConstraints(max_length=128)] | None = None
 
+
 class ChatResponse(BaseModel):
     success: bool
     data: dict[str, Any] | None = None
     error: str | None = None
     session_id: str | None = None
-

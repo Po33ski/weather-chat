@@ -2,10 +2,10 @@ from typing import Any, Optional
 
 from google.adk.agents import Agent
 
-from ...tools.search_hotels import search_hotels
-from ...tools.build_hotel_booking_link import build_hotel_booking_link
-from . import prompt
 from ....utils.load_env_data import load_model
+from ...tools.build_hotel_booking_link import build_hotel_booking_link
+from ...tools.search_hotels import search_hotels
+from . import prompt
 
 
 def _after_tool_callback(
@@ -16,7 +16,9 @@ def _after_tool_callback(
 ) -> Optional[dict[str, Any]]:
     """Normalize tool error responses to {"error": "..."} format."""
     if isinstance(tool_response, dict) and "error" in tool_response:
-        error_msg = str(tool_response.get("error") or "Hotel search returned an unknown error.")
+        error_msg = str(
+            tool_response.get("error") or "Hotel search returned an unknown error."
+        )
         return {"error": error_msg}
     return None
 
