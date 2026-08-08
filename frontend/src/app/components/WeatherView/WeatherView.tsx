@@ -14,7 +14,6 @@ import { WhereFromType, BrickModalContextType, UnitSystemContextType } from "@/a
 
 export function WeatherView({
   data,
-  address,
   whereFrom,
 }: {
   data: CurrentDataDay;

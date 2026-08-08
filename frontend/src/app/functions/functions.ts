@@ -24,19 +24,19 @@ import high_humidity from "../../../public/high_humidity.jpg";
 
 export const systemsConvert = {
   toFahrenheit: (temp: number | null) => {
-    let t = typeof temp === "number" ? temp : 0;
+    const t = typeof temp === "number" ? temp : 0;
     return Math.round((t * (9 / 5) + 32) * 100) / 100;
   },
   toCelcius: (temp: number | null) => {
-    let t = typeof temp === "number" ? temp : 0;
+    const t = typeof temp === "number" ? temp : 0;
     return (t - 32) * (5 / 9);
   },
   toMiles: (temp: number | null) => {
-    let t = typeof temp === "number" ? temp : 0;
+    const t = typeof temp === "number" ? temp : 0;
     return Math.round((t / 1.609) * 100) / 100;
   },
   toKilometres: (temp: number | null) => {
-    let t = typeof temp === "number" ? temp : 0;
+    const t = typeof temp === "number" ? temp : 0;
     return (t * 1.609 * 100.2) / 100;
   },
 };
@@ -101,7 +101,7 @@ export const whatImage = (
       case temp < 0:
         return cold_image;
       default:
-        sunset_image;
+        return sunset_image;
     }
   };
   const checkWindSpeedImage = (speed: number) => {
@@ -115,7 +115,7 @@ export const whatImage = (
       case speed < 12:
         return notwind_image;
       default:
-        sunset_image;
+        return sunset_image;
     }
   };
 
