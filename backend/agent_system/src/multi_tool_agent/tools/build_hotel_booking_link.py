@@ -21,10 +21,12 @@ def build_hotel_booking_link(
     per-hotel deep link even without knowing the property's exact URL slug.
 
     URL pattern produced:
-    https://www.booking.com/searchresults.html?ss=<hotel name>+<city>&checkin=<YYYY-MM-DD>&checkout=<YYYY-MM-DD>&selected_currency=PLN|USD&lang=pl|en-us
+    https://www.booking.com/searchresults.html?ss=<hotel name>+<city>
+    &checkin=<YYYY-MM-DD>&checkout=<YYYY-MM-DD>&selected_currency=PLN|USD&lang=pl|en-us
 
     Args:
-        hotel_name: The hotel's name, exactly as extracted from search results (required).
+        hotel_name: The hotel's name, exactly as extracted from search
+            results (required).
         city: The city the hotel is in — disambiguates the name (required).
         check_in: Check-in date in YYYY-MM-DD format (optional).
         check_out: Check-out date in YYYY-MM-DD format (optional).

@@ -1,5 +1,8 @@
-from ...templates.json_format import json_format_instructions, json_format
-from ...templates.context_template import context_template, context_template_instructions
+from ...templates.context_template import (
+    context_template,
+    context_template_instructions,
+)
+from ...templates.json_format import json_format, json_format_instructions
 
 GET_WEATHER_AGENT_NAME = "get_weather_agent"
 
@@ -81,7 +84,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - Use only commas. 
     - Use only the fields that are in the JSON FORMAT section. 
     - Do not add any other fields.
-    - use '{' '}' and [] as in the example.
+    - use '{" "}' and [] as in the example.
     - in [] may be many objects because there can be many days, so you have to put them all in the JSON.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range based on the TOOL RESPONSE, not internal assumptions:
@@ -97,6 +100,4 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range appropriately.
     - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), answer that fact in the short human text, but the fenced JSON must still be the COMPLETE schema for the detected kind with ALL its fields filled from the tool response — never a reduced/minimal JSON; the backend parser rejects payloads with missing fields.
-""" 
-
-
+"""

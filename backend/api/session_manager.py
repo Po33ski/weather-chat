@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from google.adk.sessions import InMemorySessionService
 
@@ -52,7 +52,8 @@ class SessionManager:
         """Drop stale sessions from the registry AND the ADK session store."""
         cutoff = datetime.now() - timedelta(hours=max_age_hours)
         expired = [
-            sid for sid, data in self.sessions.items()
+            sid
+            for sid, data in self.sessions.items()
             if data.get("last_activity", datetime.min) < cutoff
         ]
         for sid in expired:

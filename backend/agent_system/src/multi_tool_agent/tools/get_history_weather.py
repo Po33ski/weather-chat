@@ -1,7 +1,8 @@
-import requests
 import json
 import os
-from typing import Dict, Any
+from typing import Any, Dict
+
+import requests
 
 from .utils import normalize_sunrise_sunset
 
@@ -10,7 +11,8 @@ API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/se
 
 def get_history_weather(city: str, start_date: str, end_date: str) -> Dict[str, Any]:
     """
-    Fetch historical weather data for a given city and date range using the Visual Crossing API.
+    Fetch historical weather data for a given city and date range using the
+    Visual Crossing API.
     Returns a dictionary with weather data, or {"error": "message"} on failure.
 
     Args:
@@ -30,7 +32,10 @@ def get_history_weather(city: str, start_date: str, end_date: str) -> Dict[str, 
     if not api_key:
         return {"error": "Weather service API key is not configured."}
 
-    url = f"{API_HTTP}{city}/{start_date}/{end_date}?unitGroup=metric&key={api_key}&contentType=json"
+    url = (
+        f"{API_HTTP}{city}/{start_date}/{end_date}"
+        f"?unitGroup=metric&key={api_key}&contentType=json"
+    )
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()

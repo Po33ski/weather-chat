@@ -3,7 +3,7 @@ import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
 import { Icon } from "../Icon/Icon";
 import "../../weather_icons_data/css/weather-icons.css";
-import { findDirection, systemsConvert, translateConditions } from "@/app/functions/functions";
+import { systemsConvert, translateConditions } from "@/app/functions/functions";
 import { HistoryAndForecastDay } from "@/app/types/interfaces";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
 

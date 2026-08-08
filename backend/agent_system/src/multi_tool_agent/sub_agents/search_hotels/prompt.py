@@ -1,4 +1,7 @@
-from ...templates.context_template import context_template, context_template_instructions
+from ...templates.context_template import (
+    context_template,
+    context_template_instructions,
+)
 
 SEARCH_HOTELS_AGENT_NAME = "search_hotels_agent"
 

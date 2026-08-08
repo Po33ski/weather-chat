@@ -40,12 +40,12 @@ ENVIRONMENT=production
 MODEL=gemini-2.5-flash
 DISABLE_WEB_DRIVER=0
 PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
-VITE_API_URL=http://localhost:8000           # dev overrides only
+VITE_BACKEND_API_URL=http://localhost:8000   # dev overrides only
 ```
 
 Note
 - Backend keeps Google ADK sessions entirely in memory; no external database is required.
-- In production, use same-origin calls from the frontend; do NOT set `NEXT_PUBLIC_API_URL`.
+- In production, use same-origin calls from the frontend; do NOT set `VITE_BACKEND_API_URL`.
 
 ## Development with Compose (optional)
 

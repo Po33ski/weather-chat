@@ -216,7 +216,7 @@ uv run uvicorn api.main:app --reload --port 8000
 # 2. Frontend (new terminal)
 cd frontend
 npm install
-export VITE_API_URL=http://localhost:8000
+export VITE_BACKEND_API_URL=http://localhost:8000
 npm run dev
 
 # App: http://localhost:5173
