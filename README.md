@@ -200,7 +200,32 @@ Get your free Tavily key at [tavily.com](https://tavily.com) — the free tier p
 
 ### Tavily
 
-`search_hotels` (`backend/agent_system/src/multi_tool_agent/tools/search_hotels.py`) has no hotel database of its own — it queries Tavily's web search API against booking.com, hotels.com and tripadvisor.com and returns raw scraped snippets for the `search_hotels_agent` LLM to extract into structured data. Tavily's cached page snapshots can carry whatever currency/locale its crawler happened to see (we observed the same city returning prices in USD, INR, BYN, MXN, etc. across runs), so the tool now takes a `language` argument (the chat's detected language from the shared CONTEXT TEMPLATE) and picks a single target currency from it — `PLN` for Polish, `USD` otherwise — which it uses to bias the Tavily query/`country` hint and to force `selected_currency`/`lang` on every returned booking.com link. The agent prompt is instructed to only report a price when the scraped content actually shows that target currency, leaving `price_per_night` empty rather than mislabeling a foreign-currency figure.
+**How it works.** Tavily is a web-search API built for AI agents: instead of HTML with links, it returns JSON with relevance-ranked text snippets extracted from the pages themselves, ready to drop into an LLM context. Crucially, Tavily knows nothing about hotels — it returns raw page text, and turning that text into structured hotel data is the LLM's job.
+
+The request sent by `search_hotels`:
+
+```python
+client.search(
+    query=query,                  # language-matched, e.g. "hotels in Warsaw ... price per night USD rating reviews booking"
+    search_depth="advanced",      # deeper crawl, better snippets (2 credits instead of 1)
+    max_results=8,
+    include_domains=["booking.com", "hotels.com", "tripadvisor.com"],
+    country=locale["country"],    # "poland" / "united states" — geo hint for the search
+)
+```
+
+Each entry in the returned `results` list has four fields:
+
+| Field     | Meaning                                                                     |
+|-----------|-----------------------------------------------------------------------------|
+| `title`   | Page title                                                                  |
+| `url`     | Page address                                                                |
+| `content` | Extracted page text — where price/rating/reviews live, if the snippet caught them |
+| `score`   | Tavily's 0–1 relevance score                                                |
+
+Before handing results to the agent, the tool post-processes them: `_force_currency` appends `selected_currency`/`lang` to booking.com links so the page opens in a consistent currency, and `_is_direct_hotel_url` flags links that point at a single property page (`/hotel/pl/xyz.html`) rather than a city overview, sorting direct pages first. The full chain is: user message → agent → tool → Tavily (snippets) → tool (currency + sorting) → LLM extracts `hotel-json` → Pydantic validator → `HotelView`.
+
+**Why currency handling is hard.** `search_hotels` has no hotel database of its own — it queries Tavily's web search API against booking.com, hotels.com and tripadvisor.com and returns raw scraped snippets for the `search_hotels_agent` LLM to extract into structured data. Tavily's cached page snapshots can carry whatever currency/locale its crawler happened to see (we observed the same city returning prices in USD, INR, BYN, MXN, etc. across runs), so the tool now takes a `language` argument (the chat's detected language from the shared CONTEXT TEMPLATE) and picks a single target currency from it — `PLN` for Polish, `USD` otherwise — which it uses to bias the Tavily query/`country` hint and to force `selected_currency`/`lang` on every returned booking.com link. The agent prompt is instructed to only report a price when the scraped content actually shows that target currency, leaving `price_per_night` empty rather than mislabeling a foreign-currency figure.
 
 ## Local Development
 
