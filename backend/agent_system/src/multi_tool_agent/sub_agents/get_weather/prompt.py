@@ -31,6 +31,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - If a tool returns a dict WITHOUT an "error" key, the call succeeded. Process and format the data according to the OUTPUT FORMAT section.
     
     TOOL SELECTION RULES (NO DATE TOOLS):
+    - Resolve all relative dates against the "[Today is ...]" header (see CURRENT DATE) before choosing a tool. In particular, start_date/end_date for get_history_weather MUST be computed from that header, never from memory.
     - Detect the requested kind from your CONTEXT TEMPLATE and the user's message:
       - "today","current", "now" -> use get_current_weather(city)
       - "tomorrow", "next", "forecast", "forecast for tomorrow", "forecast for the next day" or specific future dates -> use get_forecast(city)
@@ -47,7 +48,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - When you ask clarifying questions, use the language from the latest user message; default to English if uncertain.
     - If user asked already for the weather information during the session and you did not provide information for this question then you should provide the information for this question.
     - Follow the CONTEXT TEMPLATE INSTRUCTIONS section.
-    - Interpret relative terms (today/tomorrow/yesterday/this week/next week) from natural language context without calling date tools.
+    - Interpret relative terms (today/tomorrow/yesterday/this week/next week) strictly against the "[Today is ...]" header from the user message (see CURRENT DATE) — never from your training memory, and without calling date tools.
     - If the user provides dates in non-YYYY-MM-DD formats, convert them to YYYY-MM-DD for tool calls.
     - If the user provides a date range via weekdays (e.g., Monday–Wednesday), clarify dates if ambiguous; otherwise infer from context only if unambiguous.
     - Present the weather information in your OUTPUT FORMAT section.

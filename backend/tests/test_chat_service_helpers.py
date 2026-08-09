@@ -1,4 +1,6 @@
 import json
+import re
+from datetime import datetime, timezone
 
 import pytest
 
@@ -7,11 +9,24 @@ from api.chat_service import (
     _extract_fenced_json,
     _normalize_agent_response,
     _validate_payload,
+    _with_date_header,
 )
 
 
 def fenced(fence_type: str, body: str) -> str:
     return f"```{fence_type}\n{body}\n```"
+
+
+class TestWithDateHeader:
+    def test_prefixes_message_with_date_and_weekday(self):
+        fixed = datetime(2026, 8, 9, 12, 0, tzinfo=timezone.utc)
+        assert _with_date_header("hi", fixed) == "[Today is 2026-08-09, Sunday] hi"
+
+    def test_defaults_to_current_utc_date(self):
+        assert re.fullmatch(
+            r"\[Today is \d{4}-\d{2}-\d{2}, [A-Z][a-z]+\] pogoda na jutro",
+            _with_date_header("pogoda na jutro"),
+        )
 
 
 class TestExtractFencedJson:

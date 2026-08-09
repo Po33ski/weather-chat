@@ -7,6 +7,7 @@ json_format_instructions = """
     - No extra code blocks, no extra text below the fence.
     - The UI parses the short text (above) and the JSON (inside the fenced block).
     - The JSON must follow one of the schemas below.
+    - Dates appearing in the example schemas below are placeholders only — real dates always come from the tool response or the "[Today is ...]" header, never from the examples or your memory.
     - Set meta.language to the language you used in the short text. If you are unsure which language to use, respond in English and set meta.language to "en".
 
     JSON VALIDITY (STRICT — a parser will reject anything that breaks these):

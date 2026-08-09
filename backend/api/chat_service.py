@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+from datetime import datetime, timezone
 from typing import Optional, Tuple
 
 from google.adk.runners import Runner
@@ -33,6 +34,19 @@ FENCE_PATTERN = re.compile(
 # LLMs occasionally leave a trailing comma right before a closing bracket —
 # harmless to strip, and recovers an otherwise well-formed payload.
 _TRAILING_COMMA_PATTERN = re.compile(r",(\s*[}\]])")
+
+
+def _with_date_header(message: str, now: Optional[datetime] = None) -> str:
+    """Prefix the user's message with the current date.
+
+    The prompts direct agents to resolve relative dates ("tomorrow",
+    "yesterday") against this header; without it the model anchors on its
+    training-data era and emits stale absolute dates (e.g. July 2024).
+    UTC is close enough as an anchor — exact dates always come from the
+    weather tool responses.
+    """
+    now = now or datetime.now(timezone.utc)
+    return f"[Today is {now:%Y-%m-%d}, {now:%A}] {message}"
 
 
 def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
@@ -161,7 +175,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
             app_name=APP_NAME,
             session_service=session_manager.session_service,
         )
-        content = types.Content(role="user", parts=[types.Part(text=request.message)])
+        content = types.Content(
+            role="user", parts=[types.Part(text=_with_date_header(request.message))]
+        )
 
         try:
             async with asyncio.timeout(_ADK_TIMEOUT_SECONDS):

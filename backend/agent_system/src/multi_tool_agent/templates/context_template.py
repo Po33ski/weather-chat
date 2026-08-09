@@ -10,6 +10,12 @@ context_template = """{
 
 
 context_template_instructions = """
+    **CURRENT DATE (CRITICAL)**
+    - Every user message begins with a backend-injected header of the form "[Today is YYYY-MM-DD, Weekday]". It is NOT text the user typed.
+    - That header is the ONLY authoritative source of the current date. Resolve every relative date expression (today, tomorrow, yesterday, this week, next weekend, ...) against it.
+    - NEVER derive absolute dates from your own memory or training data — without the header you do not know what day it is.
+    - Never echo the header back to the user or include it in any JSON.
+
     - Analyze the user's request (and your CONTEXT TEMPLATE) to determine what type of weather information they need:
     - Current weather: Use get_current_weather
     - Future forecast/Prediction: Use get_forecast
