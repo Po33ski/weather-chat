@@ -2,6 +2,35 @@
 
 Travel and Weather Center Chat is a conversational assistant that combines **weather data**, **weather-aware travel advice**, and **hotel search**. Users chat naturally, and the app orchestrates a Google ADK multi-agent system to produce human-friendly responses paired with structured JSON payloads that drive the chat UI panels.
 
+The application providing real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every response validated against a strict JSON contract before being rendered, so malformed or hallucinated LLM output can never reach the UI unchecked.
+
+The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather, hotel, and combined views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every change, and only publishing and deploying the Docker image once all checks pass. The containerized application is hosted on Render, with automatic deployments triggered from the CI/CD pipeline.
+
+The application is backed by an 81-test automated suite, comprising 65 backend unit tests written with pytest and 16 frontend unit tests written with Vitest, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
+
+
+## Example Conversations
+
+**Weather:**
+- "What is the weather in Krakow?"
+- "What is the current weather in Krakow?"
+- "Show me the forecast for Paris for the next 7 days."
+- "What was the weather in London last week?" *(asks for date range)*
+
+**Travel advice** *(two-step)*:
+1. "What is the current weather in Lisbon?"
+2. "Given this weather, what are three things worth visiting?" → `travel_advice_agent` uses the cached weather context
+
+**Combined (weather + advice + hotels)** *(single message)*:
+- "Plan a trip for me to New York including weather and hotels"
+- "What can I do in Berlin over the next 7 days?" → vague trip-planning phrasing also triggers the combined flow, returning weather, activity suggestions, and hotels together
+
+**Hotel search:**
+- "Find me 2 hotels in Paris available in 3 days"
+- "Find hotels in Rome"
+- "Search for hotels in Warsaw for August 10–17"
+
+
 ## Features
 
 - **Current weather** — real-time conditions (temperature, wind, humidity, pressure, sunrise/sunset)
@@ -168,22 +197,6 @@ The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
 ```json
 { "success": true, "data": { "message": "<text + fenced json>", "sender": "ai" }, "session_id": "..." }
 ```
-
-## Example Conversations
-
-**Weather:**
-- "What is the current weather in Krakow?"
-- "Show me the forecast for Paris for the next 7 days."
-- "What was the weather in London last week?" *(asks for date range)*
-
-**Travel advice** *(two-step)*:
-1. "What is the current weather in Lisbon?"
-2. "Given this weather, what are three things worth visiting?" → `travel_advice_agent` uses the cached weather context
-
-**Hotel search:**
-- "Find hotels in Rome"
-- "Search for hotels in Warsaw for August 10–17"
-- "Znajdź hotele w Krakowie na przyszły tydzień"
 
 ## Environment Variables
 
