@@ -1,5 +1,5 @@
-from .templates.json_format import json_format_instructions, json_format
 from .templates.context_template import context_template, context_template_instructions
+from .templates.json_format import json_format, json_format_instructions
 
 ROOT_NAME = "weather_assistant"
 
@@ -56,11 +56,11 @@ ROOT_INSTR = f"""
         2. Call the get_weather_agent tool with a request describing the city and what weather info is needed (current, or forecast for the given dates), including the CONTEXT TEMPLATE language.
         3. From its returned text, take the human summary and the fenced weather-json body (meta.kind, and the "current" or "days" object).
         4. Call the search_hotels_agent tool with the city, check-in/check-out dates (empty strings if none), and the CONTEXT TEMPLATE language.
-        5. From its returned text, take the human summary and the fenced hotel-json body (the "hotels" array).
+        5. From its returned text, take the human summary and the fenced hotel-json body (the "hotels" array). An empty "hotels": [] is a normal, valid outcome (genuinely no hotels found) — it is NOT a failure. Keep it as "hotels": [] in the combined-json and mention in the human text that no hotels were found, but still proceed with the rest of the combined reply.
         6. Write the "what to do" suggestions yourself, inline — exactly three tailored suggestions (short name + 1-2 sentences each), adapted to the weather you just retrieved, following the same weather-to-activity mapping travel_advice_agent uses (good/pleasant weather → outdoor; very hot → shade/water; rainy/stormy → indoor; cold/snowy/windy → cozy indoor or short high-payoff walks). Do NOT call travel_advice_agent for this — write it yourself using the weather data from step 3.
         7. Reply with ONE message: human text (short weather summary, then the three suggestions, then a short hotel summary) in the CONTEXT TEMPLATE language, a blank line, then ONE fenced combined-json block built from the weather-json body (step 3) and the hotels array (step 5) — see the COMBINED schema.
     - You are re-assembling two separately-generated JSON fragments into one combined-json object by hand — re-check the merged result is still strictly valid JSON (balanced braces/brackets, no trailing comma where you joined the "weather" and "hotels" keys, no stray fence markers or text copied in from the sub-agent replies) before closing the fence. See JSON VALIDITY below.
-    - Partial failure handling:
+    - Partial failure handling (this means the tool itself returned a fenced {{"error": "..."}} — a hotel-json with an empty "hotels": [] is NOT a failure, see step 5):
         - If the weather tool call fails but the hotel tool call succeeds: skip the "what to do" suggestions, mention in the human text that weather info is unavailable, and reply with the hotel-json body as an ordinary hotel-json fence (not combined-json).
         - If the hotel tool call fails but the weather tool call succeeds: mention in the human text that hotel info is unavailable, and reply with the weather-json body as an ordinary weather-json fence (not combined-json), still including your own weather-based suggestions.
         - If both fail: reply with plain text explaining that neither weather nor hotel info could be retrieved. No fenced JSON block at all.

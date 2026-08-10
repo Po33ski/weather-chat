@@ -97,6 +97,6 @@ export function Icon({
   data: string | number | null;
   kindOfData: string;
 }) {
-  let icon = checkKind(data, kindOfData);
+  const icon = checkKind(data, kindOfData);
   return <>{icon}</>;
 }

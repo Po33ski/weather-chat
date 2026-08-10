@@ -1,5 +1,8 @@
-from ...templates.json_format import json_format_instructions, json_format
-from ...templates.context_template import context_template, context_template_instructions
+from ...templates.context_template import (
+    context_template,
+    context_template_instructions,
+)
+from ...templates.json_format import json_format, json_format_instructions
 
 GET_WEATHER_AGENT_NAME = "get_weather_agent"
 
@@ -28,6 +31,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - If a tool returns a dict WITHOUT an "error" key, the call succeeded. Process and format the data according to the OUTPUT FORMAT section.
     
     TOOL SELECTION RULES (NO DATE TOOLS):
+    - Resolve all relative dates against the "[Today is ...]" header (see CURRENT DATE) before choosing a tool. In particular, start_date/end_date for get_history_weather MUST be computed from that header, never from memory.
     - Detect the requested kind from your CONTEXT TEMPLATE and the user's message:
       - "today","current", "now" -> use get_current_weather(city)
       - "tomorrow", "next", "forecast", "forecast for tomorrow", "forecast for the next day" or specific future dates -> use get_forecast(city)
@@ -44,7 +48,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - When you ask clarifying questions, use the language from the latest user message; default to English if uncertain.
     - If user asked already for the weather information during the session and you did not provide information for this question then you should provide the information for this question.
     - Follow the CONTEXT TEMPLATE INSTRUCTIONS section.
-    - Interpret relative terms (today/tomorrow/yesterday/this week/next week) from natural language context without calling date tools.
+    - Interpret relative terms (today/tomorrow/yesterday/this week/next week) strictly against the "[Today is ...]" header from the user message (see CURRENT DATE) — never from your training memory, and without calling date tools.
     - If the user provides dates in non-YYYY-MM-DD formats, convert them to YYYY-MM-DD for tool calls.
     - If the user provides a date range via weekdays (e.g., Monday–Wednesday), clarify dates if ambiguous; otherwise infer from context only if unambiguous.
     - Present the weather information in your OUTPUT FORMAT section.
@@ -81,14 +85,14 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - Use only commas. 
     - Use only the fields that are in the JSON FORMAT section. 
     - Do not add any other fields.
-    - use '{' '}' and [] as in the example.
+    - use '{" "}' and [] as in the example.
     - in [] may be many objects because there can be many days, so you have to put them all in the JSON.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range based on the TOOL RESPONSE, not internal assumptions:
       - current: set meta.date to the API's first day's date (e.g., response.days[0].datetime).
       - forecast: set meta.date_range from the first and last included days (YYYY-MM-DD..YYYY-MM-DD), max 15 days.
       - history: set meta.date_range from the user-provided start_date and end_date.
-    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
+    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), answer that fact in the short human text, but the fenced JSON must still be the COMPLETE schema for the detected kind with ALL its fields filled from the tool response — never a reduced/minimal JSON; the backend parser rejects payloads with missing fields.
     {json_format}
 
     RULES:
@@ -96,7 +100,5 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - Short human text can be minimal and should avoid numeric details; rely on JSON for data.
     - Include only the JSON inside the fence. No extra markdown/comments inside the block.
     - Fill meta.city and meta.kind always; set date/date_range appropriately.
-    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), provide the short text and still include a minimal JSON with the fields you can determine (e.g., conditions, temp).
-""" 
-
-
+    - If user explicitly asks only a short fact (e.g., "Czy pada w Krakowie?"), answer that fact in the short human text, but the fenced JSON must still be the COMPLETE schema for the detected kind with ALL its fields filled from the tool response — never a reduced/minimal JSON; the backend parser rejects payloads with missing fields.
+"""

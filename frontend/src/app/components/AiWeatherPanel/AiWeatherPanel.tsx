@@ -31,11 +31,12 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
 
   const isHotel = resolvedKind === 'hotels';
   const isCombined = resolvedKind === 'combined';
+  const hasHotels = Array.isArray(data?.hotels) && data.hotels.length > 0;
 
   return (
     <div className="space-y-4">
-      {/* City / date header — only for non-hotel, non-combined (both render their own header) */}
-      {!isHotel && !isCombined && (meta?.city || meta?.date || meta?.date_range) && (
+      {/* City / date header — skipped when HotelView/CombinedView render their own header */}
+      {!(isHotel && hasHotels) && !isCombined && (meta?.city || meta?.date || meta?.date_range) && (
         <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-3xl px-6 py-5 flex items-center justify-between gap-4">
           <div>
             {meta?.city && (
@@ -65,12 +66,17 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
       )}
 
       {/* Hotels */}
-      {isHotel && Array.isArray(data?.hotels) && data.hotels.length > 0 && (
+      {isHotel && hasHotels && (
         <HotelView
-          hotels={data.hotels}
+          hotels={data!.hotels!}
           city={meta?.city ?? null}
           dateRange={meta?.date_range ?? null}
         />
+      )}
+      {isHotel && !hasHotels && (
+        <p className="text-sky-400/40 text-sm italic px-1">
+          {lang?.t('combined.noHotels') || 'No hotels found'}
+        </p>
       )}
 
       {/* Current weather */}

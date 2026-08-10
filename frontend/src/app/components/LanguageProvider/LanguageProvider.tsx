@@ -18,10 +18,6 @@ const en: Dictionary = {
   "chat.placeholder": "Type your message...",
   "chat.sending": "AI is thinking...",
 
-  "auth.signinTitle": "Sign in to use AI Chat",
-  "auth.chooseMethod": "Choose your authentication method",
-  "auth.or": "or",
-
   "current.hoursCta": "Weather for every hour",
   "list.date": "Date",
   "list.maxTemp": "Max. Temperature",
@@ -95,10 +91,6 @@ const pl: Dictionary = {
   "chat.signout": "Wyloguj",
   "chat.placeholder": "Wpisz wiadomość...",
   "chat.sending": "AI myśli...",
-
-  "auth.signinTitle": "Zaloguj się aby korzystać z AI Czat",
-  "auth.chooseMethod": "Wybierz metodę uwierzytelnienia",
-  "auth.or": "lub",
 
   "current.hoursCta": "Pogoda dla każdej godziny",
   "list.date": "Data",

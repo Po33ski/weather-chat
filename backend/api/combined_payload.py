@@ -4,8 +4,8 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from .weather_payload import CurrentWeather, DateRangeStr, DateStr, DayWeather
 from .hotel_payload import Hotel
+from .weather_payload import CurrentWeather, DateRangeStr, DateStr, DayWeather
 
 
 class CombinedMeta(BaseModel):
@@ -34,7 +34,10 @@ class CombinedWeatherDays(BaseModel):
 
 class CombinedPayload(BaseModel):
     meta: CombinedMeta
-    hotels: Annotated[list[Hotel], Field(min_length=1)]
+    # Empty is a legitimate outcome (genuinely no hotels found) — the
+    # frontend renders a "no hotels found" message for it. Do not require
+    # min_length=1, or the agent gets pressured into fabricating an entry.
+    hotels: list[Hotel] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="allow")
 
@@ -75,7 +78,9 @@ def validate_combined_payload(payload: Any) -> None:
         elif weather_kind in ("forecast", "history"):
             CombinedWeatherDays.model_validate(weather)
         else:
-            raise ValueError('weather.kind must be one of: "current", "forecast", "history"')
+            raise ValueError(
+                'weather.kind must be one of: "current", "forecast", "history"'
+            )
 
         CombinedPayload.model_validate(payload)
     except ValidationError as exc:

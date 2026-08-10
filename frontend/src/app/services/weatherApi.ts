@@ -1,5 +1,5 @@
 import { BACKEND_API_URL } from '../constants/apiConstants';
-import { ApiResponse, ChatApiResponse, WeatherData } from '../types/interfaces';
+import { ApiResponse, ChatApiResponse } from '../types/interfaces';
 
 class WeatherApiService {
   private async makeRequest<T>(
@@ -45,27 +45,6 @@ class WeatherApiService {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
-  }
-
-  async getCurrentWeather(location: string): Promise<ApiResponse<WeatherData>> {
-    return this.makeRequest<WeatherData>('/api/weather/current', 'POST', {
-      location
-    });
-  }
-
-  async getForecastWeather(location: string, days: number = 7): Promise<ApiResponse<WeatherData[]>> {
-    return this.makeRequest<WeatherData[]>('/api/weather/forecast', 'POST', {
-      location,
-      days
-    });
-  }
-
-  async getHistoryWeather(location: string, startDate: string, endDate: string): Promise<ApiResponse<WeatherData[]>> {
-    return this.makeRequest<WeatherData[]>('/api/weather/history', 'POST', {
-      location,
-      start_date: startDate,
-      end_date: endDate
-    });
   }
 
   async getChatResponse(

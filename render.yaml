@@ -10,6 +10,8 @@ services:
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
+      - key: TAVILY_API_KEY
+        sync: false
       - key: MODEL
         value: gemini-2.5-flash
       - key: DISABLE_WEB_DRIVER
@@ -21,5 +23,5 @@ services:
       #   value: https://weather-chat-6g4p.onrender.com
       # - key: VERIFY_ENV
       #   value: "true"
-    healthCheckPath: /api/ 
+    healthCheckPath: /api/health
     autoDeploy: true 

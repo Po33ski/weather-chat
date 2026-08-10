@@ -24,7 +24,7 @@ RUN uv sync
 RUN uv tool install uvicorn
 
 # Stage 2: Build Frontend (Vite + React)
-FROM node:18-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 # Set working directory
 WORKDIR /app

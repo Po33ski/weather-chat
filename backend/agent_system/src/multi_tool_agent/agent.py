@@ -1,14 +1,11 @@
 from google.adk.agents import Agent
 from google.adk.tools.agent_tool import AgentTool
 
+from ..utils.load_env_data import load_google_api_key, load_model
 from . import prompt
-
-from ..utils.load_env_data import load_model
-from ..utils.load_env_data import load_google_api_key
-
 from .sub_agents.get_weather.agent import get_weather_agent
-from .sub_agents.travel_advice.agent import travel_advice_agent
 from .sub_agents.search_hotels.agent import search_hotels_agent
+from .sub_agents.travel_advice.agent import travel_advice_agent
 
 MODEL = load_model()
 GOOGLE_API_KEY = load_google_api_key()
