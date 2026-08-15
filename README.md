@@ -198,6 +198,10 @@ The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
 { "success": true, "data": { "message": "<text + fenced json>", "sender": "ai" }, "session_id": "..." }
 ```
 
+## Tests
+
+The project has an automated test suite covering both backend and frontend: 67 backend unit tests (`pytest`, in `backend/tests/`) and 16 frontend unit tests (`Vitest`, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, and key data-transformation helpers — and run as a required check in CI before any deployment.
+
 ## Environment Variables
 
 | Variable                  | Required | Description                                  |
