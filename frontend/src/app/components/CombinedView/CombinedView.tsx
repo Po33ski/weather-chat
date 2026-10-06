@@ -77,7 +77,7 @@ export function CombinedView({
               </div>
             )}
             {weatherKind === "current" && current ? (
-              <WeatherView data={current} address={city} whereFrom="chat" />
+              <WeatherView data={current} />
             ) : Array.isArray(days) && days.length > 0 ? (
               <List data={days} />
             ) : null}

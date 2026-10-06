@@ -80,43 +80,6 @@ def load_model():
     return os.getenv("MODEL", "gemini-2.5-flash")
 
 
-def load_google_api_key():
-    """
-    Retrieves the GOOGLE_API_KEY from environment variables.
-    Returns:
-        str: The value of the GOOGLE_API_KEY variable, or None if not set.
-    """
-    return os.getenv("GOOGLE_API_KEY")
-
-
-def load_visual_crossing_api_key():
-    """
-    Retrieves the VISUAL_CROSSING_API_KEY from environment variables.
-    Returns:
-        str: The value of the VISUAL_CROSSING_API_KEY variable, or None if not set.
-    """
-    return os.getenv("VISUAL_CROSSING_API_KEY")
-
-
-def load_tavily_api_key():
-    """
-    Retrieves the TAVILY_API_KEY from environment variables.
-    Returns:
-        str: The value of the TAVILY_API_KEY variable, or None if not set.
-    """
-    return os.getenv("TAVILY_API_KEY")
-
-
-def load_disable_web_driver() -> int:
-    """
-    Retrieves the DISABLE_WEB_DRIVER variable from environment variables.
-    Returns:
-        int: The value of the DISABLE_WEB_DRIVER variable, or 0 if not set.
-    """
-    value = os.getenv("DISABLE_WEB_DRIVER", "0")
-    return int(value)
-
-
 def get_environment_info() -> dict:
     """
     Returns information about the current environment setup.
@@ -126,12 +89,5 @@ def get_environment_info() -> dict:
         "has_google_api_key": bool(os.getenv("GOOGLE_API_KEY")),
         "has_visual_crossing_api_key": bool(os.getenv("VISUAL_CROSSING_API_KEY")),
         "model": load_model(),
-        "disable_web_driver": load_disable_web_driver(),
         "environment": os.getenv("NODE_ENV", "development"),
     }
-
-
-if __name__ == "__main__":
-    load_env_data()
-    print("Environment loaded successfully!")
-    print("Environment info:", get_environment_info())

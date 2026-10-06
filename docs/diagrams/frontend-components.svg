@@ -63,7 +63,7 @@
   <rect x="290" y="540" width="280" height="64" rx="8" fill="#2563eb"/>
   <text x="430" y="560" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">types/</text>
   <text x="430" y="576" text-anchor="middle" fill="#dbeafe" font-size="9">aiChat.ts — AiMeta, AiChatData, weatherKind</text>
-  <text x="430" y="590" text-anchor="middle" fill="#dbeafe" font-size="9">hotelTypes.ts — Hotel, HotelMeta, HotelPayload</text>
+  <text x="430" y="590" text-anchor="middle" fill="#dbeafe" font-size="9">hotelTypes.ts — Hotel, HotelAvailability</text>
 
   <!-- Divider -->
   <line x1="20" y1="650" x2="1080" y2="650" stroke="#cbd5e1" stroke-width="1"/>

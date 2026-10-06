@@ -6,7 +6,6 @@ import {
   checkSign,
   findDirection,
   systemsConvert,
-  translateConditions,
   whatImage,
 } from "@/app/functions/functions";
 import { BrickModalContextType, UnitSystemContextType } from "@/app/types/types";
@@ -43,20 +42,15 @@ export function ModalBrick() {
 
   const photo = whatImage(data, kindOfData);
 
-  const isTemp = kindOfData === "temp" || kindOfData === "tempmax" || kindOfData === "tempmin";
-  const isWind = kindOfData === "windspeed";
-
   const displayValue =
-    isTemp
+    kindOfData === "temp"
       ? UNIT_SYSTEMS[unitSystem].temperature === "°F"
         ? systemsConvert.toFahrenheit(dataN)
         : dataN
-      : isWind
+      : kindOfData === "windspeed"
       ? UNIT_SYSTEMS[unitSystem].distance === "mph"
         ? systemsConvert.toMiles(dataN)
         : dataN
-      : kindOfData === "conditions"
-      ? translateConditions(String(data), (lang?.lang as any) || 'en')
       : kindOfData === "sunrise" || kindOfData === "sunset"
       ? data
       : dataN || undefined;
@@ -64,12 +58,7 @@ export function ModalBrick() {
   const unit = checkSign(kindOfData, unitSystem);
 
   function handleClose() {
-    if (brickModalContext?.isModalShownInCurrentWeatherPage) {
-      brickModalContext.setIsModalShownInCurrentWeatherPage?.(false);
-    }
-    if ((brickModalContext as any)?.isModalShownInChatWeatherPage) {
-      (brickModalContext as any)?.setIsModalShownInChatPage?.(false);
-    }
+    brickModalContext?.setIsModalShownInChatPage(false);
   }
 
   return (
@@ -81,7 +70,7 @@ export function ModalBrick() {
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-black/30 to-transparent" />
           <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
             <h2 className="text-lg font-bold text-white">{brickModalContext?.modalData.title}</h2>
-            {(kindOfData === "winddir" || kindOfData === "conditions") && (
+            {kindOfData === "winddir" && (
               <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-sky-200 backdrop-blur-sm">
                 <Icon data={data} kindOfData={kindOfData} />
               </div>
@@ -94,7 +83,7 @@ export function ModalBrick() {
           {/* Main value */}
           <div className="text-center mb-5">
             <div className="text-5xl font-bold text-white mb-1 tabular-nums">
-              {displayValue !== null && displayValue !== undefined ? String(displayValue) : '—'}
+              {displayValue !== undefined ? String(displayValue) : '—'}
               {unit && (
                 <span className="text-xl font-normal text-sky-300/70 ml-2">{unit}</span>
               )}

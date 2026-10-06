@@ -42,7 +42,6 @@ class SessionManager:
             "session_id": sid,
             "user_id": user_id,
             "adk_session_id": adk_session.id,
-            "created_at": datetime.now(),
             "last_activity": datetime.now(),
         }
         self.sessions[sid] = session

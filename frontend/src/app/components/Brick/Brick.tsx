@@ -2,27 +2,21 @@ import { useContext } from "react";
 import { Icon } from "../Icon/Icon";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { BrickModalContext } from "@/app/contexts/BrickModalContext";
-import { checkSign, findDirection, translateConditions, systemsConvert } from "@/app/functions/functions";
-import { LanguageContext } from "@/app/contexts/LanguageContext";
-import { UnitSystemContextType, WhereFromType } from "@/app/types/types";
+import { checkSign, findDirection, systemsConvert } from "@/app/functions/functions";
+import { UnitSystemContextType } from "@/app/types/types";
 import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
 
 export function Brick({
   data,
   kindOfData,
   title,
-  desc,
-  whereFrom,
 }: {
   data: number | string | null;
   kindOfData: string;
   title: string;
-  desc: string | null;
-  whereFrom: WhereFromType;
 }) {
   const unitSystemContext = useContext<UnitSystemContextType | null>(UnitSystemContext);
   const brickModalContext = useContext(BrickModalContext);
-  const lang = useContext(LanguageContext);
 
   const unitSystem =
     unitSystemContext?.unitSystem.data === "US" ||
@@ -32,26 +26,13 @@ export function Brick({
       : "METRIC";
 
   function handleOnClick() {
-    if (whereFrom === "current weather") brickModalContext?.setIsModalShownInCurrentWeatherPage?.(true);
-    if (whereFrom === "chat") brickModalContext?.setIsModalShownInChatPage?.(true);
-    brickModalContext?.setModalData({ data, kindOfData, title, desc });
+    brickModalContext?.setIsModalShownInChatPage(true);
+    brickModalContext?.setModalData({ data, kindOfData, title });
   }
 
-  const titleData: string | number | null = typeof kindOfData === "string" ? kindOfData : 0;
-
   const displayValue =
-    typeof data === "number"
-      ? kindOfData === "temp" || kindOfData === "tempmax" || kindOfData === "tempmin"
-        ? UNIT_SYSTEMS[unitSystem].temperature === "°F"
-          ? systemsConvert.toFahrenheit(data)
-          : data
-        : kindOfData === "windspeed"
-        ? UNIT_SYSTEMS[unitSystem].distance === "mph"
-          ? systemsConvert.toMiles(data)
-          : data
-        : data
-      : kindOfData === "conditions"
-      ? translateConditions(String(data), (lang?.lang as any) || 'en')
+    typeof data === "number" && kindOfData === "windspeed" && UNIT_SYSTEMS[unitSystem].distance === "mph"
+      ? systemsConvert.toMiles(data)
       : data;
 
   const unit = checkSign(kindOfData, unitSystem);
@@ -64,7 +45,7 @@ export function Brick({
       {/* Icon circle */}
       <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center text-sky-300 flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
         <span className="text-base leading-none">
-          <Icon data={titleData} kindOfData="title" />
+          <Icon data={kindOfData} kindOfData="title" />
         </span>
       </div>
 
@@ -74,17 +55,12 @@ export function Brick({
         {kindOfData === "winddir" && data !== null && (
           <p className="text-xs text-sky-300/70 mt-0.5 truncate">{findDirection(data)}</p>
         )}
-        {kindOfData === "conditions" && (
-          <span className="text-sky-300/70 text-sm leading-none">
-            <Icon data={data} kindOfData="conditions" />
-          </span>
-        )}
       </div>
 
       {/* Value + unit */}
       <div className="text-right flex-shrink-0">
         <p className="text-base font-bold text-white leading-none tabular-nums">
-          {displayValue !== null && displayValue !== undefined ? String(displayValue) : '—'}
+          {displayValue !== null ? String(displayValue) : '—'}
         </p>
         {unit && <p className="text-[11px] text-sky-400/50 mt-0.5">{unit}</p>}
       </div>

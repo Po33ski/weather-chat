@@ -81,7 +81,7 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
 
       {/* Current weather */}
       {resolvedKind === 'current' && data?.current && (
-        <WeatherView data={data.current} address={meta?.city ?? null} whereFrom="chat" />
+        <WeatherView data={data.current} />
       )}
 
       {/* Forecast / History */}
@@ -89,7 +89,7 @@ export function AiWeatherPanel({ meta, data }: { meta: AiMeta | null; data: AiCh
         resolvedKind === 'history' ||
         (!resolvedKind && Array.isArray(data?.days))) &&
         Array.isArray(data?.days) && (
-          <List data={data.days as any} />
+          <List data={data.days} />
         )}
     </div>
   );

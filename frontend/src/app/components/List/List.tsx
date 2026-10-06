@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { UnitSystemContext } from "@/app/contexts/UnitSystemContext";
 import { UNIT_SYSTEMS } from "@/app/constants/unitSystems";
 import { Icon } from "../Icon/Icon";
-import "../../weather_icons_data/css/weather-icons.css";
 import { systemsConvert, translateConditions } from "@/app/functions/functions";
 import { HistoryAndForecastDay } from "@/app/types/interfaces";
 import { LanguageContext } from "@/app/contexts/LanguageContext";
@@ -32,7 +31,7 @@ export function List({ data }: { data: HistoryAndForecastDay[] }) {
             const minT = isF ? systemsConvert.toFahrenheit(day.tempmin) : day.tempmin;
             const wind = isMph ? systemsConvert.toMiles(day.windspeed) : day.windspeed;
             const condText = day.conditions
-              ? translateConditions(String(day.conditions), (lang?.lang as any) || 'en')
+              ? translateConditions(day.conditions, lang?.lang ?? 'en')
               : null;
 
             return (

@@ -14,16 +14,6 @@ export interface BrickModalData {
   data: string | number | null;
   kindOfData: string | null;
   title: string | null;
-  desc: string | null;
-}
-
-export interface HoursData {
-  temp: number | null;
-  conditions: string | null;
-  winddir: number | null;
-  windspeed: number | null;
-  pressure: string | null;
-  humidity: string | null;
 }
 
 export interface CurrentDataDay {
@@ -38,7 +28,6 @@ export interface CurrentDataDay {
   sunset: string | null;
   pressure: number | null;
   humidity: number | null;
-  hours: [HoursData];
 }
 
 export interface HistoryAndForecastDay {

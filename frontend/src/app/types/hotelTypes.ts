@@ -10,16 +10,3 @@ export type Hotel = {
   highlights: string[];
   url: string;
 };
-
-export type HotelMeta = {
-  city: string;
-  kind: 'hotels';
-  date: null;
-  date_range: string | null;
-  language: string;
-};
-
-export type HotelPayload = {
-  meta: HotelMeta;
-  hotels: Hotel[];
-};

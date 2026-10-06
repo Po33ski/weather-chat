@@ -1,9 +1,7 @@
 import { BrickModalData } from "./interfaces";
 
 export type BrickModalContextType = {
-  isModalShownInCurrentWeatherPage: boolean;
   isModalShownInChatWeatherPage: boolean;
-  setIsModalShownInCurrentWeatherPage: (modalData: boolean) => void;
   setIsModalShownInChatPage: (modalData: boolean) => void;
   modalData: BrickModalData;
   setModalData: (modalData: BrickModalData) => void;
@@ -21,13 +19,6 @@ export type UnitSystemContextType = {
   };
 };
 
-export type CityContextType = {
-  city: {
-    data: string | null;
-    setToLocalStorage: (newData: unknown) => void;
-  };
-};
-
 export type Lang = "en" | "pl";
 
 export type LanguageValue = {
@@ -35,5 +26,3 @@ export type LanguageValue = {
   setLang: (l: Lang) => void;
   t: (k: string) => string;
 };
-
-export type WhereFromType = "current weather" | "chat";

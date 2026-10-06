@@ -66,9 +66,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files (conditioned for production only)
-# app.mount("/static", StaticFiles(directory="/app/frontend/out"), name="static")
-
 
 @app.get("/health")
 def health():

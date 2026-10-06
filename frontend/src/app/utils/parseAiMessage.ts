@@ -38,7 +38,6 @@ function mapCurrent(c: any): CurrentDataDay {
     sunset: c?.sunset ?? null,
     pressure: typeof c?.pressure === 'number' ? c.pressure : null,
     humidity: typeof c?.humidity === 'number' ? c.humidity : null,
-    hours: [{ temp: null, conditions: null, winddir: null, windspeed: null, pressure: null, humidity: null }],
   };
 }
 

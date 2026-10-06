@@ -51,18 +51,10 @@ const windDirection = (data: number | null) => {
 
 const titelIcon = (data: string | number | null) => {
   switch (data) {
-    case "temp":
-      return <i className="wi wi-thermometer" />;
-    case "tempmax":
-      return <i className="wi wi-thermometer" />;
-    case "tempmin":
-      return <i className="wi wi-thermometer-exterior" />;
     case "winddir":
       return <i className="wi wi-wind-direction" />;
     case "windspeed":
       return <i className="wi wi-strong-wind" />;
-    case "conditions":
-      return <i className="wi wi-day-cloudy-high" />;
     case "sunrise":
       return <i className="wi wi-sunrise" />;
     case "sunset":

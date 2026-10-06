@@ -10,16 +10,9 @@ import {
   translateConditions,
 } from "@/app/functions/functions";
 import { CurrentDataDay } from "@/app/types/interfaces";
-import { WhereFromType, BrickModalContextType, UnitSystemContextType } from "@/app/types/types";
+import { BrickModalContextType, UnitSystemContextType } from "@/app/types/types";
 
-export function WeatherView({
-  data,
-  whereFrom,
-}: {
-  data: CurrentDataDay;
-  address: string | null;
-  whereFrom: WhereFromType;
-}) {
+export function WeatherView({ data }: { data: CurrentDataDay }) {
   const lang = useContext(LanguageContext);
   const brickModalContext = useContext<BrickModalContextType | null>(BrickModalContext);
   const unitSystemContext = useContext<UnitSystemContextType | null>(UnitSystemContext);
@@ -39,17 +32,15 @@ export function WeatherView({
   const minVal = typeof data.tempmin === "number" ? (isF ? systemsConvert.toFahrenheit(data.tempmin) : data.tempmin) : null;
 
   const conditionsText = data.conditions
-    ? translateConditions(String(data.conditions), (lang?.lang as any) || 'en')
+    ? translateConditions(data.conditions, lang?.lang ?? 'en')
     : null;
 
   function openTempModal() {
-    if (whereFrom === "current weather") brickModalContext?.setIsModalShownInCurrentWeatherPage?.(true);
-    if (whereFrom === "chat") brickModalContext?.setIsModalShownInChatPage?.(true);
+    brickModalContext?.setIsModalShownInChatPage(true);
     brickModalContext?.setModalData({
       data: data.temp,
       kindOfData: 'temp',
       title: lang?.t('brick.currentTemp') || 'Current temperature',
-      desc: data.description,
     });
   }
 
@@ -109,53 +100,32 @@ export function WeatherView({
           data={data.windspeed}
           kindOfData="windspeed"
           title={lang?.t('brick.windspeed') || 'Wind speed'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
         <Brick
           data={data.winddir}
           kindOfData="winddir"
           title={lang?.t('brick.winddir') || 'Wind direction'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
         <Brick
           data={data.pressure}
           kindOfData="pressure"
           title={lang?.t('brick.pressure') || 'Pressure'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
         <Brick
           data={data.humidity}
           kindOfData="humidity"
           title={lang?.t('brick.humidity') || 'Humidity'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
         <Brick
           data={data.sunrise}
           kindOfData="sunrise"
           title={lang?.t('brick.sunrise') || 'Sunrise'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
         <Brick
           data={data.sunset}
           kindOfData="sunset"
           title={lang?.t('brick.sunset') || 'Sunset'}
-          desc={desc}
-          whereFrom={whereFrom}
         />
-        {whereFrom !== 'chat' && (
-          <Brick
-            data={data.conditions}
-            kindOfData="conditions"
-            title={lang?.t('brick.conditions') || 'Conditions'}
-            desc={desc}
-            whereFrom={whereFrom}
-          />
-        )}
       </div>
     </div>
   );

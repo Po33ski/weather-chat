@@ -1,10 +1,4 @@
 import { UNIT_SYSTEMS } from "../constants/unitSystems";
-import partially_cloudy_image from "../../../public/partially_cloudy_image.jpg";
-import cloudy_image from "../../../public/cloudy_image.jpg";
-import rain_image from "../../../public/rain_image.jpg";
-import snow_rain_image from "../../../public/snow_rain_image.jpg";
-import snow_image from "../../../public/snow_image.jpg";
-import clear_image from "../../../public/clear_image.jpg";
 import verystrong_image from "../../../public/verystrong_image.jpg";
 import strong_image from "../../../public/strong_image.jpg";
 import wind_image from "../../../public/wind_image.jpg";
@@ -27,49 +21,17 @@ export const systemsConvert = {
     const t = typeof temp === "number" ? temp : 0;
     return Math.round((t * (9 / 5) + 32) * 100) / 100;
   },
-  toCelcius: (temp: number | null) => {
-    const t = typeof temp === "number" ? temp : 0;
-    return (t - 32) * (5 / 9);
-  },
   toMiles: (temp: number | null) => {
     const t = typeof temp === "number" ? temp : 0;
     return Math.round((t / 1.609) * 100) / 100;
   },
-  toKilometres: (temp: number | null) => {
-    const t = typeof temp === "number" ? temp : 0;
-    return (t * 1.609 * 100.2) / 100;
-  },
 };
-
-export const normalDateFormatted = (d: Date): string => {
-  if (d) {
-    return (
-      d.getFullYear() +
-      "-" +
-      ("0" + Number(d.getMonth() + 1)).slice(-2) +
-      "-" +
-      ("0" + d.getDate()).slice(-2)
-    );
-  }
-  return "";
-};
-
-export function capitalizeFirstLetter(word: string | null): string {
-  if (typeof word === "string") {
-    return word.charAt(0).toUpperCase() + word.slice(1);
-  }
-  return "";
-}
 
 export function checkSign(
   kindOfSign: string,
   unitSystem: "UK" | "US" | "METRIC"
 ) {
-  if (
-    kindOfSign === "temp" ||
-    kindOfSign === "tempmin" ||
-    kindOfSign === "tempmax"
-  ) {
+  if (kindOfSign === "temp") {
     return UNIT_SYSTEMS[unitSystem].temperature;
   } else if (kindOfSign === "windspeed") {
     return UNIT_SYSTEMS[unitSystem].distance;
@@ -119,31 +81,6 @@ export const whatImage = (
     }
   };
 
-  const checkConditionsImage = (cond: string | number) => {
-    switch (cond) {
-      case "Partially cloudy":
-        return partially_cloudy_image;
-      case "Rain, Partially cloudy":
-        return rain_image;
-      case "Overcast":
-        return cloudy_image;
-      case "Rain, Overcast":
-        return rain_image;
-      case "Snow, Rain, Partially cloudy":
-        return snow_rain_image;
-      case "Snow, Rain, Overcast":
-        return snow_rain_image;
-      case "Clear":
-        return clear_image;
-      case "Snow, Overcast":
-        return snow_image;
-      case "Snow, Partially cloudy":
-        return snow_image;
-      default:
-        return sunset_image;
-    }
-  };
-
   const checkPressure = (pres: number) => {
     switch (true) {
       case pres < 1013:
@@ -165,20 +102,13 @@ export const whatImage = (
   };
   const checkImage = (data: string | number | null | undefined, kindOfData: string) => {
     const dataN: number = typeof data === "number" ? data : 0;
-    const dataS: string = typeof data === "string" ? data : "";
     switch (kindOfData) {
       case "temp":
-        return checkTempImage(dataN);
-      case "tempmax":
-        return checkTempImage(dataN);
-      case "tempmin":
         return checkTempImage(dataN);
       case "winddir":
         return winddir_image;
       case "windspeed":
         return checkWindSpeedImage(dataN);
-      case "conditions":
-        return checkConditionsImage(dataS);
       case "pressure":
         return checkPressure(dataN);
       case "humidity":
