@@ -20,12 +20,6 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': 'warn',
-      // Pre-existing pattern in several components; a redesign of those
-      // effects is out of scope for the lint adoption. Keep visible.
-      'react-hooks/set-state-in-effect': 'warn',
-      // parseAiMessage.ts and weatherApi.ts still map untyped LLM/API payloads
-      // with `any`; keep visible as warnings without blocking the CI gate.
-      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 );

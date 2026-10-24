@@ -1,42 +1,44 @@
-import { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { CircleAlert, X } from "lucide-react";
+import { useLanguage } from "@/app/hooks/useLanguage";
 
 export function ErrorMessage({
-  children,
-  onClose
+  title,
+  detail,
+  onClose,
 }: {
-  children: ReactNode;
+  title: string;
+  detail: string;
   onClose?: () => void;
 }) {
-  // Portalled to document.body: a sticky-positioned ancestor (e.g. the Chat
-  // panel wrapper) always creates its own stacking context, which traps a
-  // fixed-position child's z-index locally and lets the TopBar render on
-  // top of it regardless of that z-index value.
+  const { t } = useLanguage();
+
+  // Portalled to document.body: a sticky-positioned ancestor (e.g. the chat
+  // panel) creates its own stacking context, which would trap this toast's
+  // z-index locally and let the sticky header render on top of it.
   return createPortal(
-    <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-3 rounded-lg border border-red-600 shadow-lg flex items-start gap-3 max-w-[90vw] sm:max-w-2xl md:max-w-3xl break-words">
-      <span className="flex-1 break-words overflow-wrap-anywhere">{children}</span>
+    <div
+      role="alert"
+      className="fixed inset-x-4 top-20 z-50 mx-auto flex max-w-lg animate-fade-in-up items-start gap-3 rounded-2xl border border-danger/25 bg-surface p-4 shadow-overlay"
+    >
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-danger-soft text-danger" aria-hidden="true">
+        <CircleAlert className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1 break-words">
+        <p className="font-semibold text-ink">{title}</p>
+        <p className="mt-0.5 text-sm text-ink-secondary">{detail}</p>
+      </div>
       {onClose && (
         <button
+          type="button"
           onClick={onClose}
-          className="text-white hover:text-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 rounded p-1 flex-shrink-0"
-          aria-label="Close error message"
+          aria-label={t("error.dismiss")}
+          className="focus-ring -m-1 grid size-8 shrink-0 place-items-center rounded-full text-ink-muted hover:bg-surface-muted hover:text-ink"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="size-4" aria-hidden="true" />
         </button>
       )}
     </div>,
-    document.body
+    document.body,
   );
 }

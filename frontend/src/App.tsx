@@ -1,14 +1,13 @@
-import React from 'react';
-import { Layout } from './app/components/Layout/Layout';
-import { ChatPage } from './app/views/ChatPage';
+import { AppProviders } from "./app/components/AppProviders/AppProviders";
+import { Layout } from "./app/components/Layout/Layout";
+import { PlannerPage } from "./app/views/PlannerPage";
 
-const App: React.FC = () => {
+export default function App() {
   return (
-    <Layout>
-      <ChatPage />
-    </Layout>
+    <AppProviders>
+      <Layout>
+        <PlannerPage />
+      </Layout>
+    </AppProviders>
   );
-};
-
-export default App;
-
+}

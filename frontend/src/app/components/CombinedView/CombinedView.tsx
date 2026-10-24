@@ -1,99 +1,47 @@
-import { useContext, useState } from "react";
-import { LanguageContext } from "@/app/contexts/LanguageContext";
-import { WeatherView } from "@/app/components/WeatherView/WeatherView";
-import { List } from "@/app/components/List/List";
-import { HotelView } from "@/app/components/HotelView/HotelView";
-import type { AiWeatherKind } from "@/app/types/aiChat";
-import type { CurrentDataDay, HistoryAndForecastDay } from "@/app/types/interfaces";
+import { BedDouble, CloudSun } from "lucide-react";
+import { HotelList } from "@/app/components/HotelList/HotelList";
+import { WeatherResult } from "@/app/components/WeatherResult/WeatherResult";
+import { useLanguage } from "@/app/hooks/useLanguage";
 import type { Hotel } from "@/app/types/hotelTypes";
+import type { WeatherResult as WeatherResultData } from "@/app/utils/resultView";
 
-type CombinedTab = "weather" | "hotels";
-
+/**
+ * Trip plan: weather and stays as two stacked sections of one board. Either
+ * half may be missing (the agent falls back on partial failures).
+ */
 export function CombinedView({
-  weatherKind,
-  current,
-  days,
+  weather,
   hotels,
-  city,
-  date,
   dateRange,
 }: {
-  weatherKind: AiWeatherKind;
-  current?: CurrentDataDay;
-  days?: HistoryAndForecastDay[];
+  weather: WeatherResultData | null;
   hotels: Hotel[];
-  city: string | null;
-  date: string | null;
   dateRange: string | null;
 }) {
-  const lang = useContext(LanguageContext);
-  const hasWeather = (weatherKind === "current" && !!current) || (Array.isArray(days) && days.length > 0);
-  const hasHotels = hotels.length > 0;
-  const [activeTab, setActiveTab] = useState<CombinedTab>(hasWeather ? "weather" : "hotels");
+  const { t } = useLanguage();
 
   return (
-    <div className="space-y-3">
-      {/* Weather / Hotels toggle */}
-      <div className="flex bg-white/[0.06] border border-white/[0.1] rounded-2xl p-1 gap-1">
-        <button
-          type="button"
-          onClick={() => setActiveTab("weather")}
-          disabled={!hasWeather}
-          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
-            activeTab === "weather"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
-              : "text-sky-300/60 hover:text-white"
-          }`}
-        >
-          {lang?.t("combined.weatherTab") || "Weather"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("hotels")}
-          disabled={!hasHotels}
-          className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
-            activeTab === "hotels"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
-              : "text-sky-300/60 hover:text-white"
-          }`}
-        >
-          {lang?.t("combined.hotelsTab") || "Hotels"}
-          {hasHotels && ` (${hotels.length})`}
-        </button>
-      </div>
-
-      {activeTab === "weather" ? (
-        hasWeather ? (
-          <div className="space-y-4">
-            {(city || date || dateRange) && (
-              <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-3xl px-6 py-5 flex items-center justify-between gap-4">
-                <div>
-                  {city && <h3 className="text-xl font-bold text-white">{city}</h3>}
-                  {(date || dateRange) && (
-                    <p className="text-sky-300/60 text-sm mt-0.5">{date || dateRange}</p>
-                  )}
-                </div>
-                <span className="text-2xl opacity-40 select-none flex-shrink-0">📍</span>
-              </div>
-            )}
-            {weatherKind === "current" && current ? (
-              <WeatherView data={current} />
-            ) : Array.isArray(days) && days.length > 0 ? (
-              <List data={days} />
-            ) : null}
-          </div>
+    <div className="space-y-8">
+      <section aria-labelledby="combined-weather" className="space-y-4">
+        <h3 id="combined-weather" className="flex items-center gap-2 text-xl font-semibold">
+          <CloudSun className="size-5 text-ink-muted" aria-hidden="true" />
+          {t("combined.weather")}
+        </h3>
+        {weather ? (
+          <WeatherResult weather={weather} />
         ) : (
-          <p className="text-sky-400/40 text-sm italic px-1">
-            {lang?.t("combined.noWeather") || "No weather data available"}
-          </p>
-        )
-      ) : hasHotels ? (
-        <HotelView hotels={hotels} city={city} dateRange={dateRange} />
-      ) : (
-        <p className="text-sky-400/40 text-sm italic px-1">
-          {lang?.t("combined.noHotels") || "No hotels found"}
-        </p>
-      )}
+          <p className="card p-5 text-ink-secondary">{t("combined.noWeather")}</p>
+        )}
+      </section>
+
+      <section aria-labelledby="combined-stays" className="space-y-4">
+        <h3 id="combined-stays" className="flex items-center gap-2 text-xl font-semibold">
+          <BedDouble className="size-5 text-ink-muted" aria-hidden="true" />
+          {t("combined.stays")}
+          {hotels.length > 0 && <span className="text-base font-normal text-ink-muted">({hotels.length})</span>}
+        </h3>
+        <HotelList hotels={hotels} dateRange={dateRange} />
+      </section>
     </div>
   );
 }

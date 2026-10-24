@@ -120,3 +120,70 @@ describe('parseAiMessage', () => {
     expect(parseAiMessage('')).toEqual({ humanText: '', metaData: null, aiChatData: null });
   });
 });
+
+describe('parseAiMessage — defensive mapping', () => {
+  it('coerces numeric strings and drops unknown kinds', () => {
+    const text = fence('weather-json', {
+      meta: { city: 'Warsaw', kind: 'travel_advice', language: 'en' },
+      current: { ...CURRENT, pressure: '1013', humidity: 'humid' },
+    });
+    const result = parseAiMessage(text);
+    expect(result.metaData?.kind).toBeNull();
+    expect(result.aiChatData).toBeNull();
+
+    const current = parseAiMessage(
+      fence('weather-json', {
+        meta: { city: 'Warsaw', kind: 'current', date: '2026-08-08', language: 'en' },
+        current: { ...CURRENT, pressure: '1013', humidity: 'humid' },
+      }),
+    ).aiChatData?.current;
+    expect(current).toMatchObject({ pressure: 1013, humidity: null });
+  });
+
+  it('sorts forecast days chronologically and normalizes dates', () => {
+    const days = parseAiMessage(
+      fence('weather-json', {
+        meta: { city: 'Warsaw', kind: 'forecast', date_range: '2026-08-08..2026-08-10', language: 'en' },
+        days: [
+          { ...DAY, datetime: '2026-08-10T00:00:00' },
+          { ...DAY, datetime: '2026-08-08' },
+          'not a day',
+        ],
+      }),
+    ).aiChatData?.days;
+    expect(days?.map((d) => d.datetime)).toEqual(['2026-08-08', '2026-08-10']);
+  });
+
+  it('never lets a non-http hotel link through', () => {
+    const hotel = parseAiMessage(
+      fence('hotel-json', {
+        meta: { city: 'Warsaw', kind: 'hotels', language: 'en' },
+        hotels: [{ ...HOTEL, url: 'javascript:alert(1)', rating: 42, reviews_count: -3, highlights: ['spa', 7, ' '] }],
+      }),
+    ).aiChatData?.hotels?.[0];
+    expect(hotel).toMatchObject({ url: '', rating: null, reviews_count: null, highlights: ['spa'] });
+  });
+
+  it('accepts a numeric hotel price', () => {
+    const hotel = parseAiMessage(
+      fence('hotel-json', {
+        meta: { city: 'Warsaw', kind: 'hotels', language: 'en' },
+        hotels: [{ ...HOTEL, price_per_night: 450 }],
+      }),
+    ).aiChatData?.hotels?.[0];
+    expect(hotel?.price_per_night).toBe('450');
+  });
+
+  it('ignores an unknown combined weather kind', () => {
+    const data = parseAiMessage(
+      fence('combined-json', {
+        meta: { city: 'Warsaw', kind: 'combined', language: 'en' },
+        weather: { kind: 'tomorrow', current: CURRENT },
+        hotels: [HOTEL],
+      }),
+    ).aiChatData;
+    expect(data).toMatchObject({ weatherKind: null });
+    expect(data?.current).toBeUndefined();
+    expect(data?.hotels).toHaveLength(1);
+  });
+});

@@ -1,55 +1,50 @@
 import { useEffect, useState } from "react";
 
+type Updater = (prev: string | null) => unknown;
+
+function readStorage(key: string, defaultValue: string | null): string | null {
+  if (typeof window === "undefined") return defaultValue;
+  try {
+    const value: string | null = window.localStorage.getItem(key);
+    return value ? JSON.parse(value) : defaultValue;
+  } catch (error) {
+    console.warn(`useLocalStorage: ignoring unreadable value for "${key}"`, error);
+    return defaultValue;
+  }
+}
+
 export function useLocalStorage(key: string, defaultValue: string | null) {
-  const isBrowser = typeof window !== "undefined"; // return true if window is defined
-
-  const readValue = (): string | null => {
-    if (!isBrowser) return defaultValue; // return defaultValue if window is not defined
-    try {
-      const value: string | null = window.localStorage.getItem(key);
-      return value ? JSON.parse(value) : defaultValue;
-    } catch (error) {
-      console.log(error); 
-      return defaultValue;
-    }
-  };
-
-  const [data, setData] = useState<string | null>(() => readValue());
+  // The lazy initializer already reads storage on mount (client-only SPA), so
+  // the effect below only has to subscribe to later changes.
+  const [data, setData] = useState<string | null>(() => readStorage(key, defaultValue));
 
   useEffect(() => {
-    if (!isBrowser) return;
-    // Sync initial value on mount (in case SSR provided default)
-    setData(readValue());
-
     const handleStorage = (event: StorageEvent) => {
       if (event.key === key) {
-        setData(readValue());
+        setData(readStorage(key, defaultValue));
       }
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, [key, isBrowser]);
+  }, [key, defaultValue]);
 
-  const setToLocalStorage = (newData: string | null | unknown) => {
+  const setToLocalStorage = (newData: unknown) => {
     try {
-      const valueToStore = newData instanceof Function ? (newData as any)(data) : newData;
-      // Update state optimistically
+      const valueToStore = typeof newData === "function" ? (newData as Updater)(data) : newData;
       if (typeof valueToStore === "string" || valueToStore === null) {
-        setData(valueToStore as string | null);
+        setData(valueToStore);
       }
-      if (isBrowser) {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        // Emit storage event for same-tab listeners
-        try {
-          window.dispatchEvent(
-            new StorageEvent("storage", { key, newValue: JSON.stringify(valueToStore) })
-          );
-        } catch {
-          // Some environments may not allow constructing StorageEvent
-        }
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      // Emit storage event for same-tab listeners
+      try {
+        window.dispatchEvent(
+          new StorageEvent("storage", { key, newValue: JSON.stringify(valueToStore) }),
+        );
+      } catch {
+        // Some environments may not allow constructing StorageEvent
       }
     } catch (error) {
-      console.log(error);
+      console.warn(`useLocalStorage: could not persist "${key}"`, error);
     }
   };
 

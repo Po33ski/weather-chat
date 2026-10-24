@@ -1,23 +1,14 @@
-export interface MetricSystems {
-  US: string;
-  METRIC: string;
-  UK: string;
+export type UnitSystemId = "US" | "METRIC" | "UK";
+
+export interface UnitSystem {
+  unit: UnitSystemId;
+  temperature: "°C" | "°F";
+  distance: "km/h" | "mph";
 }
 
-export interface UnitSystems {
-  US: { unit: string; temperature: string; distance: string };
-  METRIC: { unit: string; temperature: string; distance: string };
-  UK: { unit: string; temperature: string; distance: string };
-}
-
-export interface BrickModalData {
-  data: string | number | null;
-  kindOfData: string | null;
-  title: string | null;
-}
-
+// Weather values arrive in metric units (°C, km/h, hPa, %) — conversion to the
+// selected unit system happens only at display time.
 export interface CurrentDataDay {
-  description: string | null;
   temp: number | null;
   tempmax: number | null;
   tempmin: number | null;
@@ -30,33 +21,39 @@ export interface CurrentDataDay {
   humidity: number | null;
 }
 
-export interface HistoryAndForecastDay {
+export interface HistoryAndForecastDay extends CurrentDataDay {
   datetime: string | null;
-  temp: number | null;
-  tempmax: number | null;
-  tempmin: number | null;
-  winddir: number | null;
-  windspeed: number | null;
-  conditions: string | null;
-  sunrise: string | null;
-  sunset: string | null;
-  pressure: string | null;
-  humidity: string | null;
 }
 
-export interface Message {
+export type MessageRole = "user" | "ai" | "error";
+
+export type ChatErrorKind =
+  | "network"
+  | "timeout"
+  | "rateLimited"
+  | "server"
+  | "invalidResponse"
+  | "backend";
+
+export interface ChatError {
+  kind: ChatErrorKind;
+  // Backend-provided reason (already human readable); null for transport errors.
+  detail: string | null;
+  status?: number;
+}
+
+export interface ChatMessage {
   id: string;
+  role: MessageRole;
   text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
+  createdAt: Date;
+  // Set on AI replies that carried structured data shown in the results panel.
+  hasResult?: boolean;
+  // Set on error entries so the failed message can be re-sent.
+  error?: ChatError;
+  retryText?: string;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-export interface ChatApiResponse extends ApiResponse<{ message: string; sender: string }> {
-  session_id?: string;
-}
+export type ChatResult =
+  | { ok: true; message: string; sessionId: string | null }
+  | { ok: false; error: ChatError | { kind: "aborted" }; sessionId: string | null };

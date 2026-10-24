@@ -1,16 +1,4 @@
-import { BrickModalData } from "./interfaces";
-
-export type BrickModalContextType = {
-  isModalShownInChatWeatherPage: boolean;
-  setIsModalShownInChatPage: (modalData: boolean) => void;
-  modalData: BrickModalData;
-  setModalData: (modalData: BrickModalData) => void;
-};
-
-export type InfoModalContextType = {
-  isInfoModalShown: boolean;
-  setIsInfoModalShown: (modalData: boolean) => void;
-};
+import type { TranslationKey, PluralKey } from "@/app/i18n/translations";
 
 export type UnitSystemContextType = {
   unitSystem: {
@@ -21,8 +9,13 @@ export type UnitSystemContextType = {
 
 export type Lang = "en" | "pl";
 
+export type TranslateParams = Record<string, string | number>;
+
 export type LanguageValue = {
   lang: Lang;
+  // BCP 47 locale used for every Intl formatter (dates, numbers, prices).
+  locale: string;
   setLang: (l: Lang) => void;
-  t: (k: string) => string;
+  t: (key: TranslationKey, params?: TranslateParams) => string;
+  tp: (key: PluralKey, count: number) => string;
 };

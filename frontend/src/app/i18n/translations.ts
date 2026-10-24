@@ -1,0 +1,415 @@
+import type { Lang } from "@/app/types/types";
+
+// English is the source of truth for the key set: `pl` is typed against it, so
+// a missing translation is a compile error rather than a raw key in the UI.
+const en = {
+  "app.name": "Travel & Weather Center",
+  "app.tagline": "AI trip planner",
+  "nav.skip": "Skip to content",
+
+  "header.language": "Language",
+  "header.units": "Units",
+  "units.METRIC": "°C · km/h",
+  "units.UK": "°C · mph",
+  "units.US": "°F · mph",
+
+  "info.open": "About this app",
+  "info.title": "About Travel & Weather Center",
+  "info.p1":
+    "Plan your trips with an AI assistant: check the current weather, forecasts up to 15 days ahead and past weather, get three ideas for things to do tailored to the weather, and find hotels — all in one conversation.",
+  "info.p2":
+    "Use the search bar for a quick start or type any question in the chat. You can change the language and units in the top bar.",
+  "info.sources": "Data sources",
+  "info.sourcesText": "Weather: Visual Crossing · Hotels: Tavily web search · AI: Google ADK with Gemini",
+  "common.close": "Close",
+
+  "hero.title": "Where to next?",
+  "hero.subtitle":
+    "Check the weather, get ideas for things to do and find a place to stay — just ask.",
+
+  "search.label": "Trip search",
+  "search.intent": "What are you planning?",
+  "search.intent.weather": "Weather",
+  "search.intent.stays": "Stays",
+  "search.intent.trip": "Full trip",
+  "search.where": "Where",
+  "search.wherePlaceholder": "Search destinations",
+  "search.from": "From",
+  "search.to": "To",
+  "search.checkIn": "Check-in",
+  "search.checkOut": "Check-out",
+  "search.submit": "Search",
+  "search.collapsedTitle": "Where to?",
+  "search.collapsedSubtitle": "Weather · Stays · Full trip",
+  "search.hint.weather":
+    "Leave the dates empty for current weather. Forecasts reach up to 15 days ahead.",
+  "search.hint.stays": "Dates are optional.",
+  "search.hint.trip": "Dates are optional — trips can be planned up to 15 days ahead.",
+  "search.error.destinationRequired": "Enter a destination.",
+  "search.error.destinationInvalid":
+    "Use a place name, e.g. “Kraków” or “Paris, France”.",
+  "search.error.destinationTooLong": "The destination name is too long (max {max} characters).",
+  "search.error.invalidDate": "Enter a valid date.",
+  "search.error.startRequired": "Pick a start date first.",
+  "search.error.endBeforeStart": "The end date can't be before the start date.",
+  "search.error.rangeTooLong": "Choose at most {max} days.",
+  "search.error.beyondForecast": "Forecasts are available up to {date}.",
+  "search.error.mixedRange": "Pick dates entirely in the past or from today onwards.",
+  "search.error.pastDate": "This date is in the past.",
+  "search.error.checkoutAfterCheckin": "Check-out must be after check-in.",
+  "search.error.stayTooLong": "Stays can be at most {max} nights.",
+
+  "chat.title": "Trip assistant",
+  "chat.subtitle": "Weather, ideas and stays in one chat",
+  "chat.newChat": "New chat",
+  "chat.greeting":
+    "Hi! Tell me where you're heading — I can check the weather, suggest what to do there and find hotels.",
+  "chat.suggestions": "Try asking",
+  "chat.suggestion.1": "What's the weather in Lisbon right now?",
+  "chat.suggestion.2": "Show me the 7-day forecast for Kraków",
+  "chat.suggestion.3": "Find hotels in Rome",
+  "chat.suggestion.4": "Plan a trip to Barcelona with weather and hotels",
+  "chat.inputLabel": "Message to the trip assistant",
+  "chat.placeholder": "Ask about weather, things to do or hotels…",
+  "chat.send": "Send message",
+  "chat.thinking": "Planning…",
+  "chat.assistant": "Assistant",
+  "chat.you": "You",
+  "chat.resultOnly": "Here's what I found.",
+  "chat.emptyReply": "I couldn't come up with an answer. Please try rephrasing.",
+  "chat.charCount": "{count} / {max}",
+  "chat.retry": "Try again",
+  "chat.showResult": "View on the trip board",
+  "chat.keyboardHint": "Enter to send · Shift + Enter for a new line",
+
+  "error.network.title": "Can't connect to the server",
+  "error.network.detail": "Check your internet connection and try again.",
+  "error.timeout.title": "The request took too long",
+  "error.timeout.detail": "The assistant didn't answer in time. Please try again.",
+  "error.rateLimited.title": "Too many requests",
+  "error.rateLimited.detail":
+    "You can send up to 10 messages per minute. Please wait a moment.",
+  "error.server.title": "The server is unavailable",
+  "error.server.detail": "Please try again in a moment.",
+  "error.invalidResponse.title": "Unexpected server response",
+  "error.invalidResponse.detail": "Please try again.",
+  "error.backend.title": "Something went wrong",
+  "error.backend.detail": "Please try again.",
+  "error.dismiss": "Dismiss",
+
+  "results.label": "Trip board",
+  "results.empty.title": "Your trip board",
+  "results.empty.subtitle":
+    "Answers from the assistant appear here — weather charts, forecasts and stays.",
+  "results.empty.weather.title": "Weather & forecast",
+  "results.empty.weather.text":
+    "Current conditions, forecasts up to 15 days and past weather, with charts.",
+  "results.empty.weather.prompt": "Show me the forecast for Lisbon for the next 7 days",
+  "results.empty.ideas.title": "Things to do",
+  "results.empty.ideas.text": "Three ideas tailored to the weather at your destination.",
+  "results.empty.ideas.prompt": "What can I do in Kraków today given the weather?",
+  "results.empty.stays.title": "Where to stay",
+  "results.empty.stays.text": "Up to three hotels with prices, ratings and booking links.",
+  "results.empty.stays.prompt": "Find hotels in Rome",
+  "results.empty.try": "Try it",
+  "results.loading": "Preparing your results…",
+
+  "kind.current": "Current weather",
+  "kind.forecast": "Forecast",
+  "kind.history": "Weather history",
+  "kind.hotels": "Stays",
+  "kind.combined": "Trip plan",
+
+  "weather.high": "High",
+  "weather.low": "Low",
+  "weather.average": "Average",
+  "weather.now": "Now",
+  "weather.wind": "Wind",
+  "weather.windFrom": "from {dir}",
+  "weather.humidity": "Humidity",
+  "weather.pressure": "Pressure",
+  "weather.sunrise": "Sunrise",
+  "weather.sunset": "Sunset",
+  "weather.daylight": "Daylight",
+  "weather.todayRange": "Today's range",
+  "weather.temperature": "Temperature",
+  "weather.date": "Date",
+  "weather.conditions": "Conditions",
+  "weather.unknown": "Unknown",
+
+  "dir.N": "N",
+  "dir.NE": "NE",
+  "dir.E": "E",
+  "dir.SE": "SE",
+  "dir.S": "S",
+  "dir.SW": "SW",
+  "dir.W": "W",
+  "dir.NW": "NW",
+
+  "forecast.avgHigh": "Avg. high",
+  "forecast.avgLow": "Avg. low",
+  "forecast.wetDays": "Rain or snow",
+  "forecast.wetDaysValue": "{count} of {total}",
+  "forecast.warmest": "Warmest day",
+  "forecast.trends": "Daily trends",
+  "forecast.dayByDay": "Day by day",
+  "forecast.chartHint": "Hover or use the arrow keys to explore each day.",
+  "forecast.metrics": "Chart metric",
+
+  "packing.title": "What to pack",
+  "packing.umbrella": "Umbrella or rain jacket",
+  "packing.boots": "Waterproof boots",
+  "packing.warmCoat": "Warm coat, hat and gloves",
+  "packing.jacket": "Light jacket or sweater",
+  "packing.sunscreen": "Sunscreen",
+  "packing.water": "Refillable water bottle",
+  "packing.sunglasses": "Sunglasses",
+  "packing.windbreaker": "Windproof layer",
+  "packing.layers": "Light layers will do",
+
+  "hotel.perNight": "night",
+  "hotel.total": "≈ {amount} total",
+  "hotel.available": "Available",
+  "hotel.unknown": "Check availability",
+  "hotel.noPrice": "Price on request",
+  "hotel.view": "View on {host}",
+  "hotel.viewGeneric": "View offer",
+  "hotel.rating": "Rating {value} out of 10",
+  "hotel.rating.exceptional": "Exceptional",
+  "hotel.rating.veryGood": "Very good",
+  "hotel.rating.good": "Good",
+  "hotel.rating.other": "Guest rating",
+  "hotel.none": "No hotels found for this search.",
+
+  "combined.weather": "Weather",
+  "combined.stays": "Stays",
+  "combined.noWeather": "Weather data isn't available for this plan.",
+
+  "footer.rights": "© {year} Travel & Weather Center",
+  "footer.author": "by Jarek Popardowski",
+  "footer.sources": "Weather: Visual Crossing · Hotels: Tavily · AI: Google ADK",
+} as const satisfies Record<string, string>;
+
+export type TranslationKey = keyof typeof en;
+
+const pl: Record<TranslationKey, string> = {
+  "app.name": "Travel & Weather Center",
+  "app.tagline": "Planer podróży AI",
+  "nav.skip": "Przejdź do treści",
+
+  "header.language": "Język",
+  "header.units": "Jednostki",
+  "units.METRIC": "°C · km/h",
+  "units.UK": "°C · mph",
+  "units.US": "°F · mph",
+
+  "info.open": "O aplikacji",
+  "info.title": "O Travel & Weather Center",
+  "info.p1":
+    "Planuj podróże z asystentem AI: sprawdź aktualną pogodę, prognozę do 15 dni naprzód i pogodę z przeszłości, poznaj trzy pomysły na zwiedzanie dopasowane do pogody i znajdź hotel — wszystko w jednej rozmowie.",
+  "info.p2":
+    "Zacznij od wyszukiwarki albo wpisz dowolne pytanie na czacie. Język i jednostki zmienisz na górnym pasku.",
+  "info.sources": "Źródła danych",
+  "info.sourcesText": "Pogoda: Visual Crossing · Hotele: wyszukiwanie Tavily · AI: Google ADK z Gemini",
+  "common.close": "Zamknij",
+
+  "hero.title": "Dokąd tym razem?",
+  "hero.subtitle":
+    "Sprawdź pogodę, poznaj pomysły na zwiedzanie i znajdź nocleg — wystarczy zapytać.",
+
+  "search.label": "Wyszukiwarka podróży",
+  "search.intent": "Co planujesz?",
+  "search.intent.weather": "Pogoda",
+  "search.intent.stays": "Noclegi",
+  "search.intent.trip": "Cała podróż",
+  "search.where": "Dokąd",
+  "search.wherePlaceholder": "Szukaj miejsc",
+  "search.from": "Od",
+  "search.to": "Do",
+  "search.checkIn": "Zameldowanie",
+  "search.checkOut": "Wymeldowanie",
+  "search.submit": "Szukaj",
+  "search.collapsedTitle": "Dokąd jedziesz?",
+  "search.collapsedSubtitle": "Pogoda · Noclegi · Cała podróż",
+  "search.hint.weather":
+    "Bez dat sprawdzisz aktualną pogodę. Prognoza sięga do 15 dni naprzód.",
+  "search.hint.stays": "Daty są opcjonalne.",
+  "search.hint.trip": "Daty są opcjonalne — podróż zaplanujesz do 15 dni naprzód.",
+  "search.error.destinationRequired": "Wpisz cel podróży.",
+  "search.error.destinationInvalid":
+    "Wpisz nazwę miejsca, np. „Kraków” albo „Paryż, Francja”.",
+  "search.error.destinationTooLong": "Nazwa miejsca jest za długa (maks. {max} znaków).",
+  "search.error.invalidDate": "Wpisz poprawną datę.",
+  "search.error.startRequired": "Najpierw wybierz datę początkową.",
+  "search.error.endBeforeStart": "Data końcowa nie może być wcześniejsza niż początkowa.",
+  "search.error.rangeTooLong": "Wybierz maksymalnie {max} dni.",
+  "search.error.beyondForecast": "Prognoza jest dostępna do {date}.",
+  "search.error.mixedRange": "Wybierz daty w całości z przeszłości albo od dziś.",
+  "search.error.pastDate": "Ta data już minęła.",
+  "search.error.checkoutAfterCheckin": "Wymeldowanie musi być po zameldowaniu.",
+  "search.error.stayTooLong": "Pobyt może trwać maksymalnie {max} nocy.",
+
+  "chat.title": "Asystent podróży",
+  "chat.subtitle": "Pogoda, pomysły i noclegi w jednym czacie",
+  "chat.newChat": "Nowa rozmowa",
+  "chat.greeting":
+    "Cześć! Powiedz, dokąd się wybierasz — sprawdzę pogodę, podpowiem, co tam robić, i znajdę hotele.",
+  "chat.suggestions": "Zapytaj na przykład",
+  "chat.suggestion.1": "Jaka jest teraz pogoda w Lizbonie?",
+  "chat.suggestion.2": "Pokaż prognozę na 7 dni dla Krakowa",
+  "chat.suggestion.3": "Znajdź hotele w Rzymie",
+  "chat.suggestion.4": "Zaplanuj podróż do Barcelony z pogodą i hotelami",
+  "chat.inputLabel": "Wiadomość do asystenta podróży",
+  "chat.placeholder": "Zapytaj o pogodę, atrakcje albo hotele…",
+  "chat.send": "Wyślij wiadomość",
+  "chat.thinking": "Planuję…",
+  "chat.assistant": "Asystent",
+  "chat.you": "Ty",
+  "chat.resultOnly": "Oto, co znalazłem.",
+  "chat.emptyReply": "Nie udało mi się przygotować odpowiedzi. Spróbuj zapytać inaczej.",
+  "chat.charCount": "{count} / {max}",
+  "chat.retry": "Spróbuj ponownie",
+  "chat.showResult": "Zobacz na tablicy podróży",
+  "chat.keyboardHint": "Enter — wyślij · Shift + Enter — nowa linia",
+
+  "error.network.title": "Brak połączenia z serwerem",
+  "error.network.detail": "Sprawdź połączenie z internetem i spróbuj ponownie.",
+  "error.timeout.title": "Przekroczono czas oczekiwania",
+  "error.timeout.detail": "Asystent nie odpowiedział na czas. Spróbuj ponownie.",
+  "error.rateLimited.title": "Zbyt wiele zapytań",
+  "error.rateLimited.detail":
+    "Możesz wysłać do 10 wiadomości na minutę. Odczekaj chwilę.",
+  "error.server.title": "Serwer jest niedostępny",
+  "error.server.detail": "Spróbuj ponownie za chwilę.",
+  "error.invalidResponse.title": "Nieoczekiwana odpowiedź serwera",
+  "error.invalidResponse.detail": "Spróbuj ponownie.",
+  "error.backend.title": "Coś poszło nie tak",
+  "error.backend.detail": "Spróbuj ponownie.",
+  "error.dismiss": "Zamknij komunikat",
+
+  "results.label": "Tablica podróży",
+  "results.empty.title": "Twoja tablica podróży",
+  "results.empty.subtitle":
+    "Tutaj pojawią się odpowiedzi asystenta — wykresy pogody, prognozy i noclegi.",
+  "results.empty.weather.title": "Pogoda i prognoza",
+  "results.empty.weather.text":
+    "Aktualne warunki, prognoza do 15 dni i pogoda z przeszłości — z wykresami.",
+  "results.empty.weather.prompt": "Pokaż prognozę dla Lizbony na najbliższe 7 dni",
+  "results.empty.ideas.title": "Co robić na miejscu",
+  "results.empty.ideas.text": "Trzy pomysły dopasowane do pogody w miejscu podróży.",
+  "results.empty.ideas.prompt": "Co mogę dziś robić w Krakowie przy tej pogodzie?",
+  "results.empty.stays.title": "Gdzie się zatrzymać",
+  "results.empty.stays.text": "Do trzech hoteli z cenami, ocenami i linkami do rezerwacji.",
+  "results.empty.stays.prompt": "Znajdź hotele w Rzymie",
+  "results.empty.try": "Wypróbuj",
+  "results.loading": "Przygotowuję wyniki…",
+
+  "kind.current": "Aktualna pogoda",
+  "kind.forecast": "Prognoza",
+  "kind.history": "Pogoda historyczna",
+  "kind.hotels": "Noclegi",
+  "kind.combined": "Plan podróży",
+
+  "weather.high": "Maks.",
+  "weather.low": "Min.",
+  "weather.average": "Średnia",
+  "weather.now": "Teraz",
+  "weather.wind": "Wiatr",
+  "weather.windFrom": "z kierunku {dir}",
+  "weather.humidity": "Wilgotność",
+  "weather.pressure": "Ciśnienie",
+  "weather.sunrise": "Wschód słońca",
+  "weather.sunset": "Zachód słońca",
+  "weather.daylight": "Długość dnia",
+  "weather.todayRange": "Zakres temperatur",
+  "weather.temperature": "Temperatura",
+  "weather.date": "Data",
+  "weather.conditions": "Warunki",
+  "weather.unknown": "Brak danych",
+
+  "dir.N": "Pn",
+  "dir.NE": "PnW",
+  "dir.E": "W",
+  "dir.SE": "PdW",
+  "dir.S": "Pd",
+  "dir.SW": "PdZ",
+  "dir.W": "Z",
+  "dir.NW": "PnZ",
+
+  "forecast.avgHigh": "Śr. maksimum",
+  "forecast.avgLow": "Śr. minimum",
+  "forecast.wetDays": "Deszcz lub śnieg",
+  "forecast.wetDaysValue": "{count} z {total}",
+  "forecast.warmest": "Najcieplejszy dzień",
+  "forecast.trends": "Trendy dzienne",
+  "forecast.dayByDay": "Dzień po dniu",
+  "forecast.chartHint": "Najedź kursorem lub użyj strzałek, aby zobaczyć każdy dzień.",
+  "forecast.metrics": "Parametr wykresu",
+
+  "packing.title": "Co spakować",
+  "packing.umbrella": "Parasol lub kurtkę przeciwdeszczową",
+  "packing.boots": "Nieprzemakalne buty",
+  "packing.warmCoat": "Ciepłą kurtkę, czapkę i rękawiczki",
+  "packing.jacket": "Lekką kurtkę lub sweter",
+  "packing.sunscreen": "Krem z filtrem",
+  "packing.water": "Butelkę na wodę",
+  "packing.sunglasses": "Okulary przeciwsłoneczne",
+  "packing.windbreaker": "Wiatrówkę",
+  "packing.layers": "Wystarczą lekkie warstwy",
+
+  "hotel.perNight": "noc",
+  "hotel.total": "≈ {amount} łącznie",
+  "hotel.available": "Dostępny",
+  "hotel.unknown": "Sprawdź dostępność",
+  "hotel.noPrice": "Cena na zapytanie",
+  "hotel.view": "Zobacz na {host}",
+  "hotel.viewGeneric": "Zobacz ofertę",
+  "hotel.rating": "Ocena {value} na 10",
+  "hotel.rating.exceptional": "Wyjątkowy",
+  "hotel.rating.veryGood": "Bardzo dobry",
+  "hotel.rating.good": "Dobry",
+  "hotel.rating.other": "Ocena gości",
+  "hotel.none": "Nie znaleziono hoteli dla tego wyszukiwania.",
+
+  "combined.weather": "Pogoda",
+  "combined.stays": "Noclegi",
+  "combined.noWeather": "Dane pogodowe nie są dostępne dla tego planu.",
+
+  "footer.rights": "© {year} Travel & Weather Center",
+  "footer.author": "autor: Jarek Popardowski",
+  "footer.sources": "Pogoda: Visual Crossing · Hotele: Tavily · AI: Google ADK",
+};
+
+type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>> & { other: string };
+
+const enPlurals = {
+  "plural.day": { one: "{count} day", other: "{count} days" },
+  "plural.night": { one: "{count} night", other: "{count} nights" },
+  "plural.review": { one: "{count} review", other: "{count} reviews" },
+} satisfies Record<string, PluralForms>;
+
+export type PluralKey = keyof typeof enPlurals;
+
+// Polish needs the few/many split ("2 noce" vs "5 nocy"); Intl.PluralRules
+// picks the category, the dictionary only supplies the wording.
+const plPlurals: Record<PluralKey, PluralForms> = {
+  "plural.day": { one: "{count} dzień", few: "{count} dni", many: "{count} dni", other: "{count} dnia" },
+  "plural.night": { one: "{count} noc", few: "{count} noce", many: "{count} nocy", other: "{count} nocy" },
+  "plural.review": { one: "{count} opinia", few: "{count} opinie", many: "{count} opinii", other: "{count} opinii" },
+};
+
+export const dictionaries: Record<Lang, Record<TranslationKey, string>> = { en, pl };
+export const pluralDictionaries: Record<Lang, Record<PluralKey, PluralForms>> = {
+  en: enPlurals,
+  pl: plPlurals,
+};
+
+export function interpolate(
+  template: string,
+  params?: Record<string, string | number>,
+): string {
+  if (!params) return template;
+  return template.replace(/\{(\w+)\}/g, (match, name: string) =>
+    name in params ? String(params[name]) : match,
+  );
+}

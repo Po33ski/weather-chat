@@ -1,37 +1,23 @@
-import { ReactNode } from "react";
-import { Footer } from "../Footer/Footer";
-import { Logo } from "../Logo/Logo";
-import { MainContent } from "../MainContent/MainContent";
-import { SystemSelector } from "../SystemSelector/SystemSelector";
-import { LanguageSelector } from "../LanguageSelector/LanguageSelector";
-import { TopBar } from "../TopBar/TopBar";
-import { ContextProviderComponent } from "../ContextProviderComponent/ContextProviderComponent";
+import type { ReactNode } from "react";
+import { AppHeader } from "@/app/components/AppHeader/AppHeader";
+import { Footer } from "@/app/components/Footer/Footer";
+import { useLanguage } from "@/app/hooks/useLanguage";
 
-export const Layout = ({ children }: { children: ReactNode }) => {
+export function Layout({ children }: { children: ReactNode }) {
+  const { t } = useLanguage();
   return (
-    <>
-      <ContextProviderComponent>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900">
-          <MainContent>
-            <TopBar>
-              <div className="flex justify-self-start invisible min-w-[48px]" aria-hidden="true">
-                {/* spacer to keep logo perfectly centered */}
-              </div>
-              <div className="flex items-center justify-center justify-self-center">
-                <Logo />
-              </div>
-              <div className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-2 justify-self-end">
-                <LanguageSelector />
-                <SystemSelector />
-              </div>
-            </TopBar>
-            <main className="flex-1">
-              {children}
-            </main>
-          </MainContent>
-          <Footer />
-        </div>
-      </ContextProviderComponent>
-    </>
+    <div className="flex min-h-dvh flex-col">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
+      >
+        {t("nav.skip")}
+      </a>
+      <AppHeader />
+      <main id="main" className="flex-1">
+        {children}
+      </main>
+      <Footer />
+    </div>
   );
-};
+}

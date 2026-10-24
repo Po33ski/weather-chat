@@ -2,8 +2,127 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/*
+ * Design tokens. UI colors are stored as RGB channels so Tailwind can apply
+ * opacity modifiers (see tailwind.config.js); chart colors are plain values
+ * because SVG attributes consume them directly. The chart pair (warm/cool)
+ * was validated for colour-vision deficiency and contrast in both modes.
+ */
+:root {
+  color-scheme: light;
+
+  --page: 247 247 245;
+  --surface: 255 255 255;
+  --surface-muted: 243 242 239;
+  --line: 230 228 223;
+  --line-strong: 210 208 202;
+  --ink: 34 34 34;
+  --ink-secondary: 94 94 94;
+  --ink-muted: 113 113 113;
+  --accent: 214 52 74;
+  --accent-hover: 196 46 68;
+  --accent-ink: 196 46 68;
+  --accent-soft: 255 241 242;
+  --success: 6 118 71;
+  --success-soft: 236 253 243;
+  --danger: 180 35 24;
+  --danger-soft: 254 243 242;
+
+  --chart-warm: #eb6834;
+  --chart-cool: #2a78d6;
+  --chart-grid: #ebe9e4;
+  --chart-axis: #c9c7c0;
+  --chart-band: rgb(34 34 34 / 0.06);
+  --chart-surface: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --page: 18 18 19;
+    --surface: 28 28 30;
+    --surface-muted: 38 38 40;
+    --line: 47 47 50;
+    --line-strong: 61 61 65;
+    --ink: 245 245 244;
+    --ink-secondary: 196 196 193;
+    --ink-muted: 154 154 151;
+    --accent: 214 52 74;
+    --accent-hover: 224 71 91;
+    --accent-ink: 255 107 125;
+    --accent-soft: 58 29 34;
+    --success: 71 205 137;
+    --success-soft: 18 48 31;
+    --danger: 255 138 122;
+    --danger-soft: 58 26 23;
+
+    --chart-warm: #d95926;
+    --chart-cool: #3987e5;
+    --chart-grid: #2c2c2e;
+    --chart-axis: #48484b;
+    --chart-band: rgb(245 245 244 / 0.07);
+    --chart-surface: #1c1c1e;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-page font-sans text-ink;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.18);
+  }
+
+  /* Native date pickers follow the token palette instead of the UA default. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* One focus treatment for every interactive element (keyboard users only). */
+  .focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink;
+  }
+
+  .card {
+    @apply rounded-3xl border border-line bg-surface shadow-card;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line-strong)) transparent;
+  }
 }

@@ -1,97 +1,119 @@
-<svg viewBox="0 0 1100 900" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
-  <rect x="0" y="0" width="1100" height="900" fill="#f8fafc"/>
+<svg viewBox="0 0 1100 800" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1100" height="800" fill="#f8fafc"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+  </defs>
 
-  <!-- Root -->
-  <rect x="20" y="150" width="210" height="60" rx="10" fill="#1e293b"/>
-  <text x="125" y="176" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">frontend/src/app/</text>
-  <text x="125" y="193" text-anchor="middle" fill="#cbd5e1" font-size="10">React + Vite</text>
+  <!-- ============ 1. Data flow ============ -->
+  <text x="20" y="34" font-size="13.5" font-weight="700" fill="#1e293b">1. Data flow — frontend/src/app (React + Vite)</text>
 
-  <!-- Connectors root -> top-level -->
-  <path d="M230,180 L260,180 L260,45 L290,45" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M230,180 L260,180 L260,120 L290,120" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M230,180 L260,180 L260,490 L290,490" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M230,180 L260,180 L260,565 L290,565" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <!-- Inputs -->
+  <rect x="30" y="60" width="210" height="56" rx="10" fill="#d97706"/>
+  <text x="135" y="83" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">TripSearch</text>
+  <text x="135" y="100" text-anchor="middle" fill="#fef3c7" font-size="9.5">validateTripSearch → buildTripPrompt</text>
 
-  <!-- views/ -->
-  <rect x="290" y="20" width="250" height="50" rx="8" fill="#2563eb"/>
-  <text x="415" y="40" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">views/ChatPage.tsx</text>
-  <text x="415" y="56" text-anchor="middle" fill="#dbeafe" font-size="9.5">two-column layout: Chat (left) + panel (right)</text>
+  <rect x="30" y="150" width="210" height="56" rx="10" fill="#0891b2"/>
+  <text x="135" y="173" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">ChatPanel</text>
+  <text x="135" y="190" text-anchor="middle" fill="#ecfeff" font-size="9.5">ChatComposer · suggestions · retry</text>
 
-  <!-- components/ header -->
-  <rect x="290" y="95" width="250" height="50" rx="8" fill="#2563eb"/>
-  <text x="415" y="115" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">components/</text>
-  <text x="415" y="131" text-anchor="middle" fill="#dbeafe" font-size="9.5">chat message + side-panel views</text>
+  <!-- Core -->
+  <rect x="300" y="100" width="210" height="66" rx="10" fill="#1e293b"/>
+  <text x="405" y="124" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">hooks/useChat</text>
+  <text x="405" y="141" text-anchor="middle" fill="#cbd5e1" font-size="9.5">messages · session id · error</text>
+  <text x="405" y="155" text-anchor="middle" fill="#cbd5e1" font-size="9.5">latest ResultView</text>
 
-  <!-- Connectors components -> children -->
-  <path d="M540,120 L570,120 L570,41 L650,41" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M540,120 L570,120 L570,93 L650,93" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M540,120 L570,120 L570,142 L650,142" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M540,120 L570,120 L570,188 L650,188" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M540,120 L570,120 L570,234 L650,234" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <path d="M540,120 L570,120 L570,283 L650,283" stroke="#94a3b8" stroke-width="2" fill="none"/>
+  <rect x="570" y="100" width="210" height="66" rx="10" fill="#2563eb"/>
+  <text x="675" y="124" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">services/weatherApi</text>
+  <text x="675" y="141" text-anchor="middle" fill="#dbeafe" font-size="9.5">POST /api/chat · timeout</text>
+  <text x="675" y="155" text-anchor="middle" fill="#dbeafe" font-size="9.5">payload checks · typed error kinds</text>
 
-  <rect x="650" y="18" width="320" height="46" rx="8" fill="#0891b2"/>
-  <text x="810" y="37" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">Chat/Chat.tsx</text>
-  <text x="810" y="52" text-anchor="middle" fill="#ecfeff" font-size="9.5">message input, session mgmt, calls parseAiMessage()</text>
+  <rect x="840" y="60" width="230" height="56" rx="10" fill="#2563eb"/>
+  <text x="955" y="83" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">utils/parseAiMessage</text>
+  <text x="955" y="100" text-anchor="middle" fill="#dbeafe" font-size="9.5">human text + json fence → typed data</text>
 
-  <rect x="650" y="70" width="320" height="46" rx="8" fill="#0891b2"/>
-  <text x="810" y="89" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">AiWeatherPanel/</text>
-  <text x="810" y="104" text-anchor="middle" fill="#ecfeff" font-size="9.5">picks a view based on meta.kind (see below)</text>
+  <rect x="840" y="150" width="230" height="56" rx="10" fill="#2563eb"/>
+  <text x="955" y="173" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">utils/resultView</text>
+  <text x="955" y="190" text-anchor="middle" fill="#dbeafe" font-size="9.5">toResultView → one view variant</text>
 
-  <rect x="650" y="122" width="320" height="40" rx="8" fill="#0891b2"/>
-  <text x="810" y="139" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">WeatherView/</text>
-  <text x="810" y="154" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders current weather</text>
+  <rect x="570" y="215" width="210" height="50" rx="10" fill="#0891b2"/>
+  <text x="675" y="237" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">ResultsPanel</text>
+  <text x="675" y="253" text-anchor="middle" fill="#ecfeff" font-size="9.5">"trip board" — see section 2</text>
 
-  <rect x="650" y="168" width="320" height="40" rx="8" fill="#0891b2"/>
-  <text x="810" y="185" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">List/List.tsx</text>
-  <text x="810" y="200" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders forecast / history day list</text>
+  <!-- Arrows -->
+  <path d="M240,88 L270,88 L270,122 L298,122" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M240,170 L270,170 L270,144 L298,144" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <text x="252" y="76" font-size="9" fill="#475569">send(prompt)</text>
+  <path d="M510,133 L568,133" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M780,122 L810,122 L810,88 L838,88" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <text x="784" y="80" font-size="9" fill="#475569">reply text</text>
+  <path d="M955,116 L955,148" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M900,206 L900,240 L782,240" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <text x="800" y="232" font-size="9" fill="#475569">ResultView</text>
+  <path d="M405,166 L405,236 L242,236 L242,206" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <text x="270" y="250" font-size="9" fill="#475569">messages · errors (+ ErrorMessage toast)</text>
 
-  <rect x="650" y="214" width="320" height="40" rx="8" fill="#0891b2"/>
-  <text x="810" y="231" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">HotelView/HotelView.tsx</text>
-  <text x="810" y="246" text-anchor="middle" fill="#ecfeff" font-size="9.5">renders hotel cards + booking link</text>
+  <!-- ============ 2. Routing ============ -->
+  <line x1="20" y1="290" x2="1080" y2="290" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="318" font-size="13.5" font-weight="700" fill="#1e293b">2. ResultsPanel routing (DestinationHeader on top of every view)</text>
 
-  <rect x="650" y="260" width="320" height="46" rx="8" fill="#d97706"/>
-  <text x="810" y="279" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">CombinedView/  ★ new</text>
-  <text x="810" y="294" text-anchor="middle" fill="#fef3c7" font-size="9.5">weather/hotels tab toggle over the views above</text>
+  <rect x="420" y="338" width="260" height="46" rx="8" fill="#1e293b"/>
+  <text x="550" y="366" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">ResultView (type / weather.kind)</text>
+  <path d="M550,384 L550,404 L145,404 L145,424" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,384 L550,404 L410,404 L410,424" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,384 L550,404 L690,404 L690,424" stroke="#334155" stroke-width="2" fill="none"/>
+  <path d="M550,384 L550,404 L955,404 L955,424" stroke="#334155" stroke-width="2" fill="none"/>
 
-  <!-- utils/ -->
-  <rect x="290" y="465" width="280" height="50" rx="8" fill="#2563eb"/>
-  <text x="430" y="485" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">utils/parseAiMessage.ts</text>
-  <text x="430" y="501" text-anchor="middle" fill="#dbeafe" font-size="9">splits text + detects json fence type</text>
+  <rect x="30" y="424" width="230" height="78" rx="8" fill="#0891b2"/>
+  <text x="145" y="444" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">"current" → CurrentWeather</text>
+  <text x="145" y="462" text-anchor="middle" fill="#ecfeff" font-size="9.5">hero temperature + range meter</text>
+  <text x="145" y="476" text-anchor="middle" fill="#ecfeff" font-size="9.5">wind · humidity · pressure · sun tiles</text>
+  <text x="145" y="490" text-anchor="middle" fill="#ecfeff" font-size="9.5">PackingTips</text>
 
-  <!-- types/ -->
-  <rect x="290" y="540" width="280" height="64" rx="8" fill="#2563eb"/>
-  <text x="430" y="560" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">types/</text>
-  <text x="430" y="576" text-anchor="middle" fill="#dbeafe" font-size="9">aiChat.ts — AiMeta, AiChatData, weatherKind</text>
-  <text x="430" y="590" text-anchor="middle" fill="#dbeafe" font-size="9">hotelTypes.ts — Hotel, HotelAvailability</text>
+  <rect x="280" y="424" width="260" height="78" rx="8" fill="#0891b2"/>
+  <text x="410" y="444" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">"forecast"/"history" → ForecastView</text>
+  <text x="410" y="462" text-anchor="middle" fill="#ecfeff" font-size="9.5">summary StatTiles</text>
+  <text x="410" y="476" text-anchor="middle" fill="#ecfeff" font-size="9.5">WeatherCharts (temp · wind · humidity · pressure)</text>
+  <text x="410" y="490" text-anchor="middle" fill="#ecfeff" font-size="9.5">DayList table · PackingTips (forecast only)</text>
 
-  <!-- Divider -->
-  <line x1="20" y1="650" x2="1080" y2="650" stroke="#cbd5e1" stroke-width="1"/>
-  <text x="20" y="675" font-size="12.5" font-weight="700" fill="#1e293b">meta.kind routing (inside AiWeatherPanel)</text>
+  <rect x="560" y="424" width="260" height="78" rx="8" fill="#0891b2"/>
+  <text x="690" y="444" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">"hotels" → HotelList</text>
+  <text x="690" y="462" text-anchor="middle" fill="#ecfeff" font-size="9.5">HotelCard: rating label · price</text>
+  <text x="690" y="476" text-anchor="middle" fill="#ecfeff" font-size="9.5">≈ total for the stay · availability</text>
+  <text x="690" y="490" text-anchor="middle" fill="#ecfeff" font-size="9.5">http(s)-only booking link</text>
 
-  <!-- routing diagram -->
-  <rect x="420" y="695" width="260" height="46" rx="8" fill="#1e293b"/>
-  <text x="550" y="723" text-anchor="middle" fill="#ffffff" font-size="12.5" font-weight="700">resolvedKind (from meta.kind)</text>
+  <rect x="840" y="424" width="230" height="78" rx="8" fill="#d97706"/>
+  <text x="955" y="444" text-anchor="middle" fill="#ffffff" font-size="11.5" font-weight="700">"combined" → CombinedView</text>
+  <text x="955" y="462" text-anchor="middle" fill="#fef3c7" font-size="9.5">Weather section → WeatherResult</text>
+  <text x="955" y="476" text-anchor="middle" fill="#fef3c7" font-size="9.5">Stays section → HotelList</text>
+  <text x="955" y="490" text-anchor="middle" fill="#fef3c7" font-size="9.5">either half may be missing</text>
 
-  <path d="M550,741 L550,762 L140,762 L140,784" stroke="#334155" stroke-width="2" fill="none"/>
-  <path d="M550,741 L550,762 L370,762 L370,784" stroke="#334155" stroke-width="2" fill="none"/>
-  <path d="M550,741 L550,762 L600,762 L600,784" stroke="#334155" stroke-width="2" fill="none"/>
-  <path d="M550,741 L550,762 L830,762 L830,784" stroke="#334155" stroke-width="2" fill="none"/>
+  <text x="30" y="530" font-size="10" fill="#475569">Text-only replies (travel advice) carry no ResultView — the previous board stays visible. While a new reply loads, the board is dimmed in place.</text>
 
-  <rect x="30" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
-  <text x="140" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"current" → WeatherView</text>
-  <text x="140" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own city/date header</text>
+  <!-- ============ 3. Shell & building blocks ============ -->
+  <line x1="20" y1="556" x2="1080" y2="556" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="584" font-size="13.5" font-weight="700" fill="#1e293b">3. App shell, state and shared building blocks</text>
 
-  <rect x="260" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
-  <text x="370" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"forecast"/"history" → List</text>
-  <text x="370" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own city/date header</text>
+  <rect x="30" y="604" width="330" height="80" rx="8" fill="#1e293b"/>
+  <text x="195" y="626" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">App → AppProviders → Layout</text>
+  <text x="195" y="644" text-anchor="middle" fill="#cbd5e1" font-size="9.5">LanguageProvider (EN/PL, Intl locale, plurals)</text>
+  <text x="195" y="658" text-anchor="middle" fill="#cbd5e1" font-size="9.5">UnitSystemContext (METRIC · UK · US, localStorage)</text>
+  <text x="195" y="672" text-anchor="middle" fill="#cbd5e1" font-size="9.5">AppHeader · views/PlannerPage · Footer</text>
 
-  <rect x="490" y="784" width="220" height="42" rx="8" fill="#0891b2"/>
-  <text x="600" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"hotels" → HotelView</text>
-  <text x="600" y="816" text-anchor="middle" fill="#ecfeff" font-size="9">own 🏨 header</text>
+  <rect x="385" y="604" width="330" height="80" rx="8" fill="#2563eb"/>
+  <text x="550" y="626" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">AppHeader</text>
+  <text x="550" y="644" text-anchor="middle" fill="#dbeafe" font-size="9.5">Logo · LanguageSwitch · UnitSelect</text>
+  <text x="550" y="658" text-anchor="middle" fill="#dbeafe" font-size="9.5">InfoDialog (native &lt;dialog&gt;)</text>
+  <text x="550" y="672" text-anchor="middle" fill="#dbeafe" font-size="9.5">i18n/translations.ts — typed keys</text>
 
-  <rect x="720" y="784" width="240" height="56" rx="8" fill="#d97706"/>
-  <text x="840" y="801" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="700">"combined" → CombinedView</text>
-  <text x="840" y="816" text-anchor="middle" fill="#fef3c7" font-size="9">tab: Weather → WeatherView/List</text>
-  <text x="840" y="829" text-anchor="middle" fill="#fef3c7" font-size="9">tab: Hotels → HotelView</text>
+  <rect x="740" y="604" width="330" height="80" rx="8" fill="#0891b2"/>
+  <text x="905" y="626" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Shared components</text>
+  <text x="905" y="644" text-anchor="middle" fill="#ecfeff" font-size="9.5">TimeSeriesChart · SegmentedControl (tabs)</text>
+  <text x="905" y="658" text-anchor="middle" fill="#ecfeff" font-size="9.5">StatTile · WeatherIcon · RichText</text>
+  <text x="905" y="672" text-anchor="middle" fill="#ecfeff" font-size="9.5">DestinationHeader · ErrorMessage</text>
+
+  <rect x="30" y="704" width="1040" height="64" rx="8" fill="#e2e8f0"/>
+  <text x="550" y="728" text-anchor="middle" fill="#1e293b" font-size="11.5" font-weight="700">Pure, unit-tested utils</text>
+  <text x="550" y="748" text-anchor="middle" fill="#334155" font-size="9.5">format.ts (local ISO dates, clock, prices, safe URLs) · weather.ts (units, conditions EN/PL, wind, daylight, summary, packing) · chartScale.ts (ticks, scales, SVG paths) · richText.ts · chatErrors.ts</text>
 </svg>

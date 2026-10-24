@@ -4,9 +4,9 @@ Travel and Weather Center Chat is a conversational assistant that combines **wea
 
 The application providing real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every response validated against a strict JSON contract before being rendered, so malformed or hallucinated LLM output can never reach the UI unchecked.
 
-The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather, hotel, and combined views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every change, and only publishing and deploying the Docker image once all checks pass. The containerized application is hosted on Render, with automatic deployments triggered from the CI/CD pipeline.
+The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather (with charts), hotel, and combined trip-plan views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every change, and only publishing and deploying the Docker image once all checks pass. The containerized application is hosted on Render, with automatic deployments triggered from the CI/CD pipeline.
 
-The application is backed by an 81-test automated suite, comprising 65 backend unit tests written with pytest and 16 frontend unit tests written with Vitest, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
+The application is backed by a 221-test automated suite, comprising 67 backend unit tests written with pytest and 154 frontend unit and component tests written with Vitest and Testing Library, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
 
 
 ## Example Conversations
@@ -154,19 +154,35 @@ All responses include one fenced JSON block. The frontend uses `meta.kind` to se
 
 ## Frontend Components
 
+The UI is a travel-planner layout: a structured trip search (destination, dates, intent) on top, the AI chat on the left and a "trip board" with the structured results on the right. It is fully bilingual (EN/PL), unit-system aware (°C/°F, km/h/mph) and follows the OS light/dark preference through CSS design tokens.
+
 ```text
 frontend/src/app/
 ├── views/
-│   └── ChatPage.tsx                  # two-column layout: Chat (left) + panel (right)
+│   └── PlannerPage.tsx               # hero + TripSearch, ChatPanel (left) + ResultsPanel (right)
+├── hooks/
+│   └── useChat.ts                    # conversation state: send/retry/reset, session id, latest result
 ├── components/
-│   ├── Chat/Chat.tsx                 # message input, session management, API calls
-│   ├── AiWeatherPanel/               # right panel — switches view based on meta.kind
-│   ├── WeatherView/                  # renders current weather data
-│   ├── List/List.tsx                 # renders forecast / history day list
-│   ├── HotelView/HotelView.tsx       # renders hotel cards (price, rating, highlights, booking link)
-│   └── CombinedView/CombinedView.tsx # weather/hotels tab toggle for combined responses
+│   ├── TripSearch/                   # Airbnb-style search pill; validated, builds the chat prompt
+│   ├── ChatPanel/ ChatMessage/ ChatComposer/   # chat log, suggestions, input (Enter/Shift+Enter, length limit)
+│   ├── ResultsPanel/                 # trip board — empty state, loading, routes a ResultView to a view
+│   ├── DestinationHeader/            # city, kind badge, formatted date / range
+│   ├── CurrentWeather/               # hero temperature, today's range meter, stat tiles
+│   ├── ForecastView/                 # summary tiles + WeatherCharts + DayList (forecast & history)
+│   ├── WeatherCharts/ TimeSeriesChart/        # SVG charts: temperature, wind, humidity, pressure
+│   ├── DayList/                      # day-by-day table (also the accessible twin of the charts)
+│   ├── HotelList/ HotelCard/         # stays: rating, price, estimated total, booking link
+│   ├── CombinedView/                 # trip plan: weather section + stays section
+│   └── PackingTips/                  # packing hints derived from the weather data
+├── services/
+│   └── weatherApi.ts                 # POST /api/chat, runtime payload checks, typed error kinds
 ├── utils/
-│   └── parseAiMessage.ts             # splits human text from weather-json / hotel-json / combined-json fence
+│   ├── parseAiMessage.ts             # splits human text from weather-json / hotel-json / combined-json fence
+│   ├── resultView.ts                 # parsed payload → ResultView (what the trip board renders)
+│   ├── tripPrompt.ts                 # trip search validation + prompt builder (EN/PL)
+│   ├── weather.ts / format.ts        # unit conversion, conditions, dates, prices, safe URLs
+│   └── chartScale.ts                 # scales, ticks and SVG paths for the charts
+├── i18n/translations.ts              # typed EN/PL dictionaries + plural forms
 └── types/
     ├── aiChat.ts                     # AiMeta, AiChatData (current | days | hotels | weatherKind)
     └── hotelTypes.ts                 # Hotel, HotelAvailability
@@ -176,15 +192,15 @@ frontend/src/app/
 
 ![Frontend Components](docs/diagrams/frontend-components.svg)
 
-The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
+`toResultView()` turns the parsed reply into one `ResultView` variant, and `ResultsPanel` renders it:
 
-| `meta.kind`          | Rendered component |
-|----------------------|--------------------|
-| `current`            | `WeatherView`      |
-| `forecast`/`history` | `List`              |
-| `hotels`             | `HotelView`         |
-| `combined`            | `CombinedView` (tab toggle over the views above) |
-| `travel_advice`      | *(text only)*      |
+| `meta.kind`          | Rendered view |
+|----------------------|---------------|
+| `current`            | `CurrentWeather` |
+| `forecast`/`history` | `ForecastView` (summary tiles, charts, day-by-day table) |
+| `hotels`             | `HotelList` |
+| `combined`           | `CombinedView` (weather section + stays section) |
+| `travel_advice`      | *(text only — the previous board stays visible)* |
 
 ## Backend API
 
@@ -200,7 +216,7 @@ The `AiWeatherPanel` uses `meta.kind` to decide which component to render:
 
 ## Tests
 
-The project has an automated test suite covering both backend and frontend: 67 backend unit tests (`pytest`, in `backend/tests/`) and 16 frontend unit tests (`Vitest`, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, and key data-transformation helpers — and run as a required check in CI before any deployment.
+The project has an automated test suite covering both backend and frontend: 67 backend unit tests (`pytest`, in `backend/tests/`) and 154 frontend tests (`Vitest` + Testing Library, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, trip-search validation, API error handling, chart scales and key data-transformation helpers — and run as a required check in CI before any deployment.
 
 ## Environment Variables
 
@@ -240,7 +256,7 @@ Each entry in the returned `results` list has four fields:
 | `content` | Extracted page text — where price/rating/reviews live, if the snippet caught them |
 | `score`   | Tavily's 0–1 relevance score                                                |
 
-Before handing results to the agent, the tool post-processes them: `_force_currency` appends `selected_currency`/`lang` to booking.com links so the page opens in a consistent currency, and `_is_direct_hotel_url` flags links that point at a single property page (`/hotel/pl/xyz.html`) rather than a city overview, sorting direct pages first. The full chain is: user message → agent → tool → Tavily (snippets) → tool (currency + sorting) → LLM extracts `hotel-json` → Pydantic validator → `HotelView`.
+Before handing results to the agent, the tool post-processes them: `_force_currency` appends `selected_currency`/`lang` to booking.com links so the page opens in a consistent currency, and `_is_direct_hotel_url` flags links that point at a single property page (`/hotel/pl/xyz.html`) rather than a city overview, sorting direct pages first. The full chain is: user message → agent → tool → Tavily (snippets) → tool (currency + sorting) → LLM extracts `hotel-json` → Pydantic validator → `HotelList` / `HotelCard`.
 
 **Why currency handling is hard.** `search_hotels` has no hotel database of its own — it queries Tavily's web search API against booking.com, hotels.com and tripadvisor.com and returns raw scraped snippets for the `search_hotels_agent` LLM to extract into structured data. Tavily's cached page snapshots can carry whatever currency/locale its crawler happened to see (we observed the same city returning prices in USD, INR, BYN, MXN, etc. across runs), so the tool now takes a `language` argument (the chat's detected language from the shared CONTEXT TEMPLATE) and picks a single target currency from it — `PLN` for Polish, `USD` otherwise — which it uses to bias the Tavily query/`country` hint and to force `selected_currency`/`lang` on every returned booking.com link. The agent prompt is instructed to only report a price when the scraped content actually shows that target currency, leaving `price_per_night` empty rather than mislabeling a foreign-currency figure.
 

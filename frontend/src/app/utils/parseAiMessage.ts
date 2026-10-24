@@ -1,115 +1,154 @@
-import type { AiMeta, AiChatData, ParsedAiMessage } from "@/app/types/aiChat";
+import type { AiChatData, AiKind, AiMeta, AiWeatherKind, ParsedAiMessage } from "@/app/types/aiChat";
 import type { CurrentDataDay, HistoryAndForecastDay } from "@/app/types/interfaces";
 import type { Hotel } from "@/app/types/hotelTypes";
+import { normalizeIsoDate, safeHttpUrl } from "./format";
 
-const COMBINED_FENCE = /```\s*combined-json[\r\n]+([\s\S]*?)```/i;
-const WEATHER_FENCE = /```\s*weather-json[\r\n]+([\s\S]*?)```/i;
-const HOTEL_FENCE = /```\s*hotel-json[\r\n]+([\s\S]*?)```/i;
+type FenceType = "combined-json" | "weather-json" | "hotel-json";
 
-function extractBlock(text: string): { jsonText: string | null; fenceType: 'combined-json' | 'weather-json' | 'hotel-json' | null; humanText: string } {
-  const cm = text.match(COMBINED_FENCE);
-  if (cm) {
-    const human = text.replace(COMBINED_FENCE, '').trim();
-    return { jsonText: cm[1], fenceType: 'combined-json', humanText: human };
+// Order matters: a combined reply is checked first so its nested weather data
+// is never mistaken for a single-intent weather-json block.
+const FENCES: [FenceType, RegExp][] = [
+  ["combined-json", /```\s*combined-json[\r\n]+([\s\S]*?)```/i],
+  ["weather-json", /```\s*weather-json[\r\n]+([\s\S]*?)```/i],
+  ["hotel-json", /```\s*hotel-json[\r\n]+([\s\S]*?)```/i],
+];
+
+const AI_KINDS: readonly NonNullable<AiKind>[] = ["current", "forecast", "history", "hotels", "combined"];
+const WEATHER_KINDS: readonly NonNullable<AiWeatherKind>[] = ["current", "forecast", "history"];
+
+type JsonObject = Record<string, unknown>;
+
+const isObject = (value: unknown): value is JsonObject =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const asObject = (value: unknown): JsonObject => (isObject(value) ? value : {});
+
+const asString = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
+// The backend validates floats, but numeric strings ("1013") are accepted too
+// so a lenient payload still renders instead of showing dashes.
+function asNumber(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
-  const wm = text.match(WEATHER_FENCE);
-  if (wm) {
-    const human = text.replace(WEATHER_FENCE, '').trim();
-    return { jsonText: wm[1], fenceType: 'weather-json', humanText: human };
-  }
-  const hm = text.match(HOTEL_FENCE);
-  if (hm) {
-    const human = text.replace(HOTEL_FENCE, '').trim();
-    return { jsonText: hm[1], fenceType: 'hotel-json', humanText: human };
+  return null;
+}
+
+function extractBlock(text: string): {
+  jsonText: string | null;
+  fenceType: FenceType | null;
+  humanText: string;
+} {
+  for (const [fenceType, pattern] of FENCES) {
+    const match = text.match(pattern);
+    if (match) {
+      return { jsonText: match[1], fenceType, humanText: text.replace(pattern, "").trim() };
+    }
   }
   return { jsonText: null, fenceType: null, humanText: text.trim() };
 }
 
-function mapCurrent(c: any): CurrentDataDay {
+function mapCurrent(raw: unknown): CurrentDataDay {
+  const c = asObject(raw);
   return {
-    description: c?.conditions ?? null,
-    temp: typeof c?.temp === 'number' ? c.temp : null,
-    tempmax: typeof c?.tempmax === 'number' ? c.tempmax : null,
-    tempmin: typeof c?.tempmin === 'number' ? c.tempmin : null,
-    winddir: typeof c?.winddir === 'number' ? c.winddir : null,
-    windspeed: typeof c?.windspeed === 'number' ? c.windspeed : null,
-    conditions: c?.conditions ?? null,
-    sunrise: c?.sunrise ?? null,
-    sunset: c?.sunset ?? null,
-    pressure: typeof c?.pressure === 'number' ? c.pressure : null,
-    humidity: typeof c?.humidity === 'number' ? c.humidity : null,
+    temp: asNumber(c.temp),
+    tempmax: asNumber(c.tempmax),
+    tempmin: asNumber(c.tempmin),
+    winddir: asNumber(c.winddir),
+    windspeed: asNumber(c.windspeed),
+    conditions: asString(c.conditions),
+    sunrise: asString(c.sunrise),
+    sunset: asString(c.sunset),
+    pressure: asNumber(c.pressure),
+    humidity: asNumber(c.humidity),
   };
 }
 
-function mapDays(days: any[]): HistoryAndForecastDay[] {
-  return days.map((d: any) => ({
-    datetime: d?.datetime ?? null,
-    temp: typeof d?.temp === 'number' ? d.temp : null,
-    tempmax: typeof d?.tempmax === 'number' ? d.tempmax : null,
-    tempmin: typeof d?.tempmin === 'number' ? d.tempmin : null,
-    winddir: typeof d?.winddir === 'number' ? d.winddir : null,
-    windspeed: typeof d?.windspeed === 'number' ? d.windspeed : null,
-    conditions: d?.conditions ?? null,
-    sunrise: d?.sunrise ?? null,
-    sunset: d?.sunset ?? null,
-    pressure: typeof d?.pressure === 'number' ? String(d.pressure) : d?.pressure ?? null,
-    humidity: typeof d?.humidity === 'number' ? String(d.humidity) : d?.humidity ?? null,
+function mapDays(raw: unknown[]): HistoryAndForecastDay[] {
+  const days = raw.filter(isObject).map((d) => ({
+    ...mapCurrent(d),
+    datetime: normalizeIsoDate(d.datetime),
   }));
+  // Charts read left to right in time; keep the agent's order only if a date is missing.
+  return days.every((d) => d.datetime)
+    ? [...days].sort((a, b) => (a.datetime as string).localeCompare(b.datetime as string))
+    : days;
 }
 
-function mapHotels(hotels: any[]): Hotel[] {
-  return hotels.map((h: any) => ({
-    name: h?.name ?? '',
-    price_per_night: h?.price_per_night ?? '',
-    currency: h?.currency ?? '',
-    availability: h?.availability ?? 'unknown',
-    rating: typeof h?.rating === 'number' ? h.rating : null,
-    reviews_count: typeof h?.reviews_count === 'number' ? h.reviews_count : null,
-    highlights: Array.isArray(h?.highlights) ? h.highlights : [],
-    url: h?.url ?? '',
-  }));
+function mapHotels(raw: unknown[]): Hotel[] {
+  return raw.filter(isObject).map((h) => {
+    const rating = asNumber(h.rating);
+    const reviews = asNumber(h.reviews_count);
+    const price = typeof h.price_per_night === "number" ? String(h.price_per_night) : h.price_per_night;
+    return {
+      name: asString(h.name) ?? "",
+      price_per_night: asString(price) ?? "",
+      currency: asString(h.currency)?.toUpperCase() ?? "",
+      availability: h.availability === "available" ? "available" : "unknown",
+      rating: rating !== null && rating >= 0 && rating <= 10 ? rating : null,
+      reviews_count: reviews !== null && reviews >= 0 ? Math.round(reviews) : null,
+      highlights: Array.isArray(h.highlights)
+        ? h.highlights.map(asString).filter((s): s is string => s !== null)
+        : [],
+      url: safeHttpUrl(asString(h.url))?.href ?? "",
+    };
+  });
+}
+
+function asKind<T extends string>(value: unknown, allowed: readonly T[]): T | null {
+  return typeof value === "string" && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : null;
 }
 
 export function parseAiMessage(text: string): ParsedAiMessage {
-  const { jsonText, fenceType, humanText } = extractBlock(text || '');
+  const { jsonText, fenceType, humanText } = extractBlock(text || "");
   if (!jsonText) return { humanText, metaData: null, aiChatData: null };
 
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(jsonText);
-    const meta: AiMeta = {
-      city: parsed?.meta?.city ?? null,
-      date: parsed?.meta?.date ?? null,
-      date_range: parsed?.meta?.date_range ?? null,
-      kind: (parsed?.meta?.kind ?? null) as AiMeta['kind'],
-      language: parsed?.meta?.language ?? null,
-    };
-
-    let aiChatData: AiChatData | null = null;
-
-    if (fenceType === 'combined-json' || meta.kind === 'combined') {
-      const weatherKind = parsed?.weather?.kind ?? null;
-      const combined: AiChatData = { weatherKind };
-      if (weatherKind === 'current' && parsed.weather?.current) {
-        combined.current = mapCurrent(parsed.weather.current);
-      } else if ((weatherKind === 'forecast' || weatherKind === 'history') && Array.isArray(parsed.weather?.days)) {
-        combined.days = mapDays(parsed.weather.days);
-      }
-      if (Array.isArray(parsed.hotels)) {
-        combined.hotels = mapHotels(parsed.hotels);
-      }
-      aiChatData = combined;
-    } else if (fenceType === 'hotel-json' || meta.kind === 'hotels') {
-      if (Array.isArray(parsed.hotels)) {
-        aiChatData = { hotels: mapHotels(parsed.hotels) };
-      }
-    } else if (meta.kind === 'current' && parsed.current) {
-      aiChatData = { current: mapCurrent(parsed.current) };
-    } else if ((meta.kind === 'forecast' || meta.kind === 'history') && Array.isArray(parsed.days)) {
-      aiChatData = { days: mapDays(parsed.days) };
-    }
-
-    return { humanText, metaData: meta, aiChatData };
+    parsed = JSON.parse(jsonText);
   } catch {
     return { humanText, metaData: null, aiChatData: null };
   }
+  if (!isObject(parsed)) return { humanText, metaData: null, aiChatData: null };
+
+  const rawMeta = asObject(parsed.meta);
+  const meta: AiMeta = {
+    city: asString(rawMeta.city),
+    date: normalizeIsoDate(rawMeta.date),
+    date_range: asString(rawMeta.date_range),
+    kind: asKind(rawMeta.kind, AI_KINDS),
+    language: asString(rawMeta.language),
+  };
+
+  let aiChatData: AiChatData | null = null;
+
+  if (fenceType === "combined-json" || meta.kind === "combined") {
+    const weather = asObject(parsed.weather);
+    const weatherKind = asKind(weather.kind, WEATHER_KINDS);
+    const combined: AiChatData = { weatherKind };
+    if (weatherKind === "current" && isObject(weather.current)) {
+      combined.current = mapCurrent(weather.current);
+    } else if ((weatherKind === "forecast" || weatherKind === "history") && Array.isArray(weather.days)) {
+      combined.days = mapDays(weather.days);
+    }
+    if (Array.isArray(parsed.hotels)) {
+      combined.hotels = mapHotels(parsed.hotels);
+    }
+    aiChatData = combined;
+  } else if (fenceType === "hotel-json" || meta.kind === "hotels") {
+    if (Array.isArray(parsed.hotels)) {
+      aiChatData = { hotels: mapHotels(parsed.hotels) };
+    }
+  } else if (meta.kind === "current" && isObject(parsed.current)) {
+    aiChatData = { current: mapCurrent(parsed.current) };
+  } else if ((meta.kind === "forecast" || meta.kind === "history") && Array.isArray(parsed.days)) {
+    aiChatData = { days: mapDays(parsed.days) };
+  }
+
+  return { humanText, metaData: meta, aiChatData };
 }
