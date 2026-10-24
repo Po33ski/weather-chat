@@ -71,13 +71,19 @@ def warn_missing_environment_variables():
         print("✅ All required environment variables are available")
 
 
+# Gemini 3.x models require thought signatures to be echoed back on every
+# function-call turn; google-adk >= 2.7 handles that, older ADK versions fail
+# with a 400 on the first tool call.
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
+
+
 def load_model():
     """
     Retrieves the MODEL environment variable.
     Returns:
-        str: The value of the MODEL environment variable, or default value.
+        str: The value of the MODEL environment variable, or DEFAULT_MODEL.
     """
-    return os.getenv("MODEL", "gemini-2.5-flash")
+    return os.getenv("MODEL", DEFAULT_MODEL)
 
 
 def get_environment_info() -> dict:

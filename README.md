@@ -225,7 +225,7 @@ The project has an automated test suite covering both backend and frontend: 67 b
 | `GOOGLE_API_KEY`          | ✅       | Google Generative AI key for ADK agents      |
 | `VISUAL_CROSSING_API_KEY` | ✅       | Visual Crossing Weather API key              |
 | `TAVILY_API_KEY`          | ✅       | Tavily search API key (hotel search)         |
-| `MODEL`                   | optional | Gemini model ID (default: `gemini-2.5-flash`)|
+| `MODEL`                   | optional | Gemini model ID (default: `gemini-3.5-flash-lite`)|
 | `PUBLIC_WEB_ORIGIN`       | optional | Public domain added to CORS allowed origins  |
 | `ENVIRONMENT`             | optional | Set to `production` to enforce required vars |
 

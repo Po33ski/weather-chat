@@ -37,7 +37,7 @@ GOOGLE_API_KEY=...
 Optional
 ```bash
 ENVIRONMENT=production
-MODEL=gemini-2.5-flash
+MODEL=gemini-3.5-flash-lite
 DISABLE_WEB_DRIVER=0
 PUBLIC_WEB_ORIGIN=https://weather-chat-6g4p.onrender.com   # only if doing cross-origin
 VITE_BACKEND_API_URL=http://localhost:8000   # dev overrides only

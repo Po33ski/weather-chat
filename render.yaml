@@ -13,7 +13,7 @@ services:
       - key: TAVILY_API_KEY
         sync: false
       - key: MODEL
-        value: gemini-2.5-flash
+        value: gemini-3.5-flash-lite
       - key: DISABLE_WEB_DRIVER
         value: 0
       - key: ENVIRONMENT

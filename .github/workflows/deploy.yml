@@ -56,7 +56,7 @@ jobs:
           -e VISUAL_CROSSING_API_KEY='${{ secrets.VISUAL_CROSSING_API_KEY }}' \
           -e GOOGLE_API_KEY='${{ secrets.GOOGLE_API_KEY }}' \
           -e TAVILY_API_KEY='${{ secrets.TAVILY_API_KEY }}' \
-          -e MODEL='gemini-2.0-flash' \
+          -e MODEL='gemini-3.5-flash-lite' \
           -e DISABLE_WEB_DRIVER='0' \
           -e ENVIRONMENT='production' \
           weather-center-chat:ci
