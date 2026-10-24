@@ -57,3 +57,7 @@ build/
 # Temporary files
 *.tmp
 *.temp
+
+# Claude Code
+CLAUDE.md
+CHANGELOG.md
