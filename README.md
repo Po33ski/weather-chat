@@ -48,6 +48,9 @@ User message
 FastAPI  /api/chat
     │
     ▼
+Scope check (Gemini)  ──► off-topic → short refusal, agents skipped
+    │
+    ▼
 Google ADK Runner  ──► root_agent (weather_assistant)
                             │
                     ┌───────┼───────────────┐
@@ -60,6 +63,7 @@ Google ADK Runner  ──► root_agent (weather_assistant)
                                      hotels.com, etc.)
 ```
 
+- The assistant answers **only trip-planning questions** (weather, attractions, hotels). Before the agents run, a quick Gemini call classifies the message and off-topic ones get a short refusal; the same rule is also in every agent's prompt.
 - The **root agent** maintains a per-session context template (city, date range, language) and routes to the correct child agent.
 - It also recognizes whether a message is asking for a single piece of information (just weather, or just hotels) versus a combined request that needs the full sequence — in that case it calls the weather and hotel sub-agents one after another itself and merges their results into one reply.
 - Every response returns a human-readable text block **plus** one fenced JSON block (`weather-json`, `hotel-json`, or `combined-json` for merged requests) that the frontend parses to render the side panel.

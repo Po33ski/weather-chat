@@ -14,6 +14,7 @@ import agent_system.src.multi_tool_agent.agent as agent_module
 from .combined_payload import validate_combined_payload
 from .hotel_payload import validate_hotel_payload
 from .models import ChatRequest, ChatResponse
+from .scope_guard import scope_refusal
 from .session_manager import APP_NAME, session_manager
 from .weather_payload import validate_weather_payload
 
@@ -169,6 +170,17 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
 
         await session_manager.cleanup_expired_sessions()
         session_data = await session_manager.ensure_session(request.session_id)
+
+        # Off-topic messages are answered here without running the agents:
+        # cheaper than the full ADK chain, and the refused turn never enters
+        # the session history the agents read on later turns.
+        refusal = await scope_refusal(request.message, session_data)
+        if refusal is not None:
+            return ChatResponse(
+                success=True,
+                data={"message": refusal, "sender": "ai"},
+                session_id=session_data["session_id"],
+            )
 
         runner = Runner(
             agent=agent_module.root_agent,
