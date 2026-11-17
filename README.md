@@ -2,11 +2,11 @@
 
 Travel and Weather Center Chat is a conversational assistant that combines **weather data**, **weather-aware travel advice**, and **hotel search**. Users chat naturally, and the app orchestrates a Google ADK multi-agent system to produce human-friendly responses paired with structured JSON payloads that drive the chat UI panels.
 
-The application providing real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every response validated against a strict JSON contract before being rendered, so malformed or hallucinated LLM output can never reach the UI unchecked.
+The application provides real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every response validated against a strict JSON contract before being rendered, so malformed or hallucinated LLM output can never reach the UI unchecked.
 
 The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather (with charts), hotel, and combined trip-plan views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every change, and only publishing and deploying the Docker image once all checks pass. The containerized application is hosted on Render, with automatic deployments triggered from the CI/CD pipeline.
 
-The application is backed by a 221-test automated suite, comprising 67 backend unit tests written with pytest and 154 frontend unit and component tests written with Vitest and Testing Library, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
+The application is backed by a 243-test automated suite, comprising 89 backend unit tests written with pytest and 154 frontend unit and component tests written with Vitest and Testing Library, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
 
 
 ## Example Conversations
@@ -66,7 +66,7 @@ Google ADK Runner  ──► root_agent (weather_assistant)
 - The assistant answers **only trip-planning questions** (weather, attractions, hotels). Before the agents run, a quick Gemini call classifies the message and off-topic ones get a short refusal; the same rule is also in every agent's prompt.
 - The **root agent** maintains a per-session context template (city, date range, language) and routes to the correct child agent.
 - It also recognizes whether a message is asking for a single piece of information (just weather, or just hotels) versus a combined request that needs the full sequence — in that case it calls the weather and hotel sub-agents one after another itself and merges their results into one reply.
-- Every response returns a human-readable text block **plus** one fenced JSON block (`weather-json`, `hotel-json`, or `combined-json` for merged requests) that the frontend parses to render the side panel.
+- Weather and hotel responses return a human-readable text block **plus** one fenced JSON block (`weather-json`, `hotel-json`, or `combined-json` for merged requests) that the frontend parses to render the side panel. Travel advice and off-topic refusals are text only.
 - The FastAPI layer validates the structured payload with Pydantic before sending it to the client.
 
 **Visual overview:**
@@ -98,7 +98,7 @@ backend/agent_system/src/multi_tool_agent/
 │   └── hotel_locale.py               # shared PLN/USD currency + locale helper
 └── templates/
     ├── json_format.py                # all JSON output schemas (current/forecast/history/hotels/combined)
-    └── context_template.py          # shared session context passed to all agents
+    └── context_template.py           # shared session context passed to all agents
 ```
 
 **Visual overview:**
@@ -107,7 +107,7 @@ backend/agent_system/src/multi_tool_agent/
 
 ## JSON Output Schemas
 
-All responses include one fenced JSON block. The frontend uses `meta.kind` to select the correct rendering panel.
+Weather and hotel responses include one fenced JSON block (travel advice is text only). The frontend uses `meta.kind` to select the correct rendering panel.
 
 ### `weather-json` — weather and forecast data
 
@@ -145,7 +145,7 @@ All responses include one fenced JSON block. The frontend uses `meta.kind` to se
     {
       "name": "Hotel Le Marais",
       "price_per_night": "145",
-      "currency": "EUR",
+      "currency": "USD",
       "availability": "available",
       "rating": 8.7,
       "reviews_count": 2340,
@@ -204,7 +204,7 @@ frontend/src/app/
 | `forecast`/`history` | `ForecastView` (summary tiles, charts, day-by-day table) |
 | `hotels`             | `HotelList` |
 | `combined`           | `CombinedView` (weather section + stays section) |
-| `travel_advice`      | *(text only — the previous board stays visible)* |
+| *(none — travel advice)* | *(text only — the previous board stays visible)* |
 
 ## Backend API
 
@@ -212,6 +212,7 @@ frontend/src/app/
 |--------|--------------|--------------------------------------|
 | `POST` | `/api/chat`  | Send a message; returns `ChatResponse` |
 | `GET`  | `/api/health`| Health check + env/service status    |
+| `GET`  | `/health`    | Same check, used by `start.sh` and platform health checks |
 
 `ChatResponse` shape:
 ```json
@@ -220,7 +221,7 @@ frontend/src/app/
 
 ## Tests
 
-The project has an automated test suite covering both backend and frontend: 67 backend unit tests (`pytest`, in `backend/tests/`) and 154 frontend tests (`Vitest` + Testing Library, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, trip-search validation, API error handling, chart scales and key data-transformation helpers — and run as a required check in CI before any deployment.
+The project has an automated test suite covering both backend and frontend: 89 backend unit tests (`pytest`, in `backend/tests/`) and 154 frontend tests (`Vitest` + Testing Library, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, trip-search validation, API error handling, chart scales and key data-transformation helpers — and run as a required check in CI before any deployment.
 
 ## Environment Variables
 
@@ -232,6 +233,7 @@ The project has an automated test suite covering both backend and frontend: 67 b
 | `MODEL`                   | optional | Gemini model ID (default: `gemini-3.5-flash-lite`)|
 | `PUBLIC_WEB_ORIGIN`       | optional | Public domain added to CORS allowed origins  |
 | `ENVIRONMENT`             | optional | Set to `production` to enforce required vars |
+| `VERIFY_ENV`              | optional | Set to `true` to enforce required vars outside production |
 
 Get your free Tavily key at [tavily.com](https://tavily.com) — the free tier provides 1000 requests/month.
 
@@ -266,7 +268,7 @@ Before handing results to the agent, the tool post-processes them: `_force_curre
 
 ## Local Development
 
-Requirements: Python 3.12 with `uv`, Node.js 18+.
+Requirements: Python 3.12 with `uv`, Node.js 22 (20.19+ minimum, required by ESLint 10 and Vitest 4).
 
 ```bash
 # 1. Backend
