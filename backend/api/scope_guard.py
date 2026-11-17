@@ -118,7 +118,8 @@ async def _classify(
                     system_instruction=SCOPE_INSTRUCTION,
                     response_mime_type="application/json",
                     response_schema=ScopeVerdict,
-                    temperature=0,
+                    # No temperature override: Gemini 3 is tuned for the
+                    # default (1.0); the response schema keeps the output stable.
                 ),
             )
     except Exception as exc:
