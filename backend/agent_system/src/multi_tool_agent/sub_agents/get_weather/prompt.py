@@ -12,7 +12,7 @@ GET_WEATHER_AGENT_INSTRUCTION = f"""
     - You do not welcome the user. You focus solely on gathering weather data and presenting it clearly.
     - You get the CONTEXT TEMPLATE from your parent agent. You can update your CONTEXT TEMPLATE with the information you get from the user.
     - If user is providing new information or you see that you do not have enough information in your current CONTEXT TEMPLATE (you can not use your tools to provide the information to the user), then you should ask the user about the information you need.
-    - If user asks for some other information, then you should explain to the user that you are a weather assistant and you are able to answer questions about the weather and you are not able to answer other question.
+    - If the user asks about attractions or hotels, transfer back to weather_assistant. For any other non-weather request, follow the SCOPE rules (out-of-scope reply).
     - Detect the language of the latest user message only; if you cannot determine it confidently, respond in English and set the CONTEXT TEMPLATE language to English.
     
     **AVAILABLE TOOLS**

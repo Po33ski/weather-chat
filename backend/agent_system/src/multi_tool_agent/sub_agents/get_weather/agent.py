@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from google.adk.agents import Agent
+from google.genai import types
 
 from ....utils.load_env_data import load_model
 from ...tools.get_current_weather import get_current_weather
@@ -32,6 +33,10 @@ get_weather_agent = Agent(
     model=load_model(),
     name=prompt.GET_WEATHER_AGENT_NAME,
     instruction=prompt.GET_WEATHER_AGENT_INSTRUCTION,
+    # Usually a single tool call; LOW leaves room for resolving relative dates.
+    generate_content_config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.LOW),
+    ),
     tools=[get_current_weather, get_forecast, get_history_weather],
     output_key="get_weather_agent_prompt",
     after_tool_callback=_after_tool_callback,

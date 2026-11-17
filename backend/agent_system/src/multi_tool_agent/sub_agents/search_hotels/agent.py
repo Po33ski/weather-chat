@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from google.adk.agents import Agent
+from google.genai import types
 
 from ....utils.load_env_data import load_model
 from ...tools.build_hotel_booking_link import build_hotel_booking_link
@@ -27,6 +28,11 @@ search_hotels_agent = Agent(
     model=load_model(),
     name=prompt.SEARCH_HOTELS_AGENT_NAME,
     instruction=prompt.SEARCH_HOTELS_AGENT_INSTRUCTION,
+    # Two chained tool calls (search, then booking link); MINIMAL thinking can
+    # stop multi-step tool use early.
+    generate_content_config=types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_level=types.ThinkingLevel.MEDIUM),
+    ),
     tools=[search_hotels, build_hotel_booking_link],
     output_key="search_hotels_agent_output",
     after_tool_callback=_after_tool_callback,

@@ -39,6 +39,7 @@ select = ["E", "F", "I", "W", "B"]
 # whitespace are part of the prompt content, not code style.
 "**/prompt.py" = ["E501", "W291", "W293"]
 "**/templates/*.py" = ["E501", "W291", "W293"]
+"api/scope_prompt.py" = ["E501", "W291", "W293"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
