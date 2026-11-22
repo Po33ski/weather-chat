@@ -2,11 +2,11 @@
 
 Travel and Weather Center Chat is a conversational assistant that combines **weather data**, **weather-aware travel advice**, and **hotel search**. Users chat naturally, and the app orchestrates a Google ADK multi-agent system to produce human-friendly responses paired with structured JSON payloads that drive the chat UI panels.
 
-The application provides real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every response validated against a strict JSON contract before being rendered, so malformed or hallucinated LLM output can never reach the UI unchecked.
+The application provides real-time weather information, with an added feature acting as a travel advisor that suggests three tailored attractions based on the current weather in a given city, alongside relevant hotel recommendations. Its core is a multi-agent AI system built with the Google ADK framework, where a root agent routes each request to specialized sub-agents for weather, travel advice, and hotel search, combining their outputs into a single coherent reply. The system includes an AI chatbot that lets users communicate directly with the agents in natural language, in either English or Polish, with every structured response validated against a strict JSON contract before it reaches the client. Malformed data is sanitized or rejected; validation checks structure and value ranges, so it cannot tell whether a well-formed value is factually correct.
 
-The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather (with charts), hotel, and combined trip-plan views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every change, and only publishing and deploying the Docker image once all checks pass. The containerized application is hosted on Render, with automatic deployments triggered from the CI/CD pipeline.
+The AI agent system is orchestrated with Google ADK, which manages a root agent and three specialized sub-agents for weather, travel advice, and hotel search, combining agent-transfer delegation and tool-style invocation to merge multiple data sources into a single response. The backend API is built with FastAPI, handling chat sessions, request validation, and orchestration of calls to the AI agent runner. Pydantic enforces strict schema validation and sanitization on every AI-generated payload, rejecting non-HTTP URLs and normalizing out-of-range values before any data reaches the client. The frontend is a responsive single-page application built with React, Vite, and TypeScript, rendering structured weather (with charts), hotel, and combined trip-plan views directly from the agents' JSON output. Real-time weather data is supplied by the Visual Crossing Weather API, covering current conditions, forecasts, and historical data. Hotel information is retrieved through the Tavily Search API, which provides live web search over booking platforms so the hotel sub-agent can extract pricing and availability without maintaining a dedicated hotel database. The application is packaged with Docker and Nginx into a single production image, with Nginx reverse-proxying API traffic to the FastAPI service. GitHub Actions powers the CI/CD pipeline, running linting, type-checking, and the full test suite on every pull request and on pushes to `main` and `deploy`. A push to `deploy` also builds and smoke-tests the Docker image, then publishes it to GHCR and deploys it to Azure Container Apps only if all checks pass. The application is also hosted on Render, which deploys through its own auto-deploy and does not wait for the GitHub Actions checks.
 
-The application is backed by a 243-test automated suite, comprising 89 backend unit tests written with pytest and 154 frontend unit and component tests written with Vitest and Testing Library, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input constraints, and verifying key UI data-transformation logic, all enforced as a required quality gate in the CI/CD pipeline before deployment.
+The application is backed by a 396-test automated suite, comprising 242 offline backend tests written with pytest and 154 frontend unit and component tests written with Vitest and Testing Library, covering the core reliability-critical logic: parsing and repairing the AI agent's JSON output, validating and sanitizing all AI-generated data against strict schemas, enforcing request-input and rate limits, exercising the agent tools and sessions, and verifying key UI data-transformation logic. The suite is a required quality gate in the GitHub Actions pipeline.
 
 
 ## Example Conversations
@@ -95,7 +95,8 @@ backend/agent_system/src/multi_tool_agent/
 │   ├── get_history_weather.py        # Visual Crossing API — historical date range
 │   ├── search_hotels.py              # Tavily web search — hotels in a city, currency-biased by language
 │   ├── build_hotel_booking_link.py   # fallback booking.com link when Tavily has no direct hotel page
-│   └── hotel_locale.py               # shared PLN/USD currency + locale helper
+│   ├── hotel_locale.py               # shared PLN/USD currency + locale helper
+│   └── utils.py                      # safe Visual Crossing URLs, sunrise/sunset normalization
 └── templates/
     ├── json_format.py                # all JSON output schemas (current/forecast/history/hotels/combined)
     └── context_template.py           # shared session context passed to all agents
@@ -107,7 +108,7 @@ backend/agent_system/src/multi_tool_agent/
 
 ## JSON Output Schemas
 
-Weather and hotel responses include one fenced JSON block (travel advice is text only). The frontend uses `meta.kind` to select the correct rendering panel.
+Weather and hotel responses include one fenced JSON block (travel advice is text only). The frontend uses the fence label and `meta.kind` to select the correct rendering panel.
 
 ### `weather-json` — weather and forecast data
 
@@ -156,6 +157,34 @@ Weather and hotel responses include one fenced JSON block (travel advice is text
 }
 ```
 
+### `combined-json` — weather and hotels in one reply
+
+**`kind: "combined"`**
+```json
+{
+  "meta": { "city": "Berlin", "kind": "combined", "date": null, "date_range": "2025-08-01..2025-08-07", "language": "en" },
+  "weather": {
+    "kind": "forecast",
+    "days": [
+      { "datetime": "2025-08-01", "temp": 24, "tempmax": 27, "tempmin": 18, "windspeed": 10, "winddir": 180,
+        "conditions": "Sunny", "sunrise": "05:20", "sunset": "20:50", "pressure": 1015, "humidity": 55 }
+    ]
+  },
+  "hotels": [
+    { "name": "Hotel Mitte", "price_per_night": "120", "currency": "USD", "availability": "unknown",
+      "rating": 8.4, "reviews_count": 1250, "highlights": ["Near the station"], "url": "https://www.booking.com/..." }
+  ]
+}
+```
+
+`weather.kind` is `current` (with a `current` object) or `forecast` / `history` (with a `days` array). `hotels` may be empty.
+
+### Missing values and errors
+
+- Every weather key must be present, but its value may be `null` when the data source has none (for example, no sunrise during polar night). The UI shows a dash.
+- Imperfect hotel fields are normalized instead of rejecting the reply: non-HTTP URLs become empty and ratings outside 0–10 become `null`.
+- An agent or tool error is a fenced `{"error": "message"}` block, which the API returns as `success: false`.
+
 ## Frontend Components
 
 The UI is a travel-planner layout: a structured trip search (destination, dates, intent) on top, the AI chat on the left and a "trip board" with the structured results on the right. It is fully bilingual (EN/PL), unit-system aware (°C/°F, km/h/mph) and follows the OS light/dark preference through CSS design tokens.
@@ -186,10 +215,13 @@ frontend/src/app/
 │   ├── tripPrompt.ts                 # trip search validation + prompt builder (EN/PL)
 │   ├── weather.ts / format.ts        # unit conversion, conditions, dates, prices, safe URLs
 │   └── chartScale.ts                 # scales, ticks and SVG paths for the charts
+├── contexts/                         # language and unit-system React contexts
 ├── i18n/translations.ts              # typed EN/PL dictionaries + plural forms
 └── types/
     ├── aiChat.ts                     # AiMeta, AiChatData (current | days | hotels | weatherKind)
-    └── hotelTypes.ts                 # Hotel, HotelAvailability
+    ├── hotelTypes.ts                 # Hotel, HotelAvailability
+    ├── interfaces.ts                 # weather data, chat messages, typed chat errors
+    └── types.ts                      # language and unit-system context types
 ```
 
 **Visual overview:**
@@ -211,17 +243,33 @@ frontend/src/app/
 | Method | Path         | Description                          |
 |--------|--------------|--------------------------------------|
 | `POST` | `/api/chat`  | Send a message; returns `ChatResponse` |
-| `GET`  | `/api/health`| Health check + env/service status    |
-| `GET`  | `/health`    | Same check, used by `start.sh` and platform health checks |
+| `GET`  | `/api/health`| Health check + env/service status; used by Render, Docker and CI |
+| `GET`  | `/health`    | Same check on the FastAPI port, used by `start.sh`; not routed through Nginx |
+
+Request body (`session_id` is optional and comes from the previous response):
+```json
+{ "message": "What is the weather in Krakow?", "session_id": "..." }
+```
 
 `ChatResponse` shape:
 ```json
-{ "success": true, "data": { "message": "<text + fenced json>", "sender": "ai" }, "session_id": "..." }
+{ "success": true, "data": { "message": "<text + fenced json>", "sender": "ai" }, "error": null, "session_id": "..." }
 ```
+
+On failure, `success` is `false`, `data` is `null` and `error` holds the message.
+
+| Status | Meaning |
+|--------|---------|
+| `200`  | Normal response, including agent failures (`success: false`) |
+| `413`  | Request body over 64 KB (rejected by Nginx) |
+| `422`  | Invalid body, for example an empty message or one over 4000 characters |
+| `429`  | Over the limit of 10 chat requests per minute per client IP |
+
+Sessions are kept in memory: up to 1000 at a time, with the least recently active evicted first. Idle sessions expire after 24 hours, and all sessions are lost on restart. Each agent run is limited to 100 seconds and 12 LLM calls.
 
 ## Tests
 
-The project has an automated test suite covering both backend and frontend: 89 backend unit tests (`pytest`, in `backend/tests/`) and 154 frontend tests (`Vitest` + Testing Library, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input constraints, trip-search validation, API error handling, chart scales and key data-transformation helpers — and run as a required check in CI before any deployment.
+The project has an automated test suite covering both backend and frontend: 242 offline backend tests (`pytest`, in `backend/tests/`) and 154 frontend tests (`Vitest` + Testing Library, colocated with the source files). They cover the core reliability-critical logic — parsing and repairing the AI agent's JSON output, validating and sanitizing AI-generated payloads, request-input and rate limits, agent tools, sessions, trip-search validation, API error handling, chart scales and key data-transformation helpers — and run as a required check in CI before any deployment.
 
 ## Environment Variables
 
@@ -232,10 +280,13 @@ The project has an automated test suite covering both backend and frontend: 89 b
 | `TAVILY_API_KEY`          | ✅       | Tavily search API key (hotel search)         |
 | `MODEL`                   | optional | Gemini model ID (default: `gemini-3.5-flash-lite`)|
 | `PUBLIC_WEB_ORIGIN`       | optional | Public domain added to CORS allowed origins  |
-| `ENVIRONMENT`             | optional | Set to `production` to enforce required vars |
-| `VERIFY_ENV`              | optional | Set to `true` to enforce required vars outside production |
+| `ENVIRONMENT`             | optional | `production` reports a missing Google or Visual Crossing key at startup; also shown by `/health` |
+| `VERIFY_ENV`              | optional | Set to `true` for the same startup check outside production |
+| `FORWARDED_ALLOW_IPS`     | optional | Proxies trusted in `X-Forwarded-For` for rate limiting (default in `start.sh`: loopback and private ranges) |
 
-Get your free Tavily key at [tavily.com](https://tavily.com) — the free tier provides 1000 requests/month.
+Missing keys never stop the app from starting: the affected feature returns an error until the key is configured.
+
+Get your free Tavily key at [tavily.com](https://tavily.com). The free tier provides 1,000 API credits per month, and this app uses advanced search at 2 credits each, so that is about 500 hotel searches.
 
 ### Tavily
 
@@ -268,12 +319,22 @@ Before handing results to the agent, the tool post-processes them: `_force_curre
 
 ## Local Development
 
-Requirements: Python 3.12 with `uv`, Node.js 22 (20.19+ minimum, required by ESLint 10 and Vitest 4).
+Requirements: Python 3.12 with `uv`, Node.js 22.13+ (20.19+ or 24+ also work; required by ESLint 10).
+
+Create `env-scratchpad.sh` in the repository root with your API keys. The file is gitignored, so never commit it:
+
+```bash
+export GOOGLE_API_KEY="your-google-key"
+export VISUAL_CROSSING_API_KEY="your-visual-crossing-key"
+export TAVILY_API_KEY="your-tavily-key"
+```
+
+Then start both apps:
 
 ```bash
 # 1. Backend
 cd backend
-uv sync                              # installs all deps including tavily-python
+uv sync --extra dev                  # app dependencies plus ruff and pytest
 source ../env-scratchpad.sh          # exports GOOGLE_API_KEY, VISUAL_CROSSING_API_KEY, TAVILY_API_KEY
 uv run uvicorn api.main:app --reload --port 8000
 
@@ -294,7 +355,7 @@ source env-scratchpad.sh
 ./deploy-production.sh
 ```
 
-Builds a multi-stage image (backend + Vite frontend), starts Nginx on port 80 and proxies `/api/*` to FastAPI.
+Requires all three API keys. Builds a multi-stage image (backend + Vite frontend) and starts Nginx on port 80, which proxies `/api/*` to FastAPI. FastAPI runs as an unprivileged user and listens only inside the container, so hosting platforms must route traffic to port 80.
 
 ```bash
 curl http://localhost/api/health
