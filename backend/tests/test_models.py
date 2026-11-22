@@ -26,5 +26,7 @@ class TestChatRequest:
     def test_session_id_defaults_to_none(self):
         assert ChatRequest(message="hi").session_id is None
 
-    def test_conversation_history_defaults_to_empty_list(self):
-        assert ChatRequest(message="hi").conversation_history == []
+    def test_legacy_conversation_history_is_ignored(self):
+        # Older clients may still send it; history lives in the server session.
+        request = ChatRequest(message="hi", conversation_history=[{"role": "user"}])
+        assert not hasattr(request, "conversation_history")

@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from agent_system.src.utils.load_env_data import get_environment_info, load_env_data
 
@@ -14,17 +15,11 @@ from .models import ChatRequest, ChatResponse
 
 logger = logging.getLogger(__name__)
 
-
-def _client_ip(request: Request) -> str:
-    # uvicorn sits behind nginx in the container, so request.client.host is
-    # always 127.0.0.1 — the real client is the leftmost X-Forwarded-For hop.
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
-
-
-limiter = Limiter(key_func=_client_ip)
+# uvicorn's proxy-headers middleware sets request.client to the rightmost
+# X-Forwarded-For hop outside FORWARDED_ALLOW_IPS (see start.sh). Hops further
+# left are client-controlled: keying on them lets anyone reset their limit by
+# sending a made-up header.
+limiter = Limiter(key_func=get_remote_address)
 
 # Load environment variables (warn about missing keys, never crash on startup)
 try:

@@ -95,5 +95,5 @@ def get_environment_info() -> dict:
         "has_google_api_key": bool(os.getenv("GOOGLE_API_KEY")),
         "has_visual_crossing_api_key": bool(os.getenv("VISUAL_CROSSING_API_KEY")),
         "model": load_model(),
-        "environment": os.getenv("NODE_ENV", "development"),
+        "environment": os.getenv("ENVIRONMENT", "development"),
     }

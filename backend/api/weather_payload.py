@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, ValidationError
 
 DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
 DATE_RANGE_PATTERN = r"^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$"
@@ -11,6 +11,20 @@ TIME_PATTERN = r"^\d{2}:\d{2}$"
 DateStr = Annotated[str, Field(pattern=DATE_PATTERN)]
 DateRangeStr = Annotated[str, Field(pattern=DATE_RANGE_PATTERN)]
 TimeStr = Annotated[str, Field(pattern=TIME_PATTERN)]
+
+
+def _blank_to_none(value: Any) -> Any:
+    return None if isinstance(value, str) and not value.strip() else value
+
+
+# The keys stay required, but a value can be genuinely absent (no sunrise during
+# polar night, a station without a pressure reading). The frontend renders null
+# as a dash, so one gap must not discard the whole reply. The prompt tells the
+# model to use null; it is also told to use "" for unknown strings, hence the
+# blank handling.
+NullableFloat = Annotated[float | None, BeforeValidator(_blank_to_none)]
+NullableText = Annotated[str | None, BeforeValidator(_blank_to_none)]
+NullableTime = Annotated[TimeStr | None, BeforeValidator(_blank_to_none)]
 
 
 class WeatherMetaBase(BaseModel):
@@ -34,34 +48,22 @@ class WeatherMetaRange(WeatherMetaBase):
 
 
 class CurrentWeather(BaseModel):
-    temp: float
-    tempmax: float
-    tempmin: float
-    windspeed: float
-    winddir: float
-    pressure: float
-    humidity: float
-    sunrise: TimeStr
-    sunset: TimeStr
-    conditions: str
+    temp: NullableFloat
+    tempmax: NullableFloat
+    tempmin: NullableFloat
+    windspeed: NullableFloat
+    winddir: NullableFloat
+    pressure: NullableFloat
+    humidity: NullableFloat
+    sunrise: NullableTime
+    sunset: NullableTime
+    conditions: NullableText
 
     model_config = ConfigDict(extra="allow")
 
 
-class DayWeather(BaseModel):
+class DayWeather(CurrentWeather):
     datetime: DateStr
-    temp: float
-    tempmax: float
-    tempmin: float
-    windspeed: float
-    winddir: float
-    pressure: float
-    humidity: float
-    sunrise: TimeStr
-    sunset: TimeStr
-    conditions: str
-
-    model_config = ConfigDict(extra="allow")
 
 
 class WeatherCurrentPayload(BaseModel):
@@ -88,10 +90,13 @@ def _format_validation_error(exc: ValidationError) -> str:
     return f"{loc}: {msg}" if loc else str(msg)
 
 
-def validate_weather_payload(payload: Any) -> None:
+def validate_weather_payload(payload: Any) -> dict[str, Any]:
     """
     Validate agent weather payload against the schema documented in
     `agent_system/src/multi_tool_agent/templates/json_format.py`.
+
+    Returns:
+        The payload with blank values normalized to null.
 
     Raises:
         ValueError: if payload is invalid.
@@ -106,11 +111,11 @@ def validate_weather_payload(payload: Any) -> None:
     kind = meta.get("kind")
     try:
         if kind == "current":
-            WeatherCurrentPayload.model_validate(payload)
-            return
+            model = WeatherCurrentPayload.model_validate(payload)
+            return model.model_dump(exclude_unset=True)
         if kind in ("forecast", "history"):
-            WeatherDaysPayload.model_validate(payload)
-            return
+            model = WeatherDaysPayload.model_validate(payload)
+            return model.model_dump(exclude_unset=True)
     except ValidationError as exc:
         raise ValueError(_format_validation_error(exc)) from exc
 

@@ -1,11 +1,14 @@
 import asyncio
 import json
 import logging
+import math
 import os
 import re
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
+from google.adk.agents.invocation_context import LlmCallsLimitExceededError
+from google.adk.agents.run_config import RunConfig, ToolThreadPoolConfig
 from google.adk.runners import Runner
 from google.genai import types
 
@@ -25,6 +28,20 @@ logger = logging.getLogger(__name__)
 # to 3 root-level LLM turns plus 2 nested AgentTool sub-runs, so this needs
 # more headroom than a single-intent reply.
 _ADK_TIMEOUT_SECONDS = 100
+
+# Stops a model stuck in a loop, which would otherwise keep spending paid calls
+# until the timeout (ADK's default is 500). Counted per run, and each AgentTool
+# is its own run; the longest normal run (hotel search plus three booking links
+# after a transfer) needs about 7.
+_MAX_LLM_CALLS = 12
+
+# The weather and hotel tools use blocking HTTP clients. Without a pool ADK runs
+# them on the event loop, which freezes every other request (including /health)
+# and keeps asyncio.timeout from firing until the tool returns.
+_RUN_CONFIG = RunConfig(
+    max_llm_calls=_MAX_LLM_CALLS,
+    tool_thread_pool_config=ToolThreadPoolConfig(max_workers=8),
+)
 
 # Matches weather-json, hotel-json, combined-json, and plain json fenced blocks.
 FENCE_PATTERN = re.compile(
@@ -50,6 +67,20 @@ def _with_date_header(message: str, now: Optional[datetime] = None) -> str:
     return f"[Today is {now:%Y-%m-%d}, {now:%A}] {message}"
 
 
+def _finite_float(text: str) -> Optional[float]:
+    value = float(text)
+    return value if math.isfinite(value) else None
+
+
+def _loads_finite(text: str) -> Any:
+    """Parse JSON, reading NaN, Infinity and overflowing numbers as null.
+
+    Python accepts these, but re-serializing them emits tokens that the
+    browser's JSON.parse rejects, which silently loses the whole data block.
+    """
+    return json.loads(text, parse_constant=lambda _: None, parse_float=_finite_float)
+
+
 def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
     """Return (fence_type, parsed_dict) for the first fenced JSON block, or None."""
     match = FENCE_PATTERN.search(raw_text)
@@ -59,12 +90,12 @@ def _extract_fenced_json(raw_text: str) -> Optional[Tuple[str, dict]]:
     json_body = match.group(2).strip()
 
     try:
-        return fence_type, json.loads(json_body)
+        return fence_type, _loads_finite(json_body)
     except json.JSONDecodeError:
         repaired = _TRAILING_COMMA_PATTERN.sub(r"\1", json_body)
         if repaired != json_body:
             try:
-                return fence_type, json.loads(repaired)
+                return fence_type, _loads_finite(repaired)
             except json.JSONDecodeError:
                 pass
         # Log the raw offending body so failures can actually be diagnosed —
@@ -141,16 +172,16 @@ def _detect_error_in_response(
     return False, None, None, None
 
 
-def _validate_payload(fence_type: str, payload: dict) -> None:
-    """Route payload validation to the right validator by fence type and kind."""
-    kind = payload.get("meta", {}).get("kind") if isinstance(payload, dict) else None
+def _validate_payload(fence_type: str, payload: dict) -> dict:
+    """Validate by fence type and kind, returning the sanitized payload."""
+    meta = payload.get("meta") if isinstance(payload, dict) else None
+    kind = meta.get("kind") if isinstance(meta, dict) else None
 
     if fence_type == "combined-json" or kind == "combined":
-        validate_combined_payload(payload)
-    elif fence_type == "hotel-json" or kind == "hotels":
-        validate_hotel_payload(payload)
-    else:
-        validate_weather_payload(payload)
+        return validate_combined_payload(payload)
+    if fence_type == "hotel-json" or kind == "hotels":
+        return validate_hotel_payload(payload)
+    return validate_weather_payload(payload)
 
 
 async def process_chat_request(request: ChatRequest) -> ChatResponse:
@@ -197,9 +228,22 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
                     user_id=session_data["user_id"],
                     session_id=session_data["adk_session_id"],
                     new_message=content,
+                    run_config=_RUN_CONFIG,
                 )
                 async for event in events:
                     if event.is_final_response():
+                        # ADK reports the limit as a final event, not an exception.
+                        if event.error_code == LlmCallsLimitExceededError.__name__:
+                            logger.warning(
+                                "ADK run stopped at %s LLM calls", _MAX_LLM_CALLS
+                            )
+                            return ChatResponse(
+                                success=False,
+                                error="The request needed too many steps. "
+                                "Please try again.",
+                                session_id=session_data["session_id"],
+                            )
+
                         raw_text = ""
                         if getattr(event, "content", None) and getattr(
                             event.content, "parts", None
@@ -223,7 +267,9 @@ async def process_chat_request(request: ChatRequest) -> ChatResponse:
 
                         if json_payload is not None:
                             try:
-                                _validate_payload(fence_type or "", json_payload)
+                                json_payload = _validate_payload(
+                                    fence_type or "", json_payload
+                                )
                             except ValueError as exc:
                                 return ChatResponse(
                                     success=False,

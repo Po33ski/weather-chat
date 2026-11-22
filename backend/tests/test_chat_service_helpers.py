@@ -65,6 +65,25 @@ class TestExtractFencedJson:
         result = _extract_fenced_json(text)
         assert result == ("weather-json", {"first": True})
 
+    @pytest.mark.parametrize(
+        "token", ["NaN", "Infinity", "-Infinity", "1e999", "-1e999"]
+    )
+    def test_non_finite_numbers_become_null(self, token):
+        body = f'{{"a": {token}, "b": 1.5}}'
+        result = _extract_fenced_json(fenced("weather-json", body))
+        assert result == ("weather-json", {"a": None, "b": 1.5})
+
+    def test_non_finite_number_is_handled_after_comma_repair(self):
+        result = _extract_fenced_json(fenced("weather-json", '{"a": NaN,}'))
+        assert result == ("weather-json", {"a": None})
+
+    def test_reserialized_output_is_strict_json(self):
+        raw = fenced("weather-json", '{"a": NaN, "b": 1e999}')
+        fence_type, payload = _extract_fenced_json(raw)
+        normalized = _normalize_agent_response(raw, fence_type, payload)
+        body = normalized.split("```weather-json\n", 1)[1].rsplit("\n```", 1)[0]
+        assert json.loads(body, parse_constant=pytest.fail) == {"a": None, "b": None}
+
 
 class TestNormalizeAgentResponse:
     def test_empty_input_returns_error_marker(self):
@@ -171,3 +190,11 @@ class TestValidatePayloadRouting:
             _validate_payload(
                 "json", {"meta": {"city": "W", "kind": "mystery", "language": "en"}}
             )
+
+    @pytest.mark.parametrize("meta", [None, "text", 3, []])
+    @pytest.mark.parametrize(
+        "fence_type", ["json", "weather-json", "hotel-json", "combined-json"]
+    )
+    def test_non_object_meta_is_a_validation_error(self, fence_type, meta):
+        with pytest.raises(ValueError, match="meta must be an object"):
+            _validate_payload(fence_type, {"meta": meta})

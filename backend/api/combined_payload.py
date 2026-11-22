@@ -52,10 +52,13 @@ def _format_validation_error(exc: ValidationError) -> str:
     return f"{loc}: {msg}" if loc else str(msg)
 
 
-def validate_combined_payload(payload: Any) -> None:
+def validate_combined_payload(payload: Any) -> dict[str, Any]:
     """
     Validate agent combined payload against the combined-json schema
     documented in `agent_system/src/multi_tool_agent/templates/json_format.py`.
+
+    Returns:
+        The payload with weather and hotel fields sanitized.
 
     Raises:
         ValueError: if payload is invalid.
@@ -74,14 +77,20 @@ def validate_combined_payload(payload: Any) -> None:
     weather_kind = weather.get("kind")
     try:
         if weather_kind == "current":
-            CombinedWeatherCurrent.model_validate(weather)
+            parsed_weather = CombinedWeatherCurrent.model_validate(weather)
         elif weather_kind in ("forecast", "history"):
-            CombinedWeatherDays.model_validate(weather)
+            parsed_weather = CombinedWeatherDays.model_validate(weather)
         else:
             raise ValueError(
                 'weather.kind must be one of: "current", "forecast", "history"'
             )
 
-        CombinedPayload.model_validate(payload)
+        parsed = CombinedPayload.model_validate(payload)
     except ValidationError as exc:
         raise ValueError(_format_validation_error(exc)) from exc
+
+    # "weather" is only an extra on CombinedPayload because its shape depends
+    # on weather.kind, so the sanitized copy has to be put back explicitly.
+    return parsed.model_dump(exclude_unset=True) | {
+        "weather": parsed_weather.model_dump(exclude_unset=True)
+    }

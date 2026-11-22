@@ -53,6 +53,53 @@ class TestHotelFieldSanitization:
         assert Hotel(name="H", rating=8.5).rating == 8.5
         assert Hotel(name="H", rating=None).rating is None
 
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [("8.5", 8.5), ("8,5", 8.5), ("8.5/10", 8.5), ("4.5/5", None), ("n/a", None)],
+    )
+    def test_rating_strings(self, value, expected):
+        assert Hotel(name="H", rating=value).rating == expected
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            (120, "120"),
+            (120.0, "120"),
+            (99.5, "99.5"),
+            ("120", "120"),
+            (None, ""),
+            (True, ""),
+        ],
+    )
+    def test_price_becomes_text(self, value, expected):
+        assert Hotel(name="H", price_per_night=value).price_per_night == expected
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            (1234, 1234),
+            (12.0, 12),
+            ("1,234", 1234),
+            ("1 234", 1234),
+            ("many", None),
+            (-3, None),
+            (12.5, None),
+        ],
+    )
+    def test_reviews_count(self, value, expected):
+        assert Hotel(name="H", reviews_count=value).reviews_count == expected
+
+    @pytest.mark.parametrize("field", ["url", "currency"])
+    def test_null_text_fields_become_empty(self, field):
+        assert getattr(Hotel(name="H", **{field: None}), field) == ""
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [(None, []), ("spa", []), (["spa", 7, " ", " gym "], ["spa", "gym"])],
+    )
+    def test_highlights_keep_only_text(self, value, expected):
+        assert Hotel(name="H", highlights=value).highlights == expected
+
 
 class TestHotelPayload:
     def test_empty_hotels_list_is_valid(self):
@@ -79,6 +126,16 @@ class TestHotelPayload:
     def test_non_dict_payload_raises(self):
         with pytest.raises(ValueError, match="must be an object"):
             validate_hotel_payload(["not", "a", "dict"])
+
+    def test_returns_sanitized_copy(self):
+        result = validate_hotel_payload(
+            {
+                "meta": {"city": "Warsaw", "kind": "hotels", "language": "en"},
+                "hotels": [{"name": "H", "url": "javascript:alert(1)", "rating": 42}],
+            }
+        )
+        assert result["hotels"][0]["url"] == ""
+        assert result["hotels"][0]["rating"] is None
 
 
 class TestWeatherPayload:
@@ -130,6 +187,37 @@ class TestWeatherPayload:
                 {"meta": {"city": "Warsaw", "kind": "hotels", "language": "en"}}
             )
 
+    @pytest.mark.parametrize("field", ["sunrise", "sunset", "pressure", "winddir"])
+    @pytest.mark.parametrize("value", [None, "", "  "])
+    def test_absent_value_becomes_null(self, field, value):
+        # e.g. no sunrise during polar night: the rest of the reply still counts.
+        result = validate_weather_payload(
+            {
+                "meta": {
+                    "city": "Longyearbyen",
+                    "kind": "forecast",
+                    "date_range": "2026-11-21..2026-11-21",
+                    "language": "en",
+                },
+                "days": [DAY_WEATHER | {field: value}],
+            }
+        )
+        assert result["days"][0][field] is None
+
+    def test_malformed_time_is_still_rejected(self):
+        with pytest.raises(ValueError, match=r"current\.sunrise"):
+            validate_weather_payload(
+                {
+                    "meta": {
+                        "city": "Warsaw",
+                        "kind": "current",
+                        "date": "2026-08-08",
+                        "language": "en",
+                    },
+                    "current": CURRENT_WEATHER | {"sunrise": "morning"},
+                }
+            )
+
 
 class TestCombinedPayload:
     def test_valid_combined_payload(self):
@@ -145,6 +233,25 @@ class TestCombinedPayload:
                 "hotels": [],
             }
         )
+
+    def test_returns_sanitized_weather_and_hotels(self):
+        result = validate_combined_payload(
+            {
+                "meta": {
+                    "city": "Warsaw",
+                    "kind": "combined",
+                    "date": "2026-08-08",
+                    "language": "en",
+                },
+                "weather": {
+                    "kind": "current",
+                    "current": CURRENT_WEATHER | {"sunrise": ""},
+                },
+                "hotels": [{"name": "H", "url": "javascript:alert(1)"}],
+            }
+        )
+        assert result["weather"]["current"]["sunrise"] is None
+        assert result["hotels"][0]["url"] == ""
 
     def test_missing_weather_object_raises(self):
         with pytest.raises(ValueError, match="weather must be an object"):

@@ -4,9 +4,7 @@ from typing import Any, Dict
 
 import requests
 
-from .utils import normalize_sunrise_sunset
-
-API_HTTP = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"
+from .utils import normalize_sunrise_sunset, timeline_params, timeline_url
 
 
 def get_history_weather(city: str, start_date: str, end_date: str) -> Dict[str, Any]:
@@ -32,12 +30,12 @@ def get_history_weather(city: str, start_date: str, end_date: str) -> Dict[str, 
     if not api_key:
         return {"error": "Weather service API key is not configured."}
 
-    url = (
-        f"{API_HTTP}{city}/{start_date}/{end_date}"
-        f"?unitGroup=metric&key={api_key}&contentType=json"
-    )
+    url = timeline_url(city, start_date, end_date)
+    if url is None:
+        return {"error": f"City '{city}' not found or invalid date range."}
+
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, params=timeline_params(api_key), timeout=10)
         response.raise_for_status()
         weather_data = response.json()
         return normalize_sunrise_sunset(weather_data)

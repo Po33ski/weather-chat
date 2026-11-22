@@ -54,7 +54,7 @@ def test_chat():
     if not os.getenv("GOOGLE_API_KEY"):
         print("   ⚠️  Skipping: GOOGLE_API_KEY not set")
         return
-    resp = _post("/api/chat", {"message": "Hello", "conversation_history": []})
+    resp = _post("/api/chat", {"message": "Hello"})
     assert resp.status_code == 200, f"/api/chat status {resp.status_code}"
     data = resp.json()
     # Backend always returns HTTP 200; check the success flag for semantic result.

@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import math
+import re
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+
+# "8.5", "8,5" or "8.5/10". Other scales ("4.5/5") can't be read as 0-10.
+_RATING_PATTERN = re.compile(r"^(\d+(?:[.,]\d+)?)(?:\s*/\s*10)?$")
+# "1234", "1,234", "1 234", "1.234": thousands separators vary by locale.
+_COUNT_PATTERN = re.compile(r"^\d{1,3}(?:[ ,. ]\d{3}){1,3}$|^\d{1,12}$")
 
 
 class HotelMeta(BaseModel):
@@ -33,15 +40,31 @@ class Hotel(BaseModel):
     # values are sanitized to their "unknown" form instead of rejected; the
     # frontend already renders "" / null / "unknown" as missing data.
 
-    @field_validator("url")
+    @field_validator("url", mode="before")
     @classmethod
-    def _url_must_be_http(cls, value: str) -> str:
+    def _url_must_be_http(cls, value: object) -> str:
         # The frontend renders this as a live <a href> link; anything but
         # http(s) (e.g. a javascript: URI) must not become clickable.
-        value = (value or "").strip()
-        if value and not value.startswith(("http://", "https://")):
+        text = value.strip() if isinstance(value, str) else ""
+        if text and not text.startswith(("http://", "https://")):
             return ""
-        return value
+        return text
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def _currency_as_text(cls, value: object) -> str:
+        return value if isinstance(value, str) else ""
+
+    @field_validator("price_per_night", mode="before")
+    @classmethod
+    def _price_as_text(cls, value: object) -> str:
+        if isinstance(value, str):
+            return value
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return ""
+        if not math.isfinite(value):
+            return ""
+        return str(int(value)) if value == int(value) else str(value)
 
     @field_validator("availability", mode="before")
     @classmethod
@@ -50,12 +73,36 @@ class Hotel(BaseModel):
             return "available"
         return "unknown"
 
-    @field_validator("rating")
+    @field_validator("rating", mode="before")
     @classmethod
-    def _rating_on_ten_scale(cls, value: float | None) -> float | None:
-        if value is None or not (0 <= value <= 10):
+    def _rating_on_ten_scale(cls, value: object) -> float | None:
+        if isinstance(value, str):
+            match = _RATING_PATTERN.match(value.strip())
+            value = float(match.group(1).replace(",", ".")) if match else None
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None
+        return float(value) if 0 <= value <= 10 else None
+
+    @field_validator("reviews_count", mode="before")
+    @classmethod
+    def _reviews_as_int(cls, value: object) -> int | None:
+        if isinstance(value, str):
+            text = value.strip()
+            value = int(re.sub(r"\D", "", text)) if _COUNT_PATTERN.match(text) else None
+        if isinstance(value, float) and value.is_integer():
+            value = int(value)
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             return None
         return value
+
+    @field_validator("highlights", mode="before")
+    @classmethod
+    def _text_highlights_only(cls, value: object) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [
+            item.strip() for item in value if isinstance(item, str) and item.strip()
+        ]
 
 
 class HotelPayload(BaseModel):
@@ -78,9 +125,13 @@ def _format_validation_error(exc: ValidationError) -> str:
     return f"{loc}: {msg}" if loc else str(msg)
 
 
-def validate_hotel_payload(payload: Any) -> None:
+def validate_hotel_payload(payload: Any) -> dict[str, Any]:
     """
     Validate agent hotel payload against the hotel-json schema.
+
+    Returns:
+        The payload with out-of-contract hotel fields sanitized. Callers must
+        send this copy to the client, not the original.
 
     Raises:
         ValueError: if payload is invalid.
@@ -93,6 +144,6 @@ def validate_hotel_payload(payload: Any) -> None:
         raise ValueError("meta must be an object")
 
     try:
-        HotelPayload.model_validate(payload)
+        return HotelPayload.model_validate(payload).model_dump(exclude_unset=True)
     except ValidationError as exc:
         raise ValueError(_format_validation_error(exc)) from exc
