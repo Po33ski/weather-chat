@@ -67,6 +67,13 @@ RUN uv sync
 # Install uvicorn as a tool in runtime stage
 RUN uv tool install uvicorn
 
+# Unprivileged account for the FastAPI process (see start.sh). The import fails
+# the build if that account can't reach the interpreter, the venv or the code.
+RUN useradd --system --no-create-home --shell /usr/sbin/nologin app \
+    && HOME=/tmp PYTHONDONTWRITEBYTECODE=1 \
+       setpriv --reuid=app --regid=app --init-groups --no-new-privs --inh-caps=-all \
+       /app/backend/.venv/bin/python -c "import api.main"
+
 # Copy nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 

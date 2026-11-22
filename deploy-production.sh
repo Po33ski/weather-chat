@@ -20,6 +20,12 @@ if [ -z "$GOOGLE_API_KEY" ]; then
     exit 1
 fi
 
+if [ -z "$TAVILY_API_KEY" ]; then
+    echo "❌ Error: TAVILY_API_KEY environment variable is not set"
+    echo "   Please source env-scratchpad.sh or set the environment variable"
+    exit 1
+fi
+
 echo "✅ Environment variables are set"
 
 # Build the Docker image
@@ -39,9 +45,11 @@ docker run -d \
     -p 80:80 \
     -e VISUAL_CROSSING_API_KEY="$VISUAL_CROSSING_API_KEY" \
     -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
+    -e TAVILY_API_KEY="$TAVILY_API_KEY" \
     -e MODEL="gemini-3.5-flash-lite" \
     -e DISABLE_WEB_DRIVER="0" \
     -e ENVIRONMENT="production" \
+    -e FORWARDED_ALLOW_IPS="127.0.0.1" \
     weather-center-chat:latest
 
 # Wait for container to start
@@ -52,7 +60,7 @@ sleep 10
 if docker ps | grep -q weather-center-chat; then
     echo "✅ Container is running successfully!"
     echo "🌐 Application is available at: http://localhost"
-    echo "🔍 Health check: http://localhost/health"
+    echo "🔍 Health check: http://localhost/api/health"
 else
     echo "❌ Container failed to start"
     docker logs weather-center-chat
